@@ -13,6 +13,9 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
   -f db/migrations/002_technology_knowledge_graph.sql
+
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -f db/migrations/003_fix_product_wide_edition_scope.sql
 ```
 
 Run the lightweight repository checks with:
@@ -34,6 +37,10 @@ edition-specific pricing, deployment models, integrations, countries,
 languages, industries, compliance frameworks, and capabilities. Capability
 support is never reduced to a simple yes/no value: unknown and not-yet-verified
 states remain explicit.
+
+Deployment, integration, and compliance facts may be product-wide or scoped to
+an edition. Migration 003 replaces primary keys that would otherwise force
+`edition_id` to be non-null with NULL-safe unique indexes.
 
 Evidence is first-class. Capability facts can link to multiple evidence sources,
 carry confidence and verification timestamps, and retain verification history.
