@@ -1,84 +1,9 @@
-import React, { useState } from 'react';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
-export default function App() {
-  const [problem, setProblem] = useState('');
-  const [consultation, setConsultation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [readiness, setReadiness] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  async function start() {
-    if (!problem.trim()) return;
-    setBusy(true); setError('');
-    try {
-      const res = await fetch(`${API}/consultations`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({business_problem:problem})});
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Could not start consultation');
-      setConsultation(data);
-      setMessages([{role:'assistant', text:"Tell me about your company, expected users, country, budget, and any must-have integrations or deployment constraints."}]);
-    } catch (e) { setError(String(e.message || e)); }
-    finally { setBusy(false); }
-  }
-
-  async function send() {
-    if (!input.trim() || !consultation) return;
-    const text = input; setInput(''); setMessages(m => [...m,{role:'user',text}]); setBusy(true); setError('');
-    try {
-      const res = await fetch(`${API}/consultations/${consultation.public_uuid}/messages`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Chat request failed');
-      setMessages(m => [...m,{role:'assistant',text:data.message}]);
-      setReadiness(data.readiness);
-    } catch(e) { setError(String(e.message || e)); }
-    finally { setBusy(false); }
-  }
-
-  async function match() {
-    if (!consultation) return;
-    setBusy(true); setError('');
-    try {
-      const res = await fetch(`${API}/consultations/${consultation.public_uuid}/recommendations`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scoring_version:'v1'})});
-      const data = await res.json();
-      if (!res.ok) {
-        const d = data.detail;
-        throw new Error(typeof d === 'string' ? d : `${d?.message || 'Not ready'}${d?.missing ? `: ${d.missing.join(', ')}` : ''}`);
-      }
-      setRecommendations(data.recommendations || []);
-    } catch(e) { setError(String(e.message || e)); }
-    finally { setBusy(false); }
-  }
-
-  return <div className="app-shell">
-    <header><div className="brand">TechSelect <span>AI</span></div><div className="tag">Evidence-backed technology advisory</div></header>
-    <main>
-      {!consultation ? <section className="hero card">
-        <p className="eyebrow">FREE AI CONSULTATION</p>
-        <h1>Find the right technology for your business.</h1>
-        <p className="lead">Describe the business problem. TechSelect AI will structure your requirements, ask only the important follow-up questions, and evaluate products using verified capability data.</p>
-        <textarea value={problem} onChange={e=>setProblem(e.target.value)} placeholder="Example: We are a 300-person construction company in Egypt looking for a CRM for 35 users. We need Arabic, WhatsApp, quotation management and an API, under $15/user/month." />
-        <button onClick={start} disabled={busy || problem.trim().length < 5}>{busy?'Starting…':'Start Free AI Consultation'}</button>
-      </section> : <div className="consult-grid">
-        <section className="chat card">
-          <div className="chat-head"><div><p className="eyebrow">CONSULTATION</p><h2>Tell TechSelect AI what you need</h2></div>{readiness && <div className="readiness"><strong>{Number(readiness.readiness_score).toFixed(0)}%</strong><span>ready</span></div>}</div>
-          <div className="messages">{messages.map((m,i)=><div key={i} className={`msg ${m.role}`}>{m.text}</div>)}</div>
-          <div className="composer"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder="Add company details, budget, requirements…"/><button onClick={send} disabled={busy}>Send</button></div>
-        </section>
-        <aside className="card side">
-          <p className="eyebrow">MATCHING STATUS</p>
-          <h3>Structured recommendation engine</h3>
-          <p>{readiness?.ready_for_matching ? 'Enough confirmed information is available to run matching.' : 'TechSelect AI is still collecting the critical information needed for a reliable match.'}</p>
-          {readiness?.missing_critical_fields?.length>0 && <div className="missing"><strong>Still needed</strong>{readiness.missing_critical_fields.map(x=><span key={x}>{x.replaceAll('_',' ')}</span>)}</div>}
-          <button onClick={match} disabled={busy || !readiness?.ready_for_matching}>Find Best Matches</button>
-          <small>AI does not choose the winner. Product scores come from the deterministic database engine.</small>
-        </aside>
-      </div>}
-      {error && <div className="error">{error}</div>}
-      {recommendations.length>0 && <section className="results card"><p className="eyebrow">RECOMMENDATIONS</p><h2>Best-fit options</h2>{recommendations.map(r=><div className="result" key={r.product_name}><div><strong>#{r.recommendation_rank} {r.product_name}</strong><span>{r.recommendation_status.replaceAll('_',' ')}</span></div><div className="score">{Number(r.overall_score).toFixed(0)}%</div></div>)}</section>}
-    </main>
-  </div>;
-}
+import React,{useEffect,useState}from'react';
+const API='';
+function setSeo(title,description,canonical,jsonLd){document.title=title;document.querySelector('meta[name="description"]')?.setAttribute('content',description);document.querySelector('link[rel="canonical"]')?.setAttribute('href',canonical);let s=document.getElementById('jsonld');if(s)s.remove();if(jsonLd){s=document.createElement('script');s.id='jsonld';s.type='application/ld+json';s.text=JSON.stringify(jsonLd);document.head.appendChild(s)}}
+function Home(){const[p,setP]=useState('');const[c,setC]=useState(null);async function start(){const r=await fetch('/api/consultations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_problem:p})});setC(await r.json())}return <main><section className="hero"><div className="eyebrow">Independent software & technology advisory</div><h1>Find the right technology for your business.</h1><p>Describe what you need. TechSelectAI structures your requirements and evaluates suitable options using evidence-backed data.</p><textarea value={p} onChange={e=>setP(e.target.value)} placeholder="We need a CRM for 60 users in Saudi Arabia with Arabic and WhatsApp"/><button onClick={start} disabled={p.trim().length<5}>Start free consultation</button>{c&&<div className="notice">Consultation started. Reference: {c.public_token}</div>}</section></main>}
+function Software(){const[d,setD]=useState([]);useEffect(()=>{setSeo('Software Directory | TechSelectAI','Explore evidence-backed software profiles.','https://techselectai.com/software');fetch('/api/software').then(r=>r.json()).then(x=>setD(x.products||[]))},[]);return <main><h1>Software explorer</h1><div className="grid">{d.map(p=><a className="card" href={'/software/'+p.slug} key={p.id}><small>{p.category} · {p.vendor}</small><h3>{p.name}</h3><p>{p.short_description}</p></a>)}</div></main>}
+function Product({slug}){const[d,setD]=useState(null);useEffect(()=>{fetch('/api/software/'+slug).then(r=>r.json()).then(x=>{setD(x.product);if(x.product)setSeo(`${x.product.name} Review, Capabilities & Evidence | TechSelectAI`,x.product.short_description||`Review ${x.product.name}.`,`https://techselectai.com/software/${slug}`,{'@context':'https://schema.org','@type':'SoftwareApplication',name:x.product.name,applicationCategory:x.product.category,url:`https://techselectai.com/software/${slug}`})})},[slug]);if(!d)return <main>Loading…</main>;return <main><small>{d.category} · {d.vendor}</small><h1>{d.name}</h1><p>{d.short_description}</p><h2>Capabilities</h2><table><tbody>{d.capabilities.map((c,i)=><tr key={i}><td><a href={'/capabilities/'+c.slug}>{c.name}</a></td><td>{c.support_status.replaceAll('_',' ')}</td><td>{Math.round((Number(c.confidence_score)||0)*100)}%</td></tr>)}</tbody></table><h2>Evidence</h2>{d.evidence.map((e,i)=><p key={i}><a href={e.source_url} target="_blank">{e.source_title}</a> · {e.verification_status}</p>)}</main>}
+function Capability({slug}){const[d,setD]=useState(null);useEffect(()=>{fetch('/api/capabilities/'+slug).then(r=>r.json()).then(x=>{setD(x.capability);if(x.capability)setSeo(`${x.capability.name} Software Capability Comparison | TechSelectAI`,x.capability.description||`Compare ${x.capability.name} support.`,`https://techselectai.com/capabilities/${slug}`)})},[slug]);if(!d)return <main>Loading…</main>;return <main><small>{d.category} · {d.module}</small><h1>{d.name}</h1><p>{d.description}</p><div className="grid">{d.products.map(p=><a className="card" href={'/software/'+p.slug} key={p.slug}><h3>{p.name}</h3><p>{p.support_status.replaceAll('_',' ')}</p></a>)}</div></main>}
+function Compare({pair}){const[d,setD]=useState(null);useEffect(()=>{fetch('/api/compare/'+pair).then(r=>r.json()).then(x=>{if(x.canonical&&x.canonical!==pair){location.replace('/compare/'+x.canonical);return}setD(x);if(x.products?.length===2)setSeo(`${x.products[0].name} vs ${x.products[1].name} | TechSelectAI`,`Evidence-backed comparison of ${x.products[0].name} and ${x.products[1].name}.`,`https://techselectai.com/compare/${x.canonical}`)})},[pair]);if(!d)return <main>Loading…</main>;return <main><h1>{d.products[0].name} vs {d.products[1].name}</h1><p>Unknown means not yet verified; it does not mean unsupported.</p><table><tbody>{d.facts.map((f,i)=><tr key={i}><td>{f.module} · {f.name}</td><td>{d.products.find(p=>p.id==f.product_id)?.name}</td><td>{f.support_status.replaceAll('_',' ')}</td></tr>)}</tbody></table></main>}
+export default function App(){const path=location.pathname.split('/').filter(Boolean);let page=<Home/>;if(path[0]==='software'&&!path[1])page=<Software/>;else if(path[0]==='software'&&path[1])page=<Product slug={path[1]}/>;else if(path[0]==='capabilities'&&path[1])page=<Capability slug={path[1]}/>;else if(path[0]==='compare'&&path[1])page=<Compare pair={path[1]}/>;return <><header><a href="/" className="brand">TechSelectAI</a><nav><a href="/software">Software</a><a href="/methodology">Methodology</a><a href="/">Get Advice</a></nav></header>{page}</>}

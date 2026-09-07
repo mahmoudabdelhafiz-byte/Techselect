@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Serve existing files/directories directly.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Backend endpoints and SEO files are routed to PHP.
+RewriteRule ^(api/.*|health|robots\.txt|sitemap\.xml)$ api/index.php [QSA,L]
+
+# React/Vite SPA fallback.
+RewriteRule ^ index.html [L]
