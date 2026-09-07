@@ -1,5 +1,16 @@
 RewriteEngine On
 
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# Block direct web access to internal/source material when repository folders are uploaded.
+RewriteRule ^(?:app|db|docs|scripts)/ - [F,L]
+RewriteRule ^(?:\.env|README\.md) - [F,L]
+
 # Human-facing account/admin routes.
 RewriteRule ^(login|register|verify-email|reset-password)/?$ account.php [QSA,L]
 RewriteRule ^admin/?$ admin.php [QSA,L]
@@ -10,7 +21,7 @@ RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
-# Serve existing files/directories directly.
+# Serve existing public files/directories directly.
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
