@@ -16,7 +16,13 @@ ALTER TABLE consultation_recommendations
   ADD COLUMN IF NOT EXISTS recommendation_run_id BIGINT UNSIGNED NULL,
   ADD COLUMN IF NOT EXISTS snapshot_json JSON NULL;
 
-CREATE INDEX IF NOT EXISTS idx_rec_run ON consultation_recommendations(recommendation_run_id);
+-- The original V1 schema allowed only one product row per consultation/scoring version.
+-- Replace that with per-run uniqueness so Refresh Recommendations creates history.
+ALTER TABLE consultation_recommendations DROP INDEX uq_rec;
+ALTER TABLE consultation_recommendations
+  ADD CONSTRAINT fk_rec_run FOREIGN KEY(recommendation_run_id) REFERENCES recommendation_runs(id) ON DELETE CASCADE,
+  ADD UNIQUE KEY uq_rec_run(recommendation_run_id,product_id),
+  ADD KEY idx_rec_run(recommendation_run_id);
 
 CREATE TABLE IF NOT EXISTS ai_extracted_fields(
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
