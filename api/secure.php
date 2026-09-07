@@ -1,0 +1,2 @@
+<?php
+require_once __DIR__.'/../app/lib/Db.php';require_once __DIR__.'/../app/lib/Security.php';$config=require __DIR__.'/../app/config.php';$pdo=Db::pdo();Security::start();$method=$_SERVER['REQUEST_METHOD']??'GET';if(in_array($method,['POST','PUT','PATCH','DELETE'],true)){Security::sameOrigin($config);Security::rateLimit($pdo,'consultation-write',40,60);if(Security::user())Security::requireCsrf();}require __DIR__.'/index.php';
