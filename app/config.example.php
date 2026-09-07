@@ -10,4 +10,5 @@ return [
   'site_url' => rtrim(getenv('SITE_URL') ?: 'https://techselectai.com', '/'),
   'openai_api_key' => getenv('OPENAI_API_KEY') ?: '',
   'openai_model' => getenv('OPENAI_MODEL') ?: 'gpt-5',
+  'mail_from' => getenv('MAIL_FROM') ?: 'no-reply@techselectai.com',
 ];
