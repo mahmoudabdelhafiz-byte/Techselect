@@ -1,42 +1,48 @@
 # TechSelectAI
 
-TechSelectAI is an evidence-backed software and technology advisory platform. The repository contains both the historical PostgreSQL architecture work and the current shared-hosting V1 application target.
+TechSelectAI is an evidence-backed software and technology advisory platform operated by Barmageyat.
 
-## Current V1 deployment stack
-
-The release target is:
+## V1 release candidate stack
 
 - React + Vite frontend
 - PHP 8.x API
 - MariaDB/MySQL
-- Apache/mod_rewrite on cPanel-style shared hosting
-- deterministic PHP scoring
-- server-side OpenAI requirement extraction only; AI does not rank products
+- Apache/mod_rewrite for cPanel-style shared hosting
+- deterministic recommendation scoring in PHP
+- server-side OpenAI requirement extraction; AI does not rank products
+- evidence-backed product/capability knowledge model
+- account verification/password reset, RBAC, CSRF and rate limiting
+- SEO sitemap/robots/canonical metadata
 
-See `docs/V1_SHARED_HOSTING.md` for deployment steps.
+## V1 MariaDB setup
 
-## MariaDB setup
+Import in order:
 
-Import in this order:
+1. `db/mysql/001_v1_schema.sql`
+2. `db/mysql/002_seed_identity_products.sql`
+3. `db/mysql/003_recommendation_runs_and_ai_fields.sql`
+4. `db/mysql/004_release_security_and_fit.sql`
 
-```text
-db/mysql/001_v1_schema.sql
-db/mysql/002_seed_identity_products.sql
-db/mysql/003_recommendation_runs_and_ai_fields.sql
-```
+Then follow `docs/V1_SHARED_HOSTING.md`.
 
-The initial curated dataset covers Corporate Identity & Digital Business Cards with CardIQ, Blinq and HiHello. Unknown/not-yet-verified capability states remain distinct from explicit not-supported facts.
+## Core recommendation rules
 
-## PostgreSQL architecture reference
+- AI may interpret and structure requirements, but final ranking is deterministic.
+- `unknown` and `not_yet_verified` are not treated as `not_supported`.
+- mandatory gaps remain visible.
+- evidence confidence is separate from fit.
+- integration, deployment and commercial dimensions are scored only when relevant consultation inputs exist; omitted optional dimensions do not penalize the user.
+- ownership or sponsorship never adds ranking points.
+- recommendation refreshes create versioned runs rather than silently rewriting old results.
 
-The original Phase 1 architecture remains under `db/migrations/`. It documents the consultation/analytics model, technology knowledge graph, deterministic scoring contract and AI extraction boundaries developed in Sprints 1.1-1.5. These PostgreSQL migrations are retained as design/history; they are not the database migrations used by the shared-hosting V1.
+## Initial curated dataset
 
-## Product rules preserved in both architectures
+The first launch category is Corporate Identity & Digital Business Cards with CardIQ, Blinq and HiHello. CardIQ is disclosed as a Barmageyat product and remains subject to the same scoring/evidence rules.
 
-- AI may extract, normalize and explain requirements, but cannot decide rankings.
-- Product recommendations come from deterministic scoring over structured facts.
-- `unknown` is not the same as `not_supported`.
-- Evidence is first-class and confidence remains separate from fit.
-- Mandatory gaps remain visible.
-- Ownership or sponsorship must not add ranking points.
-- Recommendation refreshes preserve prior run snapshots rather than silently changing an old recommendation.
+## Architecture history
+
+The repository retains earlier PostgreSQL/FastAPI migrations and documentation as architecture history. They are not used by the shared-hosting V1 runtime.
+
+## Release status
+
+PR #7 is the V1 shared-hosting release candidate. Merging the PR does not mean the application is deployed. Deployment requires the cPanel/MariaDB setup and smoke tests documented in `docs/V1_SHARED_HOSTING.md`.
