@@ -15,6 +15,11 @@ RewriteRule ^(?:\.env|README\.md) - [F,L]
 RewriteRule ^(login|register|verify-email|reset-password)/?$ account.php [QSA,L]
 RewriteRule ^admin/?$ admin.php [QSA,L]
 
+# Server-rendered public SEO documentation.
+RewriteRule ^categories/[a-z0-9-]+/?$ public_docs.php [QSA,L]
+RewriteRule ^integrations/[a-z0-9-]+/?$ public_docs.php [QSA,L]
+RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
+
 # Dedicated release APIs: order matters.
 RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
@@ -27,7 +32,7 @@ RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
 # Read-only API and SEO endpoints.
-RewriteRule ^(api/.*|health|robots\.txt|sitemap\.xml)$ api/index.php [QSA,L]
+RewriteRule ^(api/.*|health|robots\.txt)$ api/index.php [QSA,L]
 
 # React/Vite SPA fallback.
 RewriteRule ^ index.html [L]
