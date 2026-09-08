@@ -17,7 +17,11 @@ ALTER TABLE consultation_recommendations
   ADD COLUMN IF NOT EXISTS snapshot_json JSON NULL;
 
 -- The original V1 schema allowed only one product row per consultation/scoring version.
--- Replace that with per-run uniqueness so Refresh Recommendations creates history.
+-- MariaDB may use uq_rec as the backing index for the consultation_id foreign key,
+-- so create an explicit replacement index before dropping uq_rec.
+ALTER TABLE consultation_recommendations
+  ADD KEY idx_rec_consultation_fk(consultation_id);
+
 ALTER TABLE consultation_recommendations DROP INDEX uq_rec;
 ALTER TABLE consultation_recommendations
   ADD CONSTRAINT fk_rec_run FOREIGN KEY(recommendation_run_id) REFERENCES recommendation_runs(id) ON DELETE CASCADE,
