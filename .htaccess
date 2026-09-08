@@ -16,8 +16,11 @@ RewriteRule ^(login|register|verify-email|reset-password)/?$ account.php [QSA,L]
 RewriteRule ^admin/?$ admin.php [QSA,L]
 
 # Server-rendered public SEO documentation.
+RewriteRule ^software/[a-z0-9-]+/?$ public_docs.php [QSA,L]
 RewriteRule ^categories/[a-z0-9-]+/?$ public_docs.php [QSA,L]
+RewriteRule ^capabilities/[a-z0-9-]+/?$ public_docs.php [QSA,L]
 RewriteRule ^integrations/[a-z0-9-]+/?$ public_docs.php [QSA,L]
+RewriteRule ^compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$ public_docs.php [QSA,L]
 RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 
 # Dedicated release APIs: order matters.
