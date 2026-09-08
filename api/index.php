@@ -33,7 +33,7 @@ if($path==='/api/software' && $method==='GET'){
 }
 if(preg_match('#^/api/software/([a-z0-9-]+)$#',$path,$m) && $method==='GET'){
   $st=$pdo->prepare("SELECT p.*,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.slug=? AND p.status='active'");$st->execute([$m[1]]);$p=$st->fetch();if(!$p)json_out(['error'=>'not_found'],404);
-  $st=$pdo->prepare("SELECT cap.name,cap.slug,mod.name module,pc.support_status,pc.limitations,pc.confidence_score,pc.last_verified_at FROM product_capabilities pc JOIN capabilities cap ON cap.id=pc.capability_id JOIN modules mod ON mod.id=cap.module_id WHERE pc.product_id=? AND pc.edition_id IS NULL ORDER BY mod.name,cap.name");$st->execute([$p['id']]);$p['capabilities']=$st->fetchAll();
+  $st=$pdo->prepare("SELECT cap.name,cap.slug,mo.name AS module,pc.support_status,pc.limitations,pc.confidence_score,pc.last_verified_at FROM product_capabilities pc JOIN capabilities cap ON cap.id=pc.capability_id JOIN modules mo ON mo.id=cap.module_id WHERE pc.product_id=? AND pc.edition_id IS NULL ORDER BY mo.name,cap.name");$st->execute([$p['id']]);$p['capabilities']=$st->fetchAll();
   $st=$pdo->prepare("SELECT source_title,source_url,source_type,verification_status,confidence,checked_at FROM evidence_sources WHERE product_id=? ORDER BY checked_at DESC");$st->execute([$p['id']]);$p['evidence']=$st->fetchAll();json_out(['product'=>$p]);
 }
 if(preg_match('#^/api/capabilities/([a-z0-9-]+)$#',$path,$m) && $method==='GET'){
