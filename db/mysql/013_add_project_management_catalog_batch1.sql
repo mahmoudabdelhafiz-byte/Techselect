@@ -62,7 +62,7 @@ ON DUPLICATE KEY UPDATE vendor_id=VALUES(vendor_id),category_id=VALUES(category_
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT p.id,'vendor_documentation',x.url,x.title,x.publisher,1,'verified','high',NOW()
 FROM products p JOIN (
- SELECT 'microsoft-planner-project' product_slug,'https://www.microsoft.com/en-us/microsoft-365/planner/microsoft-planner' url,'Microsoft Planner','Microsoft' publisher UNION ALL
+ SELECT 'microsoft-planner-project' product_slug,'https://www.microsoft.com/en-us/microsoft-365/planner/microsoft-planner' url,'Microsoft Planner' title,'Microsoft' publisher UNION ALL
  SELECT 'microsoft-planner-project','https://www.microsoft.com/en-us/microsoft-365/planner/project-plan-3','Planner and Project Plan 3','Microsoft' UNION ALL
  SELECT 'microsoft-planner-project','https://www.microsoft.com/en-us/microsoft-365/planner/project-portfolio-management','Microsoft Project portfolio management','Microsoft' UNION ALL
  SELECT 'asana','https://asana.com/features','Asana features','Asana' UNION ALL
