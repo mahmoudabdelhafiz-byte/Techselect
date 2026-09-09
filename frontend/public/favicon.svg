@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="TechSelectAI">
+<defs><linearGradient id="g" x1="0" x2="1" y1="1" y2="0"><stop offset="0" stop-color="#075985"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs>
+<rect width="128" height="128" rx="24" fill="#fff"/>
+<circle cx="58" cy="61" r="43" fill="none" stroke="#075985" stroke-width="6" stroke-dasharray="157 36" transform="rotate(-28 58 61)"/>
+<path d="M58 8l11 24-11-6-11 6z" fill="#14b8a6"/>
+<circle cx="44" cy="51" r="11" fill="#075985"/>
+<path d="M25 84c5-18 14-25 28-25 13 0 20 8 23 15l18-7 4 9-25 12c-7 4-13 4-20 2l-22 8z" fill="#075985"/>
+<path d="M41 62h7l5 13-9 14-8-14z" fill="#fff"/>
+<path d="M20 101c20-11 34-15 49-11 12 3 21 10 33 7-14 12-29 16-48 16-13 0-25-4-34-12z" fill="url(#g)"/>
+<g transform="translate(88 38)"><rect width="31" height="20" rx="5" fill="#14b8a6"/><path d="M6 10l5 5 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 8h5M23 12h5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>
