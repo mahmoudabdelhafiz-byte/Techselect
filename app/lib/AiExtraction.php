@@ -1,15 +1,18 @@
 <?php
+require_once __DIR__.'/CategoryGuard.php';
 final class AiExtraction {
   public static function extract(PDO $pdo,array $config,string $message,array $context=[]): array {
     $caps=$pdo->query("SELECT c.slug,c.name FROM capabilities c WHERE c.is_active=1 ORDER BY c.name")->fetchAll();
     $categories=$pdo->query("SELECT slug,name FROM categories WHERE is_active=1 ORDER BY name")->fetchAll();
     $allowedCaps=array_column($caps,'slug');
     $allowedCategories=array_column($categories,'slug');
+    $explicitCategory=CategoryGuard::detectExplicit($context,$message,$allowedCategories);
+    $capabilityCategoryMap=CategoryGuard::capabilityCategoryMap($pdo);
 
     if(empty($config['openai_api_key'])){
       return [
         'assistant_message'=>'I saved your message, but AI extraction is not configured on this server yet. You can still confirm requirements manually.',
-        'category_slug'=>null,
+        'category_slug'=>$explicitCategory,
         'requirements'=>[],
         'company'=>['country'=>null,'industry'=>null,'employee_count'=>null,'expected_users'=>null],
         'budget'=>['min'=>null,'max'=>null,'currency'=>null,'period'=>null],
@@ -48,7 +51,8 @@ final class AiExtraction {
       'required'=>['assistant_message','category_slug','company','budget','requirements','deployment_preferences','integrations','languages','follow_up_questions']
     ];
 
-    $instructions='You are TechSelectAI, an independent software-selection consultant. Extract only requirements explicitly stated or strongly implied by the user. Use only the supplied category and capability slugs. Never invent vendor facts, pricing, compliance, capabilities or rankings. Unknown is not unsupported. Mark inferred or ambiguous requirements with lower confidence and ask only follow-up questions that can materially change the recommendation.';
+    $instructions='You are TechSelectAI, an independent software-selection consultant. Extract only requirements explicitly stated or strongly implied by the user. Use only the supplied category and capability slugs. An explicitly named software category in the user context has priority and must never be silently replaced by another category. Keep mapped capabilities within the selected primary category; cross-category needs should be described as context or integrations unless the user explicitly requests a multi-category evaluation. Never invent vendor facts, pricing, compliance, capabilities or rankings. Unknown is not unsupported. Mark inferred or ambiguous requirements with lower confidence and ask only follow-up questions that can materially change the recommendation.';
+    if($explicitCategory)$instructions.=' The user explicitly selected category slug '.$explicitCategory.'. Keep that as the primary category.';
     $input="Known categories: ".json_encode($categories,JSON_UNESCAPED_UNICODE)."\nKnown capabilities: ".json_encode($caps,JSON_UNESCAPED_UNICODE)."\nRecent context: ".json_encode($context,JSON_UNESCAPED_UNICODE)."\nLatest user message: ".$message;
     $payload=[
       'model'=>$config['openai_model'] ?: 'gpt-5',
@@ -67,6 +71,23 @@ final class AiExtraction {
     if(!$text && !empty($data['output'])) foreach($data['output'] as $item) foreach(($item['content']??[]) as $content) if(($content['type']??'')==='output_text'){$text=$content['text']??null;break 2;}
     if(!$text) throw new RuntimeException('AI response did not contain structured output');
     $result=json_decode($text,true);if(!is_array($result)) throw new RuntimeException('AI response was not valid JSON');
+
+    $modelCategory=$result['category_slug']??null;
+    if($explicitCategory)$result['category_slug']=$explicitCategory;
+    $resolvedCategory=$result['category_slug']??null;
+    $before=count($result['requirements']??[]);
+    $result['requirements']=CategoryGuard::filterRequirementsToCategory($result['requirements']??[],$resolvedCategory,$capabilityCategoryMap);
+    $removed=$before-count($result['requirements']);
+    if($explicitCategory && $modelCategory && $modelCategory!==$explicitCategory){
+      $name=$explicitCategory==='crm'?'CRM':str_replace('-',' ',$explicitCategory);
+      $result['assistant_message']='I’ll keep this consultation focused on '.$name.'. I removed unrelated category assumptions and will evaluate products only within that category. '.($result['assistant_message']??'');
+    } elseif($removed>0){
+      $result['assistant_message']='I removed requirements that belong to a different software category so the evaluation stays consistent. '.($result['assistant_message']??'');
+    }
+    if($resolvedCategory && empty(array_filter($result['requirements'],fn($r)=>!empty($r['capability_slug'])))){
+      $q='Which capabilities in this software category are must-have for you?';
+      if(!in_array($q,$result['follow_up_questions']??[],true))$result['follow_up_questions'][]=$q;
+    }
     return $result;
   }
 }
