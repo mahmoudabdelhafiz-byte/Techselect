@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 120" role="img" aria-labelledby="title desc">
+<title id="title">TechSelectAI</title><desc id="desc">Software and Technology Advisory</desc>
+<defs><linearGradient id="g" x1="0" x2="1" y1="1" y2="0"><stop offset="0" stop-color="#075985"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs>
+<g transform="translate(8 10)">
+<circle cx="50" cy="50" r="42" fill="none" stroke="#075985" stroke-width="5" stroke-dasharray="155 35" transform="rotate(-28 50 50)"/>
+<path d="M50 2l10 22-10-5-10 5z" fill="#14b8a6"/>
+<circle cx="37" cy="40" r="10" fill="#075985"/>
+<path d="M20 72c5-17 13-24 26-24 12 0 18 8 21 15l17-7 4 8-24 12c-6 3-12 3-18 1l-20 8z" fill="#075985"/>
+<path d="M34 51h7l4 12-8 13-8-13z" fill="#fff"/>
+<path d="M16 86c18-10 31-14 45-10 11 3 19 9 30 7-12 10-26 14-43 14-12 0-23-4-32-11z" fill="url(#g)"/>
+<g transform="translate(70 25)"><rect width="34" height="18" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="3"/><rect x="5" y="5" width="8" height="8" rx="2" fill="#94a3b8"/><path d="M17 7h12M17 11h9" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/></g>
+<g transform="translate(70 48)"><rect width="34" height="20" rx="4" fill="#14b8a6"/><path d="M6 10l5 5 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 8h7M23 12h7" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g>
+<g transform="translate(70 73)"><rect width="34" height="18" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="3"/><rect x="5" y="5" width="8" height="8" rx="2" fill="#94a3b8"/><path d="M17 7h12M17 11h9" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/></g>
+</g>
+<text x="126" y="60" font-family="Inter,Segoe UI,Arial,sans-serif" font-weight="800" font-size="48" fill="#063b62">TechSelect<tspan fill="#14b8a6">AI</tspan></text>
+<text x="129" y="88" font-family="Inter,Segoe UI,Arial,sans-serif" font-weight="600" font-size="15" letter-spacing="3.6" fill="#64748b">SOFTWARE &amp; TECHNOLOGY ADVISORY</text>
+</svg>
