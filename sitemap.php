@@ -9,9 +9,9 @@ header('Content-Type: application/xml; charset=utf-8');
 $urls=[];
 add_url($urls,'/','weekly','1.0');
 add_url($urls,'/software','daily','0.9');
+add_url($urls,'/trust','monthly','0.7');
 add_url($urls,'/methodology','monthly','0.6');
 
-// Product pages: require enough canonical facts plus at least one evidence source.
 $productSql="SELECT p.id,p.slug,p.updated_at
 FROM products p
 WHERE p.status='active'
@@ -24,7 +24,6 @@ foreach($pdo->query($productSql) as $r){
   add_url($urls,'/software/'.$r['slug'],'weekly','0.8',$r['updated_at']);
 }
 
-// Category pages: require at least two indexable active products to avoid thin directory pages.
 $categorySql="SELECT c.slug
 FROM categories c
 WHERE c.is_active=1
@@ -35,7 +34,6 @@ AND (SELECT COUNT(*) FROM products p
 ORDER BY c.slug";
 foreach($pdo->query($categorySql) as $r)add_url($urls,'/categories/'.$r['slug'],'weekly','0.8');
 
-// Capability pages: require coverage from at least two active products.
 $capabilitySql="SELECT c.slug,MAX(pc.last_verified_at) last_verified
 FROM capabilities c
 JOIN modules m ON m.id=c.module_id
@@ -48,7 +46,6 @@ HAVING COUNT(DISTINCT p.id)>=2
 ORDER BY c.slug";
 foreach($pdo->query($capabilitySql) as $r)add_url($urls,'/capabilities/'.$r['slug'],'weekly','0.7',$r['last_verified']);
 
-// Integration pages: require at least two active products and at least one non-zero-confidence fact.
 $integrationSql="SELECT i.slug
 FROM integrations i
 JOIN product_integrations pi ON pi.integration_id=i.id
@@ -58,7 +55,6 @@ HAVING COUNT(DISTINCT p.id)>=2 AND MAX(pi.confidence_score)>0
 ORDER BY i.slug";
 foreach($pdo->query($integrationSql) as $r)add_url($urls,'/integrations/'.$r['slug'],'weekly','0.7');
 
-// Comparison pages: only same-category indexable products with meaningful overlapping capability coverage.
 if(count($indexableProducts)>=2){
   $compareSql="SELECT p1.id id1,p1.slug slug1,p2.id id2,p2.slug slug2
   FROM products p1
