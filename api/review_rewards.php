@@ -5,6 +5,7 @@ require_once __DIR__.'/../app/lib/VerifiedReviewRewards.php';
 $config=require __DIR__.'/../app/config.php';
 $pdo=Db::pdo();Security::start();Security::requireRole(['reviewer','admin','super_admin']);
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';$method=$_SERVER['REQUEST_METHOD']??'GET';
+Security::rateLimit($pdo,$method==='GET'?'review_rewards_read':'review_rewards_write',$method==='GET'?60:20,60);
 function rr_out($d,int $s=200){http_response_code($s);header('Content-Type: application/json; charset=utf-8');echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}
 function rr_body(){return json_decode(file_get_contents('php://input'),true)?:[];}
 try{
