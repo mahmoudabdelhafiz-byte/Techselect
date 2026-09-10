@@ -1,6 +1,6 @@
 const NAV_ID='techselectai-account-nav';
 
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));}
 
 function ensureStyles(){
  if(document.getElementById('techselectai-account-nav-style'))return;
@@ -18,7 +18,8 @@ function signedOut(nav){nav.innerHTML='<a href="/login">Log in</a><a class="prim
 
 function signedIn(nav,user,csrf){
  const label=user?.name||user?.email||'Account';
- nav.innerHTML=`<span class="name" title="${esc(label)}">${esc(label)}</span><a href="/my-consultations">My Consultations</a><a href="/my-business-cases">My Business Cases</a><a href="/my-reviews">My Reviews</a><a href="/account-settings">Settings</a><button type="button" data-logout>Log out</button>`;
+ const evidence=['admin','super_admin','data_editor'].includes(user?.role)?'<a href="/evidence-refresh">Evidence Refresh</a>':'';
+ nav.innerHTML=`<span class="name" title="${esc(label)}">${esc(label)}</span><a href="/my-consultations">My Consultations</a><a href="/my-business-cases">My Business Cases</a><a href="/my-reviews">My Reviews</a>${evidence}<a href="/account-settings">Settings</a><button type="button" data-logout>Log out</button>`;
  nav.querySelector('[data-logout]')?.addEventListener('click',async e=>{const btn=e.currentTarget;btn.disabled=true;try{const r=await fetch('/api/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrf||''}});if(!r.ok)throw new Error('logout_failed');signedOut(nav);}catch{btn.disabled=false;}});
 }
 
