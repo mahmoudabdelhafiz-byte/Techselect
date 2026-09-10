@@ -14,11 +14,11 @@ function mount(){
  nav=document.createElement('nav');nav.id=NAV_ID;nav.className='ts-account-nav';nav.setAttribute('aria-label','Account');document.body.appendChild(nav);return nav;
 }
 
-function signedOut(nav){nav.innerHTML='<a href="/login">Log in</a><a class="primary" href="/register">Create account</a>';}
+function signedOut(nav){nav.innerHTML='<a href="/trust">Trust & Methodology</a><a href="/login">Log in</a><a class="primary" href="/register">Create account</a>';}
 
 function signedIn(nav,user,csrf){
  const label=user?.name||user?.email||'Account';
- nav.innerHTML=`<span class="name" title="${esc(label)}">${esc(label)}</span><a href="/my-consultations">My Consultations</a><a href="/my-reviews">My Reviews</a><a href="/account-settings">Settings</a><button type="button" data-logout>Log out</button>`;
+ nav.innerHTML=`<span class="name" title="${esc(label)}">${esc(label)}</span><a href="/trust">Trust</a><a href="/my-consultations">My Consultations</a><a href="/my-reviews">My Reviews</a><a href="/account-settings">Settings</a><button type="button" data-logout>Log out</button>`;
  nav.querySelector('[data-logout]')?.addEventListener('click',async e=>{const btn=e.currentTarget;btn.disabled=true;try{const r=await fetch('/api/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrf||''}});if(!r.ok)throw new Error('logout_failed');signedOut(nav);}catch{btn.disabled=false;}});
 }
 
