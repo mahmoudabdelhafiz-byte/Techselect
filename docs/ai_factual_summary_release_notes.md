@@ -1,0 +1,1 @@
+Release notes for issue #84: visible factual summaries and JSON-LD are generated for public software and comparison pages from existing database evidence only. No database migration and no Vite rebuild are required. Deploy app/lib/PublicKnowledgeSummary.php, brand_page.php, and optionally validation/docs files. Public rendering degrades safely if summary generation fails.
