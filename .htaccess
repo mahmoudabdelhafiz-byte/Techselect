@@ -23,11 +23,12 @@ RewriteRule ^favicon\.ico$ favicon.svg [L]
 RewriteRule ^(login|register|verify-email|reset-password)/?$ brand_page.php [QSA,L]
 RewriteRule ^admin/?$ brand_page.php [QSA,L]
 RewriteRule ^review/[a-z0-9-]+/?$ brand_page.php [QSA,L]
+RewriteRule ^my-reviews/?$ brand_page.php [QSA,L]
 RewriteRule ^review-moderation/?$ brand_page.php [QSA,L]
 RewriteRule ^review-rewards/?$ brand_page.php [QSA,L]
 RewriteRule ^taxonomy-queue/?$ brand_page.php [QSA,L]
 RewriteRule ^pri-source-policy/?$ brand_page.php [QSA,L]
-RewriteRule ^(?:account|admin|review|review_moderation|review_rewards|taxonomy_queue|pri_source_policy)\.php$ brand_page.php [QSA,L]
+RewriteRule ^(?:account|admin|review|my_reviews|review_moderation|review_rewards|taxonomy_queue|pri_source_policy)\.php$ brand_page.php [QSA,L]
 
 # Server-rendered public SEO documentation uses the shared branding wrapper.
 RewriteRule ^software/[a-z0-9-]+/?$ brand_page.php [QSA,L]
