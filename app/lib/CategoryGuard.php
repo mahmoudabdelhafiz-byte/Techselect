@@ -1,11 +1,11 @@
 <?php
 final class CategoryGuard {
   private const ALIASES = [
-    'crm'=>['crm','customer relationship management','sales crm'],
-    'hrms'=>['hrms','hcm','human resources management','human capital management','hr system','hr software'],
+    'crm'=>['crm','customer relationship management','sales crm','crm system','crm software'],
+    'hr-hcm'=>['hrms','hcm','hris','human resources management','human capital management','hr system','hr software'],
     'itsm'=>['itsm','it service management','service desk','help desk','helpdesk'],
     'erp'=>['erp','enterprise resource planning'],
-    'project-management'=>['project management','project-management','work management','ppm'],
+    'project-management'=>['project management','project-management','work management','ppm','project software'],
     'corporate-identity-digital-business-cards'=>['digital business card','digital business cards','corporate identity','employee identity','identity verification','email signature','meeting background','business card platform'],
   ];
 
