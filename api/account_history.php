@@ -18,14 +18,14 @@ if($path==='/api/account/settings'&&$method==='GET'){
 if($path==='/api/account/settings'&&$method==='PUT'){
   Security::sameOrigin($config);Security::rateLimit($pdo,'account-settings',20,300);Security::requireCsrf();$b=ah_body();$name=trim((string)($b['name']??''));
   if($name===''||mb_strlen($name)>120)ah_out(['error'=>'invalid_name'],422);
-  $pdo->prepare("UPDATE users SET full_name=?,updated_at=NOW() WHERE id=? AND status='active'")->execute([$name,(int)$user['id']]);$_SESSION['user']['name']=$name;Security::audit($pdo,(int)$user['id'],'UPDATE_PROFILE','user',(string)$user['id']);ah_out(['updated'=>true,'user'=>$_SESSION['user']]);
+  $pdo->prepare("UPDATE users SET full_name=? WHERE id=? AND status='active'")->execute([$name,(int)$user['id']]);$_SESSION['user']['name']=$name;Security::audit($pdo,(int)$user['id'],'UPDATE_PROFILE','user',(string)$user['id']);ah_out(['updated'=>true,'user'=>$_SESSION['user']]);
 }
 if($path==='/api/account/password'&&$method==='PUT'){
   Security::sameOrigin($config);Security::rateLimit($pdo,'account-password',8,600);Security::requireCsrf();$b=ah_body();$current=(string)($b['current_password']??'');$next=(string)($b['new_password']??'');
   if(strlen($next)<10)ah_out(['error'=>'weak_password'],422);
   $st=$pdo->prepare("SELECT password_hash FROM users WHERE id=? AND status='active' LIMIT 1");$st->execute([(int)$user['id']]);$hash=(string)$st->fetchColumn();if($hash===''||!password_verify($current,$hash))ah_out(['error'=>'current_password_invalid'],422);
   if(password_verify($next,$hash))ah_out(['error'=>'new_password_must_differ'],422);
-  $pdo->prepare("UPDATE users SET password_hash=?,updated_at=NOW() WHERE id=?")->execute([password_hash($next,PASSWORD_DEFAULT),(int)$user['id']]);Security::audit($pdo,(int)$user['id'],'CHANGE_PASSWORD','user',(string)$user['id']);ah_out(['updated'=>true]);
+  $pdo->prepare("UPDATE users SET password_hash=? WHERE id=?")->execute([password_hash($next,PASSWORD_DEFAULT),(int)$user['id']]);Security::audit($pdo,(int)$user['id'],'CHANGE_PASSWORD','user',(string)$user['id']);ah_out(['updated'=>true]);
 }
 if($path==='/api/account/claim-consultation'&&$method==='POST'){
   Security::sameOrigin($config);Security::rateLimit($pdo,'claim-consultation',20,300);Security::requireCsrf();
