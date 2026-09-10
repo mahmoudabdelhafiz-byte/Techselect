@@ -54,8 +54,8 @@ if($category)$routes['category']='/categories/'.$category; else fail_check('No a
 $capability=$pdo->query("SELECT c.slug FROM capabilities c JOIN modules m ON m.id=c.module_id JOIN categories cat ON cat.id=m.category_id WHERE c.is_active=1 AND cat.is_active=1 ORDER BY CASE WHEN c.slug='email-signatures' THEN 0 ELSE 1 END,c.name LIMIT 1")->fetchColumn();
 if($capability)$routes['capability']='/capabilities/'.$capability; else fail_check('No active capability available for capability route smoke test.');
 
-$integration=$pdo->query("SELECT i.slug FROM integrations i WHERE i.is_active=1 ORDER BY i.name LIMIT 1")->fetchColumn();
-if($integration)$routes['integration']='/integrations/'.$integration; else warn_check('No active integration available; integration HTTP smoke test skipped.');
+$integration=$pdo->query("SELECT i.slug FROM integrations i ORDER BY i.name LIMIT 1")->fetchColumn();
+if($integration)$routes['integration']='/integrations/'.$integration; else warn_check('No integration available; integration HTTP smoke test skipped.');
 
 $pair=$pdo->query("SELECT p1.slug a,p2.slug b FROM products p1 JOIN products p2 ON p2.category_id=p1.category_id AND p2.id>p1.id WHERE p1.status='active' AND p2.status='active' ORDER BY p1.category_id,p1.name,p2.name LIMIT 1")->fetch();
 if($pair){$slugs=[$pair['a'],$pair['b']];sort($slugs,SORT_STRING);$routes['comparison']='/compare/'.implode('-vs-',$slugs);} else warn_check('No same-category product pair available; comparison HTTP smoke test skipped.');
