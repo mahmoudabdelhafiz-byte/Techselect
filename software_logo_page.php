@@ -5,22 +5,35 @@ $pdo=Db::pdo();
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 
 $logoMeta=null;
+$priMeta=null;
+$productRow=null;
 if(preg_match('#^/software/([a-z0-9-]+)/?$#',$path,$m)){
-  $st=$pdo->prepare("SELECT name,logo_path,logo_source_url,logo_attribution,logo_last_verified_at FROM products WHERE slug=? AND status='active' LIMIT 1");
+  $st=$pdo->prepare("SELECT id,name,logo_path,logo_source_url,logo_attribution,logo_last_verified_at FROM products WHERE slug=? AND status='active' LIMIT 1");
   $st->execute([$m[1]]);
-  $row=$st->fetch();
-  if($row && !empty($row['logo_path'])){
-    $relative=ltrim((string)$row['logo_path'],'/');
+  $productRow=$st->fetch();
+  if($productRow && !empty($productRow['logo_path'])){
+    $relative=ltrim((string)$productRow['logo_path'],'/');
     $safe=str_starts_with($relative,'media/software/') && strpos($relative,'..')===false;
     $absolute=__DIR__.'/'.$relative;
     if($safe && is_file($absolute)){
       $logoMeta=[
-        'name'=>(string)$row['name'],
+        'name'=>(string)$productRow['name'],
         'web_path'=>'/'.$relative,
-        'source_url'=>(string)($row['logo_source_url']??''),
-        'attribution'=>(string)($row['logo_attribution']??''),
-        'verified_at'=>$row['logo_last_verified_at']??null,
+        'source_url'=>(string)($productRow['logo_source_url']??''),
+        'attribution'=>(string)($productRow['logo_attribution']??''),
+        'verified_at'=>$productRow['logo_last_verified_at']??null,
       ];
+    }
+  }
+
+  // PRI is optional and must not break product pages before migration 016 is deployed.
+  if($productRow){
+    try{
+      $q=$pdo->prepare("SELECT score_5,positive_sentiment_pct,confidence_score,confidence_label,sources_analyzed,source_type_count,insufficient_data,strengths_json,concerns_json,methodology_version,last_analyzed_at FROM product_public_review_intelligence WHERE product_id=? LIMIT 1");
+      $q->execute([$productRow['id']]);
+      $priMeta=$q->fetch()?:null;
+    }catch(Throwable $e){
+      $priMeta=null;
     }
   }
 }
@@ -29,30 +42,52 @@ ob_start();
 require __DIR__.'/software_page.php';
 $html=ob_get_clean();
 
-if(!$logoMeta){echo $html;exit;}
-
 $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
-$logo='<div class="product-mark official-logo"><img src="'.$esc($logoMeta['web_path']).'" alt="'.$esc($logoMeta['name']).' logo" width="72" height="72" loading="eager" decoding="async"></div>';
-$html=preg_replace('#<div class="product-mark">.*?</div>#s',$logo,$html,1)??$html;
 
-$css='.official-logo{background:#fff;padding:11px}.official-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.logo-credit{margin:-12px 0 20px 108px;font-size:11px;color:var(--muted)}.logo-credit a{color:inherit}@media(max-width:560px){.logo-credit{margin:-10px 0 18px}}';
+if($logoMeta){
+  $logo='<div class="product-mark official-logo"><img src="'.$esc($logoMeta['web_path']).'" alt="'.$esc($logoMeta['name']).' logo" width="72" height="72" loading="eager" decoding="async"></div>';
+  $html=preg_replace('#<div class="product-mark">.*?</div>#s',$logo,$html,1)??$html;
+
+  $credit='';
+  if($logoMeta['attribution']!=='' || $logoMeta['source_url']!==''){
+    $credit='<div class="logo-credit">Logo: ';
+    if($logoMeta['source_url']!==''){
+      $credit.='<a href="'.$esc($logoMeta['source_url']).'" target="_blank" rel="nofollow noopener">'.$esc($logoMeta['attribution']!==''?$logoMeta['attribution']:'official vendor source').'</a>';
+    }else{
+      $credit.=$esc($logoMeta['attribution']);
+    }
+    $credit.=' · trademark belongs to its respective owner</div>';
+  }
+  if($credit!==''){
+    $html=preg_replace('#</section>\s*<section class="summary">#','</section>'.$credit.'<section class="summary">',$html,1)??$html;
+  }
+
+  $og='<meta property="og:image" content="'.$esc(rtrim((string)$config['site_url'],'/').$logoMeta['web_path']).'">';
+  $html=str_replace('</head>',$og.'</head>',$html);
+}
+
+$css='.official-logo{background:#fff;padding:11px}.official-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.logo-credit{margin:-12px 0 20px 108px;font-size:11px;color:var(--muted)}.logo-credit a{color:inherit}.pri{margin-top:38px;padding:22px;border:1px solid var(--line);border-radius:16px;background:#fbfdfe}.pri-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.pri-score{font-size:38px;font-weight:850;color:var(--navy);line-height:1}.pri-score small{font-size:15px;color:var(--muted);font-weight:700}.pri-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}.pri-metric{padding:12px;border-radius:11px;background:#fff;border:1px solid #e6edf2}.pri-metric span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.pri-lists{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.pri-lists h3{font-size:15px;margin:0 0 7px}.pri-lists ul{margin:0;padding-left:19px;color:#536174}.pri-note{margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.55}@media(max-width:620px){.logo-credit{margin:-10px 0 18px}.pri-head{display:block}.pri-score{margin-top:12px}.pri-lists{grid-template-columns:1fr}}';
 $html=str_replace('</style>',$css.'</style>',$html);
 
-$credit='';
-if($logoMeta['attribution']!=='' || $logoMeta['source_url']!==''){
-  $credit='<div class="logo-credit">Logo: ';
-  if($logoMeta['source_url']!==''){
-    $credit.='<a href="'.$esc($logoMeta['source_url']).'" target="_blank" rel="nofollow noopener">'.$esc($logoMeta['attribution']!==''?$logoMeta['attribution']:'official vendor source').'</a>';
+if($productRow){
+  $priSection='';
+  if(!$priMeta || !empty($priMeta['insufficient_data']) || $priMeta['score_5']===null){
+    $priSection='<section class="pri"><div class="eyebrow">Public Review Intelligence</div><h2>Public feedback analysis</h2><p class="section-intro">Not enough permitted, diverse public feedback is available yet to publish a reliable score for '.$esc($productRow['name']).'.</p><p class="pri-note">Public Review Intelligence is separate from TechSelectAI Fit Score and Evidence Confidence. We publish a score only after minimum coverage and source-diversity thresholds are met.</p></section>';
   }else{
-    $credit.=$esc($logoMeta['attribution']);
+    $strengths=json_decode((string)($priMeta['strengths_json']??'[]'),true);if(!is_array($strengths))$strengths=[];
+    $concerns=json_decode((string)($priMeta['concerns_json']??'[]'),true);if(!is_array($concerns))$concerns=[];
+    $priSection='<section class="pri"><div class="pri-head"><div><div class="eyebrow">Public Review Intelligence</div><h2>What public users are saying</h2><p class="section-intro">AI-analyzed feedback from permitted public sources, summarized into derived signals.</p></div><div class="pri-score">'.number_format((float)$priMeta['score_5'],1).'<small> / 5</small></div></div>';
+    $priSection.='<div class="pri-grid"><div class="pri-metric"><span>Positive sentiment</span><strong>'.number_format((float)$priMeta['positive_sentiment_pct'],0).'%</strong></div><div class="pri-metric"><span>Confidence</span><strong>'.$esc(ucfirst((string)$priMeta['confidence_label'])).'</strong></div><div class="pri-metric"><span>Sources analyzed</span><strong>'.intval($priMeta['sources_analyzed']).'</strong></div><div class="pri-metric"><span>Source diversity</span><strong>'.intval($priMeta['source_type_count']).' types</strong></div><div class="pri-metric"><span>Last analyzed</span><strong>'.$esc($priMeta['last_analyzed_at']?date('M Y',strtotime((string)$priMeta['last_analyzed_at'])):'Not recorded').'</strong></div></div>';
+    if($strengths || $concerns){
+      $priSection.='<div class="pri-lists"><div><h3>Common strengths</h3>';
+      if($strengths){$priSection.='<ul>';foreach(array_slice($strengths,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable strength themes yet.</p>';}
+      $priSection.='</div><div><h3>Common concerns</h3>';
+      if($concerns){$priSection.='<ul>';foreach(array_slice($concerns,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable concern themes yet.</p>';}
+      $priSection.='</div></div>';
+    }
+    $priSection.='<p class="pri-note">Public Review Intelligence is AI-assisted analysis of permitted public feedback. AI extracts sentiment and themes; the published score is calculated deterministically. It does not affect TechSelectAI recommendation ranking.</p></section>';
   }
-  $credit.=' · trademark belongs to its respective owner</div>';
+  $html=preg_replace('#<section class="cta">#',$priSection.'<section class="cta">',$html,1)??$html;
 }
-if($credit!==''){
-  $html=preg_replace('#</section>\s*<section class="summary">#','</section>'.$credit.'<section class="summary">',$html,1)??$html;
-}
-
-$og='<meta property="og:image" content="'.$esc(rtrim((string)$config['site_url'],'/').$logoMeta['web_path']).'">';
-$html=str_replace('</head>',$og.'</head>',$html);
 
 echo $html;
