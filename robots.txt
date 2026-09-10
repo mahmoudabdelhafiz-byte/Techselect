@@ -26,6 +26,7 @@ Disallow: /review-rewards
 Disallow: /taxonomy-queue
 Disallow: /pri-source-policy
 Disallow: /my-reviews
+Disallow: /ai-referrals
 Disallow: /api/
 
 Sitemap: https://techselectai.com/sitemap.xml
