@@ -16,6 +16,7 @@ elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='a
 elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
 elseif(in_array($path,['/my-reviews','/my-reviews/','/my_reviews.php'],true)) $target='my_reviews.php';
 elseif(in_array($path,['/my-consultations','/my-consultations/','/my_consultations.php'],true)) $target='my_consultations.php';
+elseif(in_array($path,['/trust','/trust/','/trust.php'],true)) $target='trust.php';
 elseif(in_array($path,['/buyer-analytics','/buyer-analytics/','/buyer_analytics.php'],true)) $target='buyer_analytics.php';
 elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
@@ -53,7 +54,6 @@ if($isPublicKnowledge){
     AiReferralAnalytics::record(Db::pdo(),$path,$_SERVER['HTTP_REFERER']??null);
   }catch(Throwable $e){}
 
-  // Buyer-intent page-view analytics is separate from recommendation scoring and best-effort only.
   try{
     require_once __DIR__.'/app/lib/Db.php';
     require_once __DIR__.'/app/lib/Security.php';
@@ -83,7 +83,6 @@ if($isPublicKnowledge){
   $html=preg_replace('#<section class="verified-reviews"(?![^>]*\bid=)#i','<section class="verified-reviews" id="verified-reviews" data-citation-section="verified-reviews"',$html,1)??$html;
   $html=preg_replace('#<section class="public-review-intelligence"(?![^>]*\bid=)#i','<section class="public-review-intelligence" id="public-review-intelligence" data-citation-section="public-review-intelligence"',$html,1)??$html;
 
-  // Visible, evidence-derived factual summaries improve human scanability and retrieval without crawler-only content.
   try{
     require_once __DIR__.'/app/lib/PublicKnowledgeSummary.php';
     $cfg=require __DIR__.'/app/config.php';
