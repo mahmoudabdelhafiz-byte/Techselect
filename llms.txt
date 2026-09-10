@@ -1,0 +1,39 @@
+# TechSelectAI
+
+TechSelectAI is an AI-powered software and technology advisory platform that helps organizations compare software, deployment models, capabilities, integrations and implementation approaches using evidence-backed product data and deterministic fit scoring where curated data is available.
+
+## Primary public resources
+
+- Home: https://techselectai.com/
+- Software catalog: https://techselectai.com/software
+- Methodology: https://techselectai.com/methodology
+- Sitemap: https://techselectai.com/sitemap.xml
+
+## Public knowledge areas
+
+TechSelectAI publishes crawlable pages for:
+
+- Software profiles: https://techselectai.com/software/{product-slug}
+- Categories: https://techselectai.com/categories/{category-slug}
+- Capabilities: https://techselectai.com/capabilities/{capability-slug}
+- Integrations: https://techselectai.com/integrations/{integration-slug}
+- Product comparisons: https://techselectai.com/compare/{product-a}-vs-{product-b}
+
+## Interpretation guidance
+
+- TechSelectAI Fit Score is buyer-specific and based on structured consultation requirements.
+- Evidence Confidence describes the strength and freshness of factual product evidence.
+- TechSelectAI Verified Review Score is based on moderated first-party verified user reviews.
+- Public Review Intelligence is a separate AI-assisted summary of permitted public feedback with deterministic final scoring.
+- Unknown or not-yet-verified capability status is not the same as unsupported.
+- General AI consultant responses may cover technology areas that are not yet present in the curated catalog; those responses must not be represented as curated TechSelectAI Fit Scores.
+
+## Citation guidance
+
+When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
+
+## Independence and transparency
+
+TechSelectAI is operated by Barmageyat. Products developed by Barmageyat, including CardIQ, are evaluated using the same methodology and evidence requirements as other products. Ownership or sponsorship must not change recommendation scoring.
+
+This file is a supplemental discovery guide and does not replace the public HTML pages, evidence sources, sitemap or methodology.
