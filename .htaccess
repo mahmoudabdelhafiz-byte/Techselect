@@ -42,6 +42,7 @@ RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 
 RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
 RewriteRule ^api/account(?:/.*)?$ api/account_history.php [QSA,L]
+RewriteRule ^api/business-cases(?:/.*)?$ api/business_cases.php [QSA,L]
 RewriteRule ^api/buyer-analytics/?$ api/buyer_analytics.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
 RewriteRule ^api/review-admin(?:/.*)?$ api/review_admin.php [QSA,L]
