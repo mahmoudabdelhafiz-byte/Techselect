@@ -19,6 +19,7 @@ RewriteRule ^(?:\.env|README\.md) - [F,L]
 # Human-facing account/admin routes.
 RewriteRule ^(login|register|verify-email|reset-password)/?$ account.php [QSA,L]
 RewriteRule ^admin/?$ admin.php [QSA,L]
+RewriteRule ^review/[a-z0-9-]+/?$ review.php [QSA,L]
 
 # Server-rendered public SEO documentation.
 RewriteRule ^software/[a-z0-9-]+/?$ software_logo_page.php [QSA,L]
@@ -31,6 +32,7 @@ RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 # Dedicated release APIs: order matters.
 RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
+RewriteRule ^api/reviews(?:/.*)?$ api/reviews.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
