@@ -10,10 +10,17 @@ $checks=[
   'category wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^categories/[a-z0-9-]+/?$ brand_page.php'],
   'capability wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^capabilities/[a-z0-9-]+/?$ brand_page.php'],
   'integration wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^integrations/[a-z0-9-]+/?$ brand_page.php'],
-  'comparison wrapped'=>['src'=>$ht,'needle'=>'brand_page.php [QSA,L]'],
+  'comparison wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$ brand_page.php'],
   'account wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^(login|register|verify-email|reset-password)/?$ brand_page.php'],
   'admin wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^admin/?$ brand_page.php'],
+  'review wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^review/[a-z0-9-]+/?$ brand_page.php'],
+  'review moderation wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^review-moderation/?$ brand_page.php'],
+  'taxonomy queue wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^taxonomy-queue/?$ brand_page.php'],
+  'PRI policy wrapped'=>['src'=>$ht,'needle'=>'RewriteRule ^pri-source-policy/?$ brand_page.php'],
   'favicon ico fallback'=>['src'=>$ht,'needle'=>'RewriteRule ^favicon\\.ico$ favicon.svg [L]'],
+  'review target supported'=>['src'=>$brand,'needle'=>"$target='review.php'"],
+  'taxonomy target supported'=>['src'=>$brand,'needle'=>"$target='taxonomy_queue.php'"],
+  'PRI policy target supported'=>['src'=>$brand,'needle'=>"$target='pri_source_policy.php'"],
 ];
 $failed=[];
 foreach($checks as $label=>$check){if(strpos($check['src'],$check['needle'])===false)$failed[]=$label;}
