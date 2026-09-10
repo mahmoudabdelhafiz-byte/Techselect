@@ -41,4 +41,38 @@ $logo='<img src="/techselectai-logo.svg" alt="TechSelectAI" width="210" height="
 $replaced=0;
 $html=preg_replace_callback('#<a([^>]*href=["\']/["\'][^>]*)>\s*TechSelectAI\s*</a>#i',static function($m) use ($logo,&$replaced){$replaced++;$attrs=$m[1];if(stripos($attrs,'class=')!==false){$attrs=preg_replace('#class=(["\'])(.*?)\1#i','class=$1$2 ts-brand-link$1',$attrs,1);}else{$attrs.=' class="ts-brand-link"';}return '<a'.$attrs.' aria-label="TechSelectAI home">'.$logo.'</a>';},$html)??$html;
 if($replaced===0 && stripos($html,'src="/techselectai-logo.svg"')===false){$strip='<div class="ts-global-brand"><a href="/" aria-label="TechSelectAI home">'.$logo.'</a></div>';$html=preg_replace('#<body([^>]*)>#i','<body$1>'.$strip,$html,1)??$html;}
+
+// Public factual pages expose stable, human-visible citation anchors for retrieval systems and readers.
+$isPublicKnowledge=(bool)preg_match('#^/(software|categories|capabilities|integrations|compare)/#',$path);
+if($isPublicKnowledge){
+  if(stripos($html,'href="/llms.txt"')===false){
+    $html=str_ireplace('</head>','<link rel="alternate" type="text/plain" href="/llms.txt" title="TechSelectAI AI discovery guide"></head>',$html);
+  }
+  $html=preg_replace('#<section class="hero"(?![^>]*\bid=)#i','<section class="hero" id="overview" data-citation-section="overview"',$html,1)??$html;
+  $anchorMap=[
+    'Capabilities'=>'capabilities',
+    'Product support comparison'=>'product-support',
+    'Product support'=>'product-support',
+    'Capability comparison'=>'capability-comparison',
+    'Integration comparison'=>'integration-comparison',
+    'Deployment comparison'=>'deployment-comparison',
+    'Deployment options'=>'deployment',
+    'Integrations'=>'integrations',
+    'Plans / editions'=>'plans',
+    'Pricing'=>'pricing',
+    'Evidence sources'=>'evidence',
+    'Alternatives'=>'alternatives',
+    'How to use this comparison'=>'interpretation',
+    'How to read this comparison'=>'interpretation'
+  ];
+  foreach($anchorMap as $heading=>$id){
+    $quoted=preg_quote($heading,'#');
+    $pattern='#<section class="section"(?![^>]*\bid=)([^>]*)>\s*<h2>'.$quoted.'</h2>#i';
+    $replacement='<section class="section" id="'.$id.'" data-citation-section="'.$id.'"$1><h2>'.$heading.'</h2>';
+    $html=preg_replace($pattern,$replacement,$html,1)??$html;
+  }
+  $html=preg_replace('#<section class="verified-reviews"(?![^>]*\bid=)#i','<section class="verified-reviews" id="verified-reviews" data-citation-section="verified-reviews"',$html,1)??$html;
+  $html=preg_replace('#<section class="public-review-intelligence"(?![^>]*\bid=)#i','<section class="public-review-intelligence" id="public-review-intelligence" data-citation-section="public-review-intelligence"',$html,1)??$html;
+}
+
 echo $html;
