@@ -33,5 +33,11 @@ if($path==='/api/reviews'&&$method==='POST'){
     out(['submitted'=>true,'review_id'=>$rid,'moderation_status'=>'pending','verification_level'=>'email_verified'],201);
   }catch(PDOException $e){if($pdo->inTransaction())$pdo->rollBack();if(($e->errorInfo[1]??null)==1062)out(['error'=>'review_already_exists'],409);out(['error'=>'review_submission_failed'],500);}
 }
-if($path==='/api/reviews/mine'&&$method==='GET'){$u=Security::user();if(!$u)out(['error'=>'authentication_required'],401);$st=$pdo->prepare("SELECT r.id,r.product_id,p.name product,r.overall_rating,r.moderation_status,r.submitted_at,r.updated_at FROM software_reviews r JOIN products p ON p.id=r.product_id WHERE r.user_id=? ORDER BY r.submitted_at DESC");$st->execute([(int)$u['id']]);out(['reviews'=>$st->fetchAll()]);}
+if($path==='/api/reviews/mine'&&$method==='GET'){
+  $u=Security::user();if(!$u)out(['error'=>'authentication_required'],401);
+  try{
+    $st=$pdo->prepare("SELECT r.id,r.product_id,p.name product,p.slug product_slug,r.overall_rating,r.moderation_status,r.submitted_at,r.updated_at,r.published_at,(SELECT v.verification_level FROM software_review_verifications v WHERE v.review_id=r.id AND v.verification_status='verified' ORDER BY FIELD(v.verification_level,'admin_verified','proof_of_use_verified','business_domain_verified','email_verified') LIMIT 1) verification_level,(SELECT rw.reward_type FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_type,(SELECT rw.eligibility_status FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_eligibility_status,(SELECT rw.issuance_status FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_status,(SELECT rw.issued_at FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_issued_at,(SELECT rw.redeemed_at FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_redeemed_at,(SELECT rw.expires_at FROM software_review_rewards rw WHERE rw.review_id=r.id LIMIT 1) reward_expires_at FROM software_reviews r JOIN products p ON p.id=r.product_id WHERE r.user_id=? ORDER BY r.submitted_at DESC");
+    $st->execute([(int)$u['id']]);out(['reviews'=>$st->fetchAll()]);
+  }catch(Throwable $e){out(['error'=>'review_status_unavailable'],503);}
+}
 out(['error'=>'not_found'],404);
