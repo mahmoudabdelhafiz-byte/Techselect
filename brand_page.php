@@ -16,6 +16,7 @@ elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='a
 elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
 elseif(in_array($path,['/my-reviews','/my-reviews/','/my_reviews.php'],true)) $target='my_reviews.php';
 elseif(in_array($path,['/my-consultations','/my-consultations/','/my_consultations.php'],true)) $target='my_consultations.php';
+elseif(in_array($path,['/buyer-analytics','/buyer-analytics/','/buyer_analytics.php'],true)) $target='buyer_analytics.php';
 elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
 elseif(in_array($path,['/taxonomy-queue','/taxonomy-queue/','/taxonomy_queue.php'],true)) $target='taxonomy_queue.php';
@@ -50,6 +51,20 @@ if($isPublicKnowledge){
     require_once __DIR__.'/app/lib/Db.php';
     require_once __DIR__.'/app/lib/AiReferralAnalytics.php';
     AiReferralAnalytics::record(Db::pdo(),$path,$_SERVER['HTTP_REFERER']??null);
+  }catch(Throwable $e){}
+
+  // Buyer-intent page-view analytics is separate from recommendation scoring and best-effort only.
+  try{
+    require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/Security.php';
+    require_once __DIR__.'/app/lib/BuyerIntentAnalytics.php';
+    Security::start();
+    $pdo=Db::pdo();
+    if(preg_match('#^/software/([a-z0-9-]+)/?$#',$path,$pm)){
+      $st=$pdo->prepare("SELECT id,category_id FROM products WHERE slug=? AND status='active' LIMIT 1");$st->execute([$pm[1]]);if($r=$st->fetch())BuyerIntentAnalytics::recordPublicEvent($pdo,'product_view',['product_id'=>$r['id'],'category_id'=>$r['category_id'],'route_path'=>$path]);
+    }elseif(preg_match('#^/compare/([a-z0-9-]+)-vs-([a-z0-9-]+)/?$#',$path,$cm)){
+      $st=$pdo->prepare("SELECT id,slug,category_id FROM products WHERE slug IN (?,?) AND status='active'");$st->execute([$cm[1],$cm[2]]);$found=[];foreach($st->fetchAll() as $r)$found[$r['slug']]=$r;if(isset($found[$cm[1]],$found[$cm[2]]))BuyerIntentAnalytics::recordPublicEvent($pdo,'comparison_view',['product_id'=>$found[$cm[1]]['id'],'related_product_id'=>$found[$cm[2]]['id'],'category_id'=>$found[$cm[1]]['category_id'],'route_path'=>$path]);
+    }
   }catch(Throwable $e){}
 
   if(stripos($html,'href="/llms.txt"')===false){
