@@ -55,4 +55,17 @@ final class UserConsultationHistory {
     unset($row);
     return $rows;
   }
+
+  public static function resumeForUser(PDO $pdo, int $userId, string $publicToken): ?array {
+    if(!preg_match('/^[a-f0-9]{48}$/',$publicToken)) return null;
+    $st=$pdo->prepare("SELECT id,public_token,business_problem FROM consultations WHERE public_token=? AND user_id=? LIMIT 1");
+    $st->execute([$publicToken,$userId]);$c=$st->fetch();if(!$c)return null;
+    $messages=$pdo->prepare("SELECT sender_type,message_text FROM consultation_messages WHERE consultation_id=? ORDER BY created_at,id");
+    $messages->execute([$c['id']]);
+    $uiMessages=[];foreach($messages->fetchAll()?:[] as $m)$uiMessages[]=['role'=>$m['sender_type']==='assistant'?'assistant':'user','text'=>$m['message_text']];
+    $rec=$pdo->prepare("SELECT cr.recommendation_rank rank,cr.overall_score overall,cr.functional_score functional,cr.mandatory_score mandatory,cr.evidence_score evidence,cr.recommendation_status status,cr.mandatory_gap_count mandatory_gaps,p.id product_id,p.name product_name,p.slug product_slug FROM consultation_recommendations cr JOIN products p ON p.id=cr.product_id WHERE cr.consultation_id=? ORDER BY cr.generated_at DESC,cr.recommendation_rank ASC LIMIT 10");
+    $rec->execute([$c['id']]);$results=[];
+    foreach($rec->fetchAll()?:[] as $r)$results[]=['rank'=>(int)$r['rank'],'product'=>['id'=>(int)$r['product_id'],'name'=>$r['product_name'],'slug'=>$r['product_slug']],'overall'=>(float)$r['overall'],'functional'=>(float)$r['functional'],'mandatory'=>(float)$r['mandatory'],'evidence'=>(float)$r['evidence'],'status'=>$r['status'],'mandatory_gaps'=>(int)$r['mandatory_gaps']];
+    return ['problem'=>$c['business_problem'],'c'=>['consultation_id'=>(int)$c['id'],'public_token'=>$c['public_token'],'saved_to_account'=>true],'msgs'=>$uiMessages,'extraction'=>null,'results'=>$results];
+  }
 }
