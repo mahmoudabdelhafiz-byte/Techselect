@@ -15,6 +15,18 @@ final class EvidenceRefresh{
     return hash('sha256',$text,true);
   }
 
+  public static function fetchForReview(string $url):array{
+    $f=self::fetch($url);$text=$f['body'];
+    if(stripos($f['content_type'],'html')!==false || stripos($text,'<html')!==false){
+      $text=preg_replace('#<script\b[^>]*>.*?</script>#is',' ',$text)??$text;
+      $text=preg_replace('#<style\b[^>]*>.*?</style>#is',' ',$text)??$text;
+      $text=strip_tags($text);$text=html_entity_decode($text,ENT_QUOTES|ENT_HTML5,'UTF-8');
+    }
+    $text=preg_replace('/\s+/u',' ',trim($text))??trim($text);
+    if(mb_strlen($text)>60000)$text=mb_substr($text,0,60000);
+    return ['status'=>$f['status'],'content_type'=>$f['content_type'],'final_url'=>$f['final_url'],'text'=>$text];
+  }
+
   public static function isSafeIp(string $ip):bool{
     return filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)!==false;
   }
