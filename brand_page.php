@@ -6,7 +6,7 @@
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 $target=null;
 
-if(preg_match('#^/software/[a-z0-9-]+/?$#',$path)) $target='software_logo_page.php';
+if(preg_match('#^/software/[a-z0-9-]+/?$#',$path)) $target='software_reviews_page.php';
 elseif(preg_match('#^/categories/[a-z0-9-]+/?$#',$path)) $target='category_page.php';
 elseif(preg_match('#^/capabilities/[a-z0-9-]+/?$#',$path)) $target='capability_page.php';
 elseif(preg_match('#^/integrations/[a-z0-9-]+/?$#',$path)) $target='integration_page.php';
