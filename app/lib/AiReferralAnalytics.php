@@ -3,14 +3,11 @@ final class AiReferralAnalytics {
   private const HOSTS = [
     'chatgpt.com'=>'chatgpt',
     'chat.openai.com'=>'chatgpt',
-    'openai.com'=>'openai',
     'claude.ai'=>'claude',
-    'anthropic.com'=>'claude',
     'perplexity.ai'=>'perplexity',
     'www.perplexity.ai'=>'perplexity',
     'gemini.google.com'=>'gemini',
     'copilot.microsoft.com'=>'copilot',
-    'www.bing.com'=>'copilot',
   ];
 
   public static function classify(?string $referrer): ?array {
