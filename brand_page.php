@@ -11,8 +11,12 @@ elseif(preg_match('#^/categories/[a-z0-9-]+/?$#',$path)) $target='category_page.
 elseif(preg_match('#^/capabilities/[a-z0-9-]+/?$#',$path)) $target='capability_page.php';
 elseif(preg_match('#^/integrations/[a-z0-9-]+/?$#',$path)) $target='integration_page.php';
 elseif(preg_match('#^/compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$#',$path)) $target='comparison_page.php';
-elseif(preg_match('#^/(login|register|verify-email|reset-password)/?$#',$path)) $target='account.php';
-elseif(preg_match('#^/admin/?$#',$path)) $target='admin.php';
+elseif(preg_match('#^/(login|register|verify-email|reset-password)/?$#',$path) || $path==='/account.php') $target='account.php';
+elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='admin.php';
+elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
+elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
+elseif(in_array($path,['/taxonomy-queue','/taxonomy-queue/','/taxonomy_queue.php'],true)) $target='taxonomy_queue.php';
+elseif(in_array($path,['/pri-source-policy','/pri-source-policy/','/pri_source_policy.php'],true)) $target='pri_source_policy.php';
 
 if(!$target || !is_file(__DIR__.'/'.$target)){
   http_response_code(404);
@@ -56,7 +60,7 @@ $html=preg_replace_callback(
   $html
 )??$html;
 
-// Pages such as account/admin may not have a homepage brand anchor. Add a compact brand strip.
+// Pages without a homepage brand anchor receive a compact, consistent logo strip.
 if($replaced===0 && stripos($html,'src="/techselectai-logo.svg"')===false){
   $strip='<div class="ts-global-brand"><a href="/" aria-label="TechSelectAI home">'.$logo.'</a></div>';
   $html=preg_replace('#<body([^>]*)>#i','<body$1>'.$strip,$html,1)??$html;
