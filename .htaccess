@@ -12,26 +12,26 @@ RewriteRule ^ https://techselectai.com%{REQUEST_URI} [R=301,L,NE]
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
-# Block direct web access to internal/source material when repository folders are uploaded.
 RewriteRule ^(?:app|db|docs|scripts)/ - [F,L]
 RewriteRule ^(?:\.env|README\.md) - [F,L]
-
-# Browser fallback for clients that still request /favicon.ico.
 RewriteRule ^favicon\.ico$ favicon.svg [L]
+
+# Authenticated consultation resume bridge restores the SPA session state.
+RewriteRule ^resume-consultation/[a-f0-9]{48}/?$ resume_consultation.php [QSA,L]
 
 # Human-facing pages use the shared TechSelectAI branding wrapper.
 RewriteRule ^(login|register|verify-email|reset-password)/?$ brand_page.php [QSA,L]
 RewriteRule ^admin/?$ brand_page.php [QSA,L]
 RewriteRule ^review/[a-z0-9-]+/?$ brand_page.php [QSA,L]
 RewriteRule ^my-reviews/?$ brand_page.php [QSA,L]
+RewriteRule ^my-consultations/?$ brand_page.php [QSA,L]
 RewriteRule ^review-moderation/?$ brand_page.php [QSA,L]
 RewriteRule ^review-rewards/?$ brand_page.php [QSA,L]
 RewriteRule ^taxonomy-queue/?$ brand_page.php [QSA,L]
 RewriteRule ^pri-source-policy/?$ brand_page.php [QSA,L]
 RewriteRule ^ai-referrals/?$ brand_page.php [QSA,L]
-RewriteRule ^(?:account|admin|review|my_reviews|review_moderation|review_rewards|taxonomy_queue|pri_source_policy|ai_referrals)\.php$ brand_page.php [QSA,L]
+RewriteRule ^(?:account|admin|review|my_reviews|my_consultations|review_moderation|review_rewards|taxonomy_queue|pri_source_policy|ai_referrals)\.php$ brand_page.php [QSA,L]
 
-# Server-rendered public SEO documentation uses the shared branding wrapper.
 RewriteRule ^software/[a-z0-9-]+/?$ brand_page.php [QSA,L]
 RewriteRule ^categories/[a-z0-9-]+/?$ brand_page.php [QSA,L]
 RewriteRule ^capabilities/[a-z0-9-]+/?$ brand_page.php [QSA,L]
@@ -41,6 +41,7 @@ RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 
 # Dedicated release APIs: order matters.
 RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
+RewriteRule ^api/account(?:/.*)?$ api/account_history.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
 RewriteRule ^api/review-admin(?:/.*)?$ api/review_admin.php [QSA,L]
 RewriteRule ^api/review-rewards(?:/.*)?$ api/review_rewards.php [QSA,L]
@@ -49,13 +50,9 @@ RewriteRule ^api/taxonomy/.*$ api/taxonomy.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
-# Serve existing public files/directories directly.
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Read-only API and SEO endpoints.
 RewriteRule ^(api/.*|health|robots\.txt)$ api/index.php [QSA,L]
-
-# React/Vite SPA fallback.
 RewriteRule ^ index.html [L]

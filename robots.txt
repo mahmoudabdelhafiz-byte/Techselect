@@ -26,6 +26,8 @@ Disallow: /review-rewards
 Disallow: /taxonomy-queue
 Disallow: /pri-source-policy
 Disallow: /my-reviews
+Disallow: /my-consultations
+Disallow: /resume-consultation/
 Disallow: /ai-referrals
 Disallow: /api/
 
