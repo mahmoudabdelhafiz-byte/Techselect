@@ -1,0 +1,31 @@
+# TechSelectAI public crawl policy
+# Public advisory, software, category, capability, integration, comparison and methodology pages are crawlable.
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: *
+Allow: /
+
+# Internal/authenticated/API implementation paths are not intended as public search content.
+Disallow: /admin
+Disallow: /review-moderation
+Disallow: /review-rewards
+Disallow: /taxonomy-queue
+Disallow: /pri-source-policy
+Disallow: /my-reviews
+Disallow: /api/
+
+Sitemap: https://techselectai.com/sitemap.xml
