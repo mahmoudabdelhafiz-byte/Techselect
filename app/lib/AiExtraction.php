@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/CategoryGuard.php';
+require_once __DIR__.'/TaxonomyExpansionQueue.php';
 final class AiExtraction {
   public static function extract(PDO $pdo,array $config,string $message,array $context=[]): array {
     $caps=$pdo->query("SELECT c.slug,c.name FROM capabilities c WHERE c.is_active=1 ORDER BY c.name")->fetchAll();
@@ -85,6 +86,10 @@ final class AiExtraction {
       $result['advisory_mode']='general';
       $result['requirements']=array_map(function($r){$r['capability_slug']=null;return $r;},$result['requirements']??[]);
       if(empty($result['catalog_notice']))$result['catalog_notice']='This guidance is based on general technology consulting rather than TechSelectAI’s fully curated scoring dataset for this topic.';
+      $topic=trim((string)($result['unmapped_topic']??''));
+      if($topic!==''){
+        try{TaxonomyExpansionQueue::capture($pdo,$topic,$message,null);}catch(Throwable $e){}
+      }
       return $result;
     }
 
