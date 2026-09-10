@@ -14,6 +14,7 @@ elseif(preg_match('#^/compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$#',$path)) $target='com
 elseif(preg_match('#^/(login|register|verify-email|reset-password)/?$#',$path) || $path==='/account.php') $target='account.php';
 elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='admin.php';
 elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
+elseif(in_array($path,['/my-reviews','/my-reviews/','/my_reviews.php'],true)) $target='my_reviews.php';
 elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
 elseif(in_array($path,['/taxonomy-queue','/taxonomy-queue/','/taxonomy_queue.php'],true)) $target='taxonomy_queue.php';
