@@ -17,6 +17,8 @@ RewriteRule ^(?:\.env|README\.md) - [F,L]
 RewriteRule ^favicon\.ico$ favicon.svg [L]
 RewriteRule ^resume-consultation/[a-f0-9]{48}/?$ resume_consultation.php [QSA,L]
 RewriteRule ^account-settings/?$ account_settings.php [QSA,L]
+RewriteRule ^my-business-cases/?$ my_business_cases.php [QSA,L]
+RewriteRule ^business-case/?$ business_case_builder.php [QSA,L]
 RewriteRule ^trust/?$ trust.php [QSA,L]
 RewriteRule ^methodology/?$ methodology.php [QSA,L]
 

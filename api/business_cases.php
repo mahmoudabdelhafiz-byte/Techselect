@@ -1,12 +1,14 @@
 <?php
 require_once __DIR__.'/../app/lib/Db.php';
 require_once __DIR__.'/../app/lib/Security.php';
+require_once __DIR__.'/../app/lib/AiBusinessCase.php';
 $config=require __DIR__.'/../app/config.php';
 $pdo=Db::pdo();Security::start();
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';$method=$_SERVER['REQUEST_METHOD']??'GET';
 function bc_out($d,int $s=200){http_response_code($s);header('Content-Type: application/json; charset=utf-8');echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}
 function bc_body(){return json_decode(file_get_contents('php://input'),true)?:[];}
 function bc_event(PDO $pdo,int $caseId,int $userId,string $type):void{$pdo->prepare('INSERT INTO business_case_events(business_case_id,user_id,event_type) VALUES(?,?,?)')->execute([$caseId,$userId,$type]);}
+function bc_decode($v){$d=$v?json_decode($v,true):[];return is_array($d)?$d:[];}
 $user=Security::user();if(!$user)bc_out(['error'=>'authentication_required'],401);$uid=(int)$user['id'];
 
 if($path==='/api/business-cases'&&$method==='GET'){
@@ -20,9 +22,17 @@ if($path==='/api/business-cases'&&$method==='POST'){
  $assumptions=is_array($b['assumptions']??null)?$b['assumptions']:[];$facts=['product'=>['id'=>(int)$product['id'],'name'=>$product['name'],'slug'=>$product['slug'],'vendor'=>$product['vendor'],'category'=>$product['category']],'consultation'=>$consultation?['id'=>(int)$consultation['id'],'business_problem'=>$consultation['business_problem'],'country_code'=>$consultation['country_code'],'company_size_band'=>$consultation['company_size_band'],'expected_users'=>$consultation['expected_users']]:null];
  $st=$pdo->prepare("INSERT INTO business_cases(user_id,consultation_id,product_id,title,assumptions_json,verified_facts_json) VALUES(?,?,?,?,?,?)");$st->execute([$uid,$consultationId?:null,$productId,$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),json_encode($facts,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)]);$id=(int)$pdo->lastInsertId();bc_event($pdo,$id,$uid,'started');bc_out(['created'=>true,'id'=>$id,'title'=>$title,'verified_facts'=>$facts,'assumptions'=>$assumptions],201);
 }
+if(preg_match('#^/api/business-cases/(\d+)/generate$#',$path,$gm)&&$method==='POST'){
+ Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-generate',8,600);Security::requireCsrf();$id=(int)$gm[1];
+ $st=$pdo->prepare("SELECT bc.* FROM business_cases bc WHERE bc.id=? AND bc.user_id=? LIMIT 1");$st->execute([$id,$uid]);$case=$st->fetch();if(!$case)bc_out(['error'=>'not_found'],404);
+ $case['verified_facts']=bc_decode($case['verified_facts_json']);$case['assumptions']=bc_decode($case['assumptions_json']);
+ try{$generated=AiBusinessCase::generate($config,$case);}catch(Throwable $e){bc_out(['error'=>'generation_failed','message'=>'Unable to generate the business case right now.'],502);}
+ $pdo->prepare("UPDATE business_cases SET generated_output_json=?,status='generated',version=version+1,generated_at=NOW(),updated_at=NOW() WHERE id=? AND user_id=?")->execute([json_encode($generated,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),$id,$uid]);bc_event($pdo,$id,$uid,'generated');
+ bc_out(['generated'=>true,'id'=>$id,'output'=>$generated]);
+}
 if(preg_match('#^/api/business-cases/(\d+)$#',$path,$m)){
  $id=(int)$m[1];$st=$pdo->prepare("SELECT bc.*,p.name product_name,p.slug product_slug FROM business_cases bc JOIN products p ON p.id=bc.product_id WHERE bc.id=? AND bc.user_id=? LIMIT 1");$st->execute([$id,$uid]);$case=$st->fetch();if(!$case)bc_out(['error'=>'not_found'],404);
  if($method==='GET'){foreach(['assumptions_json','verified_facts_json','generated_output_json'] as $k)$case[$k]=$case[$k]?json_decode($case[$k],true):null;bc_out(['business_case'=>$case]);}
- if($method==='PUT'){Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-update',30,300);Security::requireCsrf();$b=bc_body();$title=array_key_exists('title',$b)?trim((string)$b['title']):$case['title'];if($title===''||mb_strlen($title)>255)bc_out(['error'=>'invalid_title'],422);$assumptions=array_key_exists('assumptions',$b)&&is_array($b['assumptions'])?$b['assumptions']:json_decode($case['assumptions_json']?:'{}',true);$pdo->prepare("UPDATE business_cases SET title=?,assumptions_json=?,version=version+1 WHERE id=? AND user_id=?")->execute([$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),$id,$uid]);bc_event($pdo,$id,$uid,'saved');bc_out(['updated'=>true,'id'=>$id]);}
+ if($method==='PUT'){Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-update',30,300);Security::requireCsrf();$b=bc_body();$title=array_key_exists('title',$b)?trim((string)$b['title']):$case['title'];if($title===''||mb_strlen($title)>255)bc_out(['error'=>'invalid_title'],422);$assumptions=array_key_exists('assumptions',$b)&&is_array($b['assumptions'])?$b['assumptions']:json_decode($case['assumptions_json']?:'{}',true);$pdo->prepare("UPDATE business_cases SET title=?,assumptions_json=?,version=version+1,updated_at=NOW() WHERE id=? AND user_id=?")->execute([$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),$id,$uid]);bc_event($pdo,$id,$uid,'saved');bc_out(['updated'=>true,'id'=>$id]);}
 }
 bc_out(['error'=>'not_found'],404);
