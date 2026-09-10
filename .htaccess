@@ -26,6 +26,7 @@ RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 # Dedicated release APIs: order matters.
 RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
+RewriteRule ^api/taxonomy/.*$ api/taxonomy.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
