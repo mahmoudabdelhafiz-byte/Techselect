@@ -28,6 +28,7 @@ Disallow: /pri-source-policy
 Disallow: /my-reviews
 Disallow: /my-consultations
 Disallow: /resume-consultation/
+Disallow: /buyer-analytics
 Disallow: /ai-referrals
 Disallow: /api/
 
