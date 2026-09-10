@@ -1,5 +1,10 @@
 RewriteEngine On
 
+# Canonical public host: consolidate old HTTP/www URLs into one HTTPS origin for search engines.
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} !^techselectai\.com$ [NC]
+RewriteRule ^ https://techselectai.com%{REQUEST_URI} [R=301,L,NE]
+
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"
@@ -30,6 +35,7 @@ RewriteRule ^api/auth/.*$ api/auth.php [QSA,L]
 RewriteRule ^api/admin/.*$ api/admin.php [QSA,L]
 RewriteRule ^api/review-admin(?:/.*)?$ api/review_admin.php [QSA,L]
 RewriteRule ^api/reviews(?:/.*)?$ api/reviews.php [QSA,L]
+RewriteRule ^api/taxonomy/.*$ api/taxonomy.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
