@@ -49,6 +49,7 @@ RewriteRule ^api/review-admin(?:/.*)?$ api/review_admin.php [QSA,L]
 RewriteRule ^api/review-rewards(?:/.*)?$ api/review_rewards.php [QSA,L]
 RewriteRule ^api/reviews(?:/.*)?$ api/reviews.php [QSA,L]
 RewriteRule ^api/taxonomy/.*$ api/taxonomy.php [QSA,L]
+RewriteRule ^api/consultations/[a-f0-9]{48}/promotion(?:/(?:impression|click))?/?$ api/promotion.php [QSA,L]
 RewriteRule ^api/consultations/[a-f0-9]+/recommendations/?$ api/recommend.php [QSA,L]
 RewriteRule ^api/consultations(?:/.*)?$ api/secure.php [QSA,L]
 
