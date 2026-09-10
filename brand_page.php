@@ -19,6 +19,7 @@ elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moder
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
 elseif(in_array($path,['/taxonomy-queue','/taxonomy-queue/','/taxonomy_queue.php'],true)) $target='taxonomy_queue.php';
 elseif(in_array($path,['/pri-source-policy','/pri-source-policy/','/pri_source_policy.php'],true)) $target='pri_source_policy.php';
+elseif(in_array($path,['/ai-referrals','/ai-referrals/','/ai_referrals.php'],true)) $target='ai_referrals.php';
 
 if(!$target || !is_file(__DIR__.'/'.$target)){
   http_response_code(404);
@@ -45,6 +46,13 @@ if($replaced===0 && stripos($html,'src="/techselectai-logo.svg"')===false){$stri
 // Public factual pages expose stable, human-visible citation anchors for retrieval systems and readers.
 $isPublicKnowledge=(bool)preg_match('#^/(software|categories|capabilities|integrations|compare)/#',$path);
 if($isPublicKnowledge){
+  // Referral measurement is deliberately best-effort and privacy-minimized. Missing migration must never affect rendering.
+  try{
+    require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/AiReferralAnalytics.php';
+    AiReferralAnalytics::record(Db::pdo(),$path,$_SERVER['HTTP_REFERER']??null);
+  }catch(Throwable $e){}
+
   if(stripos($html,'href="/llms.txt"')===false){
     $html=str_ireplace('</head>','<link rel="alternate" type="text/plain" href="/llms.txt" title="TechSelectAI AI discovery guide"></head>',$html);
   }
