@@ -15,6 +15,8 @@ elseif(preg_match('#^/(login|register|verify-email|reset-password)/?$#',$path) |
 elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='admin.php';
 elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
 elseif(in_array($path,['/my-reviews','/my-reviews/','/my_reviews.php'],true)) $target='my_reviews.php';
+elseif(in_array($path,['/my-consultations','/my-consultations/','/my_consultations.php'],true)) $target='my_consultations.php';
+elseif(in_array($path,['/buyer-analytics','/buyer-analytics/','/buyer_analytics.php'],true)) $target='buyer_analytics.php';
 elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
 elseif(in_array($path,['/taxonomy-queue','/taxonomy-queue/','/taxonomy_queue.php'],true)) $target='taxonomy_queue.php';
@@ -43,14 +45,26 @@ $replaced=0;
 $html=preg_replace_callback('#<a([^>]*href=["\']/["\'][^>]*)>\s*TechSelectAI\s*</a>#i',static function($m) use ($logo,&$replaced){$replaced++;$attrs=$m[1];if(stripos($attrs,'class=')!==false){$attrs=preg_replace('#class=(["\'])(.*?)\1#i','class=$1$2 ts-brand-link$1',$attrs,1);}else{$attrs.=' class="ts-brand-link"';}return '<a'.$attrs.' aria-label="TechSelectAI home">'.$logo.'</a>';},$html)??$html;
 if($replaced===0 && stripos($html,'src="/techselectai-logo.svg"')===false){$strip='<div class="ts-global-brand"><a href="/" aria-label="TechSelectAI home">'.$logo.'</a></div>';$html=preg_replace('#<body([^>]*)>#i','<body$1>'.$strip,$html,1)??$html;}
 
-// Public factual pages expose stable, human-visible citation anchors for retrieval systems and readers.
 $isPublicKnowledge=(bool)preg_match('#^/(software|categories|capabilities|integrations|compare)/#',$path);
 if($isPublicKnowledge){
-  // Referral measurement is deliberately best-effort and privacy-minimized. Missing migration must never affect rendering.
   try{
     require_once __DIR__.'/app/lib/Db.php';
     require_once __DIR__.'/app/lib/AiReferralAnalytics.php';
     AiReferralAnalytics::record(Db::pdo(),$path,$_SERVER['HTTP_REFERER']??null);
+  }catch(Throwable $e){}
+
+  // Buyer-intent page-view analytics is separate from recommendation scoring and best-effort only.
+  try{
+    require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/Security.php';
+    require_once __DIR__.'/app/lib/BuyerIntentAnalytics.php';
+    Security::start();
+    $pdo=Db::pdo();
+    if(preg_match('#^/software/([a-z0-9-]+)/?$#',$path,$pm)){
+      $st=$pdo->prepare("SELECT id,category_id FROM products WHERE slug=? AND status='active' LIMIT 1");$st->execute([$pm[1]]);if($r=$st->fetch())BuyerIntentAnalytics::recordPublicEvent($pdo,'product_view',['product_id'=>$r['id'],'category_id'=>$r['category_id'],'route_path'=>$path]);
+    }elseif(preg_match('#^/compare/([a-z0-9-]+)-vs-([a-z0-9-]+)/?$#',$path,$cm)){
+      $st=$pdo->prepare("SELECT id,slug,category_id FROM products WHERE slug IN (?,?) AND status='active'");$st->execute([$cm[1],$cm[2]]);$found=[];foreach($st->fetchAll() as $r)$found[$r['slug']]=$r;if(isset($found[$cm[1]],$found[$cm[2]]))BuyerIntentAnalytics::recordPublicEvent($pdo,'comparison_view',['product_id'=>$found[$cm[1]]['id'],'related_product_id'=>$found[$cm[2]]['id'],'category_id'=>$found[$cm[1]]['category_id'],'route_path'=>$path]);
+    }
   }catch(Throwable $e){}
 
   if(stripos($html,'href="/llms.txt"')===false){
@@ -58,20 +72,7 @@ if($isPublicKnowledge){
   }
   $html=preg_replace('#<section class="hero"(?![^>]*\bid=)#i','<section class="hero" id="overview" data-citation-section="overview"',$html,1)??$html;
   $anchorMap=[
-    'Capabilities'=>'capabilities',
-    'Product support comparison'=>'product-support',
-    'Product support'=>'product-support',
-    'Capability comparison'=>'capability-comparison',
-    'Integration comparison'=>'integration-comparison',
-    'Deployment comparison'=>'deployment-comparison',
-    'Deployment options'=>'deployment',
-    'Integrations'=>'integrations',
-    'Plans / editions'=>'plans',
-    'Pricing'=>'pricing',
-    'Evidence sources'=>'evidence',
-    'Alternatives'=>'alternatives',
-    'How to use this comparison'=>'interpretation',
-    'How to read this comparison'=>'interpretation'
+    'Capabilities'=>'capabilities','Product support comparison'=>'product-support','Product support'=>'product-support','Capability comparison'=>'capability-comparison','Integration comparison'=>'integration-comparison','Deployment comparison'=>'deployment-comparison','Deployment options'=>'deployment','Integrations'=>'integrations','Plans / editions'=>'plans','Pricing'=>'pricing','Evidence sources'=>'evidence','Alternatives'=>'alternatives','How to use this comparison'=>'interpretation','How to read this comparison'=>'interpretation'
   ];
   foreach($anchorMap as $heading=>$id){
     $quoted=preg_quote($heading,'#');
