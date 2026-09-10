@@ -9,8 +9,8 @@ $checks=[
   'Norton regression example'=>'Norton should be recognized as cybersecurity / endpoint protection / antivirus',
   'do not force supported categories'=>'rather than asking the user to choose one of the supported categories',
   'general mode null category'=>'if(!$resolvedCategory)',
-  'general mode assignment'=>"$result['advisory_mode']='general'",
-  'curated mode assignment'=>"$result['advisory_mode']='curated'",
+  'general mode assignment'=>"\$result['advisory_mode']='general'",
+  'curated mode assignment'=>"\$result['advisory_mode']='curated'",
   'no fabricated fit score'=>'Never fabricate a deterministic TechSelectAI Fit Score'
 ];
 $failed=[];
