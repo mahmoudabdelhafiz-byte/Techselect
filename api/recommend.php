@@ -35,23 +35,44 @@ $fact=$pdo->prepare("SELECT support_status,confidence_score FROM product_capabil
 $intFact=$pdo->prepare("SELECT support_status,confidence_score FROM product_integrations WHERE product_id=? AND integration_id=? LIMIT 1");
 $depFact=$pdo->prepare("SELECT support_status,confidence_score FROM product_deployments WHERE product_id=? AND deployment_model_id=? LIMIT 1");
 $price=$pdo->prepare("SELECT amount_min,amount_max,currency,billing_period FROM product_pricing WHERE product_id=? ORDER BY COALESCE(amount_min,999999999) ASC LIMIT 1");
-$results=[];
+$results=[];$requirementCount=count($requirements);
 foreach($products as $p){
-  $rows=[];$evidence=[];
-  foreach($requirements as $r){$fact->execute([$p['id'],$r['capability_id']]);$f=$fact->fetch();$status=$f['support_status']??'not_yet_verified';$rows[]=['requirement_id'=>$r['id'],'priority'=>$r['priority'],'is_mandatory'=>$r['is_mandatory'],'support_status'=>$status];$evidence[]=(float)($f['confidence_score']??0);}
+  $rows=[];$evidence=[];$recordedFacts=0;$knownFacts=0;$unknownFacts=0;
+  foreach($requirements as $r){
+    $fact->execute([$p['id'],$r['capability_id']]);$f=$fact->fetch();
+    $status=$f['support_status']??'not_yet_verified';
+    if($f){$recordedFacts++;}
+    if($f && !in_array($status,['unknown','not_yet_verified'],true)){$knownFacts++;}else{$unknownFacts++;}
+    $rows[]=['requirement_id'=>$r['id'],'priority'=>$r['priority'],'is_mandatory'=>$r['is_mandatory'],'support_status'=>$status];
+    $evidence[]=(float)($f['confidence_score']??0);
+  }
   $functional=Scoring::weighted($rows);$mandatory=Scoring::mustHave($rows);$gaps=Scoring::mandatoryGaps($rows);$dims=['functional'=>$functional,'mandatory'=>$mandatory];
   if($wantedInts){$vals=[];foreach($wantedInts as $wi){$intFact->execute([$p['id'],$wi['integration_id']]);$f=$intFact->fetch();$vals[]=Scoring::support($f['support_status']??'not_yet_verified')*100;}$dims['integration']=round(array_sum($vals)/count($vals),2);}
   if(!empty($c['deployment_model_id'])){$depFact->execute([$p['id'],$c['deployment_model_id']]);$f=$depFact->fetch();$dims['deployment']=round(Scoring::support($f['support_status']??'not_yet_verified')*100,2);}
   if(!empty($c['budget_max'])){$price->execute([$p['id']]);$pr=$price->fetch();if($pr&&$pr['amount_min']!==null){$ratio=(float)$pr['amount_min']/(float)$c['budget_max'];$dims['commercial']=$ratio<=.8?100:($ratio<=1?90:($ratio<=1.2?65:($ratio<=1.5?35:10)));}else{$dims['commercial']=40;}}
   $overall=Scoring::overall($dims);$evidenceScore=$evidence?round(array_sum($evidence)/count($evidence)*100,2):0;
+  $knownCoverage=$requirementCount?round($knownFacts/$requirementCount*100,2):0;
+  $recordedCoverage=$requirementCount?round($recordedFacts/$requirementCount*100,2):0;
+  $coverageLabel=$knownCoverage>=80?'high':($knownCoverage>=60?'moderate':'limited');
   $status=$gaps?'conditional':($overall>=90?'strong_match':($overall>=75?'recommended':($overall>=55?'possible_match':'excluded')));
-  $results[]=['product'=>$p,'category_slug'=>$categorySlug,'overall'=>$overall,'functional'=>$functional,'mandatory'=>$mandatory,'integration'=>$dims['integration']??null,'deployment'=>$dims['deployment']??null,'commercial'=>$dims['commercial']??null,'evidence'=>$evidenceScore,'mandatory_gaps'=>$gaps,'rows'=>$rows,'status'=>$status];
+  $results[]=['product'=>$p,'category_slug'=>$categorySlug,'overall'=>$overall,'functional'=>$functional,'mandatory'=>$mandatory,'integration'=>$dims['integration']??null,'deployment'=>$dims['deployment']??null,'commercial'=>$dims['commercial']??null,'evidence'=>$evidenceScore,'evidence_coverage'=>$knownCoverage,'recorded_coverage'=>$recordedCoverage,'evidence_coverage_label'=>$coverageLabel,'known_fact_count'=>$knownFacts,'recorded_fact_count'=>$recordedFacts,'unknown_requirement_count'=>$unknownFacts,'requirement_count'=>$requirementCount,'mandatory_gaps'=>$gaps,'rows'=>$rows,'status'=>$status];
 }
 usort($results,function($a,$b){if($a['mandatory_gaps']!==$b['mandatory_gaps'])return $a['mandatory_gaps']<=>$b['mandatory_gaps'];if($a['mandatory']!==$b['mandatory'])return $b['mandatory']<=>$a['mandatory'];if($a['overall']!==$b['overall'])return $b['overall']<=>$a['overall'];return $b['evidence']<=>$a['evidence'];});
+$bestCoverage=$results?max(array_column($results,'evidence_coverage')):0;
+foreach($results as &$r){
+  $coverageGap=round($bestCoverage-$r['evidence_coverage'],2);
+  $r['evidence_coverage_gap_to_best']=$coverageGap;
+  $r['evidence_warning']=$r['evidence_coverage']<60
+    ?'Limited evidence coverage: several requested capabilities are not yet verified. Unknown does not mean unsupported.'
+    :($coverageGap>=25?'Evidence coverage is materially lower than the best-researched product in this comparison. Interpret fit scores with additional caution.':null);
+}
+unset($r);
 $input=['consultation_id'=>$cid,'category_id'=>$categoryId,'category_slug'=>$categorySlug,'requirements'=>$requirements,'integrations'=>$wantedInts,'deployment_model_id'=>$c['deployment_model_id'],'budget_max'=>$c['budget_max'],'budget_currency'=>$c['budget_currency']];
-$pdo->beginTransaction();$pdo->prepare("INSERT INTO recommendation_runs(consultation_id,scoring_version,input_snapshot) VALUES(?,'php-v1.2-category-guard',?)")->execute([$cid,json_encode($input,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);$run=(int)$pdo->lastInsertId();
+$scoringVersion='php-v1.2-category-guard+evidence-coverage';
+$pdo->beginTransaction();$pdo->prepare("INSERT INTO recommendation_runs(consultation_id,scoring_version,input_snapshot) VALUES(?,?,?)")->execute([$cid,$scoringVersion,json_encode($input,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);$run=(int)$pdo->lastInsertId();
 $rec=$pdo->prepare("INSERT INTO consultation_recommendations(consultation_id,product_id,recommendation_run_id,recommendation_rank,overall_score,functional_score,mandatory_score,integration_score,deployment_score,budget_score,regional_score,security_score,evidence_score,mandatory_gap_count,important_gap_count,recommendation_status,scoring_version,snapshot_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 $gap=$pdo->prepare("INSERT INTO recommendation_gaps(recommendation_id,consultation_requirement_id,gap_type,severity,explanation) VALUES(?,?,?,?,?)");
-foreach($results as $i=>&$r){$rec->execute([$cid,$r['product']['id'],$run,$i+1,$r['overall'],$r['functional'],$r['mandatory'],$r['integration']??100,$r['deployment']??100,$r['commercial']??100,100,100,$r['evidence'],$r['mandatory_gaps'],0,$r['status'],'php-v1.2-category-guard',json_encode($r)]);$rid=(int)$pdo->lastInsertId();$r['rank']=$i+1;$r['recommendation_id']=$rid;foreach($r['rows'] as $rr){if(!empty($rr['is_mandatory'])&&$rr['support_status']!=='supported'){$gap->execute([$rid,$rr['requirement_id'],$rr['support_status']==='not_supported'?'unsupported':'unknown','critical',$rr['support_status']==='not_supported'?'Explicitly recorded as not supported.':'Not fully verified; unknown is not treated as unsupported.']);}}unset($r['rows']);}
+foreach($results as $i=>&$r){$rec->execute([$cid,$r['product']['id'],$run,$i+1,$r['overall'],$r['functional'],$r['mandatory'],$r['integration']??100,$r['deployment']??100,$r['commercial']??100,100,100,$r['evidence'],$r['mandatory_gaps'],0,$r['status'],$scoringVersion,json_encode($r)]);$rid=(int)$pdo->lastInsertId();$r['rank']=$i+1;$r['recommendation_id']=$rid;foreach($r['rows'] as $rr){if(!empty($rr['is_mandatory'])&&$rr['support_status']!=='supported'){$gap->execute([$rid,$rr['requirement_id'],$rr['support_status']==='not_supported'?'unsupported':'unknown','critical',$rr['support_status']==='not_supported'?'Explicitly recorded as not supported.':'Not fully verified; unknown is not treated as unsupported.']);}}unset($r['rows']);}
+unset($r);
 $pdo->prepare("UPDATE consultations SET status='analysis' WHERE id=?")->execute([$cid]);$pdo->commit();
-out(['scoring_version'=>'php-v1.2-category-guard','category_slug'=>$categorySlug,'recommendation_run_id'=>$run,'recommendations'=>$results]);
+out(['scoring_version'=>$scoringVersion,'category_slug'=>$categorySlug,'recommendation_run_id'=>$run,'recommendations'=>$results]);
