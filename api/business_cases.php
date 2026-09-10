@@ -9,6 +9,21 @@ function bc_out($d,int $s=200){http_response_code($s);header('Content-Type: appl
 function bc_body(){return json_decode(file_get_contents('php://input'),true)?:[];}
 function bc_event(PDO $pdo,int $caseId,int $userId,string $type):void{$pdo->prepare('INSERT INTO business_case_events(business_case_id,user_id,event_type) VALUES(?,?,?)')->execute([$caseId,$userId,$type]);}
 function bc_decode($v){$d=$v?json_decode($v,true):[];return is_array($d)?$d:[];}
+function bc_product(PDO $pdo,int $productId){$st=$pdo->prepare("SELECT p.id,p.name,p.slug,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.id=? AND p.status='active' LIMIT 1");$st->execute([$productId]);return $st->fetch()?:null;}
+function bc_assumptions($value):array{$src=is_array($value)?$value:[];$allowed=['current_situation','current_solution','pain_points','expected_benefits','stakeholders','implementation_timeline','budget_assumptions','risks','roi_assumptions'];$out=[];foreach($allowed as $k){if(!array_key_exists($k,$src))continue;$v=trim((string)$src[$k]);if($v!=='')$out[$k]=mb_substr($v,0,2000);}return $out;}
+
+// Anonymous preview is intentionally transient: no business_case row, user record or lifecycle event is created.
+if($path==='/api/business-cases/preview'&&$method==='POST'){
+ Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-preview',4,900);$b=bc_body();$productId=(int)($b['product_id']??0);$token=strtolower(trim((string)($b['consultation_token']??'')));
+ if(!preg_match('/^[a-f0-9]{48}$/',$token))bc_out(['error'=>'consultation_required'],422);$product=bc_product($pdo,$productId);if(!$product)bc_out(['error'=>'invalid_product'],422);
+ $st=$pdo->prepare("SELECT id,user_id,business_problem,country_code,company_size_band,expected_users FROM consultations WHERE public_token=? LIMIT 1");$st->execute([$token]);$consultation=$st->fetch();if(!$consultation)bc_out(['error'=>'invalid_consultation'],422);
+ $u=Security::user();if(!empty($consultation['user_id'])&&(!$u||(int)$u['id']!==(int)$consultation['user_id']))bc_out(['error'=>'forbidden'],403);
+ $facts=['product'=>['id'=>(int)$product['id'],'name'=>$product['name'],'slug'=>$product['slug'],'vendor'=>$product['vendor'],'category'=>$product['category']],'consultation'=>['business_problem'=>$consultation['business_problem'],'country_code'=>$consultation['country_code'],'company_size_band'=>$consultation['company_size_band'],'expected_users'=>$consultation['expected_users']]];
+ $case=['title'=>'Business Case for '.$product['name'],'verified_facts'=>$facts,'assumptions'=>bc_assumptions($b['assumptions']??[])];
+ try{$generated=AiBusinessCase::generate($config,$case);}catch(Throwable $e){bc_out(['error'=>'generation_failed','message'=>'Unable to generate the business case preview right now.'],502);}
+ bc_out(['preview'=>true,'temporary'=>true,'product'=>['id'=>(int)$product['id'],'name'=>$product['name'],'slug'=>$product['slug']],'verified_facts'=>$facts,'assumptions'=>$case['assumptions'],'output'=>$generated]);
+}
+
 $user=Security::user();if(!$user)bc_out(['error'=>'authentication_required'],401);$uid=(int)$user['id'];
 
 if($path==='/api/business-cases'&&$method==='GET'){
@@ -16,10 +31,10 @@ if($path==='/api/business-cases'&&$method==='GET'){
 }
 if($path==='/api/business-cases'&&$method==='POST'){
  Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-create',20,300);Security::requireCsrf();$b=bc_body();$productId=(int)($b['product_id']??0);$consultationId=(int)($b['consultation_id']??0);
- $st=$pdo->prepare("SELECT p.id,p.name,p.slug,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.id=? AND p.status='active' LIMIT 1");$st->execute([$productId]);$product=$st->fetch();if(!$product)bc_out(['error'=>'invalid_product'],422);
+ $product=bc_product($pdo,$productId);if(!$product)bc_out(['error'=>'invalid_product'],422);
  $consultation=null;if($consultationId>0){$st=$pdo->prepare("SELECT id,business_problem,country_code,company_size_band,expected_users FROM consultations WHERE id=? AND user_id=? LIMIT 1");$st->execute([$consultationId,$uid]);$consultation=$st->fetch();if(!$consultation)bc_out(['error'=>'invalid_consultation'],422);}
  $title=trim((string)($b['title']??('Business Case for '.$product['name'])));if($title===''||mb_strlen($title)>255)bc_out(['error'=>'invalid_title'],422);
- $assumptions=is_array($b['assumptions']??null)?$b['assumptions']:[];$facts=['product'=>['id'=>(int)$product['id'],'name'=>$product['name'],'slug'=>$product['slug'],'vendor'=>$product['vendor'],'category'=>$product['category']],'consultation'=>$consultation?['id'=>(int)$consultation['id'],'business_problem'=>$consultation['business_problem'],'country_code'=>$consultation['country_code'],'company_size_band'=>$consultation['company_size_band'],'expected_users'=>$consultation['expected_users']]:null];
+ $assumptions=bc_assumptions($b['assumptions']??[]);$facts=['product'=>['id'=>(int)$product['id'],'name'=>$product['name'],'slug'=>$product['slug'],'vendor'=>$product['vendor'],'category'=>$product['category']],'consultation'=>$consultation?['id'=>(int)$consultation['id'],'business_problem'=>$consultation['business_problem'],'country_code'=>$consultation['country_code'],'company_size_band'=>$consultation['company_size_band'],'expected_users'=>$consultation['expected_users']]:null];
  $st=$pdo->prepare("INSERT INTO business_cases(user_id,consultation_id,product_id,title,assumptions_json,verified_facts_json) VALUES(?,?,?,?,?,?)");$st->execute([$uid,$consultationId?:null,$productId,$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),json_encode($facts,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)]);$id=(int)$pdo->lastInsertId();bc_event($pdo,$id,$uid,'started');bc_out(['created'=>true,'id'=>$id,'title'=>$title,'verified_facts'=>$facts,'assumptions'=>$assumptions],201);
 }
 if(preg_match('#^/api/business-cases/(\d+)/generate$#',$path,$gm)&&$method==='POST'){
@@ -33,6 +48,6 @@ if(preg_match('#^/api/business-cases/(\d+)/generate$#',$path,$gm)&&$method==='PO
 if(preg_match('#^/api/business-cases/(\d+)$#',$path,$m)){
  $id=(int)$m[1];$st=$pdo->prepare("SELECT bc.*,p.name product_name,p.slug product_slug FROM business_cases bc JOIN products p ON p.id=bc.product_id WHERE bc.id=? AND bc.user_id=? LIMIT 1");$st->execute([$id,$uid]);$case=$st->fetch();if(!$case)bc_out(['error'=>'not_found'],404);
  if($method==='GET'){foreach(['assumptions_json','verified_facts_json','generated_output_json'] as $k)$case[$k]=$case[$k]?json_decode($case[$k],true):null;bc_out(['business_case'=>$case]);}
- if($method==='PUT'){Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-update',30,300);Security::requireCsrf();$b=bc_body();$title=array_key_exists('title',$b)?trim((string)$b['title']):$case['title'];if($title===''||mb_strlen($title)>255)bc_out(['error'=>'invalid_title'],422);$assumptions=array_key_exists('assumptions',$b)&&is_array($b['assumptions'])?$b['assumptions']:json_decode($case['assumptions_json']?:'{}',true);$pdo->prepare("UPDATE business_cases SET title=?,assumptions_json=?,version=version+1,updated_at=NOW() WHERE id=? AND user_id=?")->execute([$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),$id,$uid]);bc_event($pdo,$id,$uid,'saved');bc_out(['updated'=>true,'id'=>$id]);}
+ if($method==='PUT'){Security::sameOrigin($config);Security::rateLimit($pdo,'business-case-update',30,300);Security::requireCsrf();$b=bc_body();$title=array_key_exists('title',$b)?trim((string)$b['title']):$case['title'];if($title===''||mb_strlen($title)>255)bc_out(['error'=>'invalid_title'],422);$assumptions=array_key_exists('assumptions',$b)?bc_assumptions($b['assumptions']):json_decode($case['assumptions_json']?:'{}',true);$pdo->prepare("UPDATE business_cases SET title=?,assumptions_json=?,version=version+1,updated_at=NOW() WHERE id=? AND user_id=?")->execute([$title,json_encode($assumptions,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),$id,$uid]);bc_event($pdo,$id,$uid,'saved');bc_out(['updated'=>true,'id'=>$id]);}
 }
 bc_out(['error'=>'not_found'],404);
