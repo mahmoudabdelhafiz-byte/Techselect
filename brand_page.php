@@ -37,7 +37,7 @@ if(stripos($html,'<html')===false || stripos($html,'<head')===false){echo $html;
 $favicon='<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="shortcut icon" href="/favicon.svg">';
 if(stripos($html,'href="/favicon.svg"')===false && stripos($html,"href='/favicon.svg'")===false){$html=str_ireplace('</head>',$favicon.'</head>',$html);}
 
-$brandCss='<style id="techselectai-global-branding">.ts-brand-link{display:inline-flex!important;align-items:center!important;text-decoration:none!important}.ts-brand-link img{display:block;width:auto;height:34px;max-width:210px}.ts-global-brand{padding:14px max(20px,5vw);border-bottom:1px solid #e2e8f0;background:#fff}.ts-global-brand a{display:inline-flex;align-items:center}.ts-global-brand img{height:34px;width:auto;max-width:210px;display:block}@media(max-width:560px){.ts-brand-link img,.ts-global-brand img{height:30px;max-width:180px}}</style>';
+$brandCss='<style id="techselectai-global-branding">.ts-brand-link{display:inline-flex!important;align-items:center!important;text-decoration:none!important}.ts-brand-link img{display:block;width:auto;height:34px;max-width:210px}.ts-global-brand{padding:14px max(20px,5vw);border-bottom:1px solid #e2e8f0;background:#fff}.ts-global-brand a{display:inline-flex;align-items:center}.ts-global-brand img{height:34px;width:auto;max-width:210px;display:block}.pk-summary{border:1px solid #dbe8ef;border-radius:16px;padding:22px;background:#f8fbfd}.pk-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pk-chip{display:inline-flex;gap:5px;align-items:center;padding:6px 9px;border:1px solid #dce6ed;border-radius:999px;background:#fff;color:#536174;font-size:12px}.pk-note{margin:14px 0 0;color:#64748b;font-size:12px;line-height:1.55}@media(max-width:560px){.ts-brand-link img,.ts-global-brand img{height:30px;max-width:180px}}</style>';
 if(stripos($html,'techselectai-global-branding')===false){$html=str_ireplace('</head>',$brandCss.'</head>',$html);}
 
 $logo='<img src="/techselectai-logo.svg" alt="TechSelectAI" width="210" height="46" decoding="async">';
@@ -82,6 +82,18 @@ if($isPublicKnowledge){
   }
   $html=preg_replace('#<section class="verified-reviews"(?![^>]*\bid=)#i','<section class="verified-reviews" id="verified-reviews" data-citation-section="verified-reviews"',$html,1)??$html;
   $html=preg_replace('#<section class="public-review-intelligence"(?![^>]*\bid=)#i','<section class="public-review-intelligence" id="public-review-intelligence" data-citation-section="public-review-intelligence"',$html,1)??$html;
+
+  // Visible, evidence-derived factual summaries improve human scanability and retrieval without crawler-only content.
+  try{
+    require_once __DIR__.'/app/lib/PublicKnowledgeSummary.php';
+    $cfg=require __DIR__.'/app/config.php';
+    $knowledge=PublicKnowledgeSummary::build(Db::pdo(),$path,(string)($cfg['site_url']??'https://techselectai.com'));
+    if($knowledge){
+      $json=array_filter($knowledge['jsonld'],static fn($v)=>$v!==null);
+      $html=str_ireplace('</head>','<script type="application/ld+json">'.json_encode($json,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE).'</script></head>',$html);
+      $html=preg_replace('#(<section class="hero"[^>]*>.*?</section>)#s','$1'.$knowledge['html'],$html,1)??$html;
+    }
+  }catch(Throwable $e){}
 }
 
 echo $html;

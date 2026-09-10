@@ -1,0 +1,1 @@
+Manual smoke after deployment: open one `/software/{slug}` page and one `/compare/{a}-vs-{b}` page; confirm a visible `#factual-summary` section appears after the hero, Unknown is described as not yet verified rather than unsupported, canonical URL is unchanged, and page source contains a second JSON-LD block for the factual TechArticle summary.
