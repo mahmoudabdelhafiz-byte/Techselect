@@ -16,6 +16,9 @@ RewriteRule ^(?:app|db|docs|scripts)/ - [F,L]
 RewriteRule ^(?:\.env|README\.md) - [F,L]
 RewriteRule ^favicon\.ico$ favicon.svg [L]
 
+# Authenticated consultation resume bridge restores the SPA session state.
+RewriteRule ^resume-consultation/[a-f0-9]{48}/?$ resume_consultation.php [QSA,L]
+
 # Human-facing pages use the shared TechSelectAI branding wrapper.
 RewriteRule ^(login|register|verify-email|reset-password)/?$ brand_page.php [QSA,L]
 RewriteRule ^admin/?$ brand_page.php [QSA,L]
