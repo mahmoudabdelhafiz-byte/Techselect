@@ -4,7 +4,7 @@ $page=(string)@file_get_contents($root.'/software_reviews_page.php');
 $brand=(string)@file_get_contents($root.'/brand_page.php');
 $checks=[
   'wrapper exists'=>$page!=='',
-  'software route uses review wrapper'=>strpos($brand,"$target='software_reviews_page.php'")!==false,
+  'software route uses review wrapper'=>strpos($brand,"\$target='software_reviews_page.php'")!==false,
   'approved-only query'=>strpos($page,"r.moderation_status='approved'")!==false,
   'published-only query'=>strpos($page,'r.published_at IS NOT NULL')!==false,
   'aggregate score source'=>strpos($page,'product_verified_review_ratings')!==false,
