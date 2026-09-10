@@ -1,0 +1,1 @@
+Scope: software + comparison public factual summaries only; no recommendation algorithm changes, no PRI/review aggregation changes, no database migration, no Vite rebuild.
