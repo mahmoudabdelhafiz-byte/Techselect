@@ -16,7 +16,7 @@ RewriteRule ^(login|register|verify-email|reset-password)/?$ account.php [QSA,L]
 RewriteRule ^admin/?$ admin.php [QSA,L]
 
 # Server-rendered public SEO documentation.
-RewriteRule ^software/[a-z0-9-]+/?$ public_docs.php [QSA,L]
+RewriteRule ^software/[a-z0-9-]+/?$ software_page.php [QSA,L]
 RewriteRule ^categories/[a-z0-9-]+/?$ public_docs.php [QSA,L]
 RewriteRule ^capabilities/[a-z0-9-]+/?$ public_docs.php [QSA,L]
 RewriteRule ^integrations/[a-z0-9-]+/?$ public_docs.php [QSA,L]
