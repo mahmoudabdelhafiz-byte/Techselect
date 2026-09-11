@@ -77,6 +77,7 @@ RewriteRule ^integrations/[a-z0-9-]+/?$ crawlable_public_page.php [QSA,L]
 RewriteRule ^compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$ crawlable_public_page.php [QSA,L]
 RewriteRule ^software-selection/[a-z0-9-]+/?$ long_tail_seo_page.php [QSA,L]
 RewriteRule ^guides/(?:hrms-arabic-mena|itsm-multi-site-enterprise)/?$ scenario_decision_guide.php [QSA,L]
+RewriteRule ^guides/(?:crm-egypt-b2b|erp-uae-enterprise|project-management-construction-mena)/?$ editorial_decision_guide.php [QSA,L]
 RewriteRule ^guides/[a-z0-9-]+/?$ decision_guide.php [QSA,L]
 RewriteRule ^sitemap\.xml$ sitemap.php [QSA,L]
 

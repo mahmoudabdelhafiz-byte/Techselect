@@ -19,6 +19,9 @@ add_url($urls,'/guides/salesforce-vs-dynamics-enterprise','weekly','0.8');
 add_url($urls,'/guides/cloud-vs-self-hosted-crm','weekly','0.8');
 add_url($urls,'/guides/hrms-arabic-mena','weekly','0.8');
 add_url($urls,'/guides/itsm-multi-site-enterprise','weekly','0.8');
+add_url($urls,'/guides/crm-egypt-b2b','weekly','0.8');
+add_url($urls,'/guides/erp-uae-enterprise','weekly','0.8');
+add_url($urls,'/guides/project-management-construction-mena','weekly','0.8');
 
 // Public catalog indexing is evidence-gated. Adding a product to the database alone is not enough.
 $productSql="SELECT p.id,p.slug,p.updated_at
