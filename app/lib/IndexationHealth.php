@@ -22,8 +22,15 @@ final class IndexationHealth {
 
     public static function importIndexStates(PDO $pdo,array $rows,string $source): int {
         if(!preg_match('/^[a-z0-9_\-]{2,48}$/i',$source))throw new InvalidArgumentException('invalid_source');$count=0;
-        $get=$pdo->prepare('SELECT id,index_state FROM indexation_url_health WHERE path=? LIMIT 1');$upd=$pdo->prepare('UPDATE indexation_url_health SET index_state=?,index_state_source=?,discovered_at=COALESCE(?,discovered_at),last_crawled_at=COALESCE(?,last_crawled_at),last_indexed_at=COALESCE(?,last_indexed_at),notes=?,updated_at=NOW() WHERE id=?');$hist=$pdo->prepare('INSERT INTO indexation_state_history(url_health_id,index_state,source,detail_json) VALUES(?,?,?,?)');
-        foreach($rows as $r){$path=(string)($r['path']??'');$state=(string)($r['index_state']??'unknown');if($path===''||!in_array($state,self::STATES,true))continue;$get->execute([$path]);$cur=$get->fetch(PDO::FETCH_ASSOC);if(!$cur)continue;$upd->execute([$state,$source,self::dateOrNull($r['discovered_at']??null),self::dateOrNull($r['last_crawled_at']??null),self::dateOrNull($r['last_indexed_at']??null),mb_substr(trim((string)($r['notes']??'')),0,2000)?:null,(int)$cur['id']]);$hist->execute([(int)$cur['id'],$state,$source,json_encode($r,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)]);$count++;}
+        $get=$pdo->prepare('SELECT id,index_state FROM indexation_url_health WHERE path=? LIMIT 1');
+        $upd=$pdo->prepare('UPDATE indexation_url_health SET index_state=?,index_state_source=?,discovered_at=COALESCE(?,discovered_at),last_crawled_at=COALESCE(?,last_crawled_at),last_indexed_at=COALESCE(?,last_indexed_at),observed_http_status=COALESCE(?,observed_http_status),observed_canonical_url=COALESCE(?,observed_canonical_url),observed_meta_robots=COALESCE(?,observed_meta_robots),robots_allowed=COALESCE(?,robots_allowed),notes=?,updated_at=NOW() WHERE id=?');
+        $hist=$pdo->prepare('INSERT INTO indexation_state_history(url_health_id,index_state,source,detail_json) VALUES(?,?,?,?)');
+        foreach($rows as $r){
+            $path=(string)($r['path']??'');$state=(string)($r['index_state']??'unknown');if($path===''||!in_array($state,self::STATES,true))continue;$get->execute([$path]);$cur=$get->fetch(PDO::FETCH_ASSOC);if(!$cur)continue;
+            $http=isset($r['observed_http_status'])&&is_numeric($r['observed_http_status'])?(int)$r['observed_http_status']:null;$canon=trim((string)($r['observed_canonical_url']??''))?:null;$meta=trim((string)($r['observed_meta_robots']??''))?:null;$robots=array_key_exists('robots_allowed',$r)?(!empty($r['robots_allowed'])?1:0):null;$notes=mb_substr(trim((string)($r['notes']??'')),0,2000)?:null;
+            $upd->execute([$state,$source,self::dateOrNull($r['discovered_at']??null),self::dateOrNull($r['last_crawled_at']??null),self::dateOrNull($r['last_indexed_at']??null),$http,$canon,$meta,$robots,$notes,(int)$cur['id']]);
+            $hist->execute([(int)$cur['id'],$state,$source,json_encode($r,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)]);$count++;
+        }
         return $count;
     }
 
@@ -38,7 +45,8 @@ final class IndexationHealth {
         $reasons=[];$ageDays=null;if(!empty($r['discovered_at']))$ageDays=(int)floor((time()-strtotime($r['discovered_at']))/86400);
         if(($r['priority_level']??'')==='strategic'&&in_array($r['index_state']??'',['discovered_not_indexed','crawled_not_indexed'],true)&&$ageDays!==null&&$ageDays>=14)$reasons[]='strategic_url_unindexed_14d';
         if(empty($r['sitemap_present']))$reasons[]='missing_from_sitemap';if(($r['robots_allowed']??1)===0)$reasons[]='robots_blocked';if(stripos((string)($r['observed_meta_robots']??''),'noindex')!==false)$reasons[]='noindex';if(!empty($r['observed_http_status'])&&(int)$r['observed_http_status']>=400)$reasons[]='http_error';
-        return ['needs_attention'=>(bool)$reasons,'reasons'=>$reasons,'age_days'=>$ageDays];
+        $observedCanonical=trim((string)($r['observed_canonical_url']??''));if($observedCanonical!==''&&!str_ends_with(rtrim($observedCanonical,'/'),rtrim((string)($r['path']??''),'/')))$reasons[]='canonical_mismatch';
+        return ['needs_attention'=>(bool)$reasons,'reasons'=>array_values(array_unique($reasons)),'age_days'=>$ageDays];
     }
 
     private static function dateOrNull($v):?string{if(!$v)return null;$t=strtotime((string)$v);return $t?date('Y-m-d H:i:s',$t):null;}
