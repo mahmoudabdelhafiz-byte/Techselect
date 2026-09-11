@@ -1,0 +1,23 @@
+<?php
+$root=dirname(__DIR__);
+$checks=[];
+$assert=function(bool $ok,string $label) use (&$checks){$checks[]=['ok'=>$ok,'label'=>$label];if(!$ok){fwrite(STDERR,"FAIL: $label\n");}};
+$lib=file_get_contents($root.'/app/lib/PartnerDiscovery.php')?:'';
+$portfolio=file_get_contents($root.'/app/lib/VendorPortfolio.php')?:'';
+$page=file_get_contents($root.'/partner_discovery.php')?:'';
+$links=file_get_contents($root.'/partner_links_page.php')?:'';
+$matrix=file_get_contents($root.'/project_decision_matrix.php')?:'';
+$ht=file_get_contents($root.'/.htaccess')?:'';
+$assert(str_contains($portfolio,"r.verification_status='verified'"),'public partner lookup requires verified relationship');
+$assert(str_contains($portfolio,"r.valid_until IS NULL OR r.valid_until>=CURRENT_DATE"),'expired relationships excluded');
+$assert(str_contains($lib,"'exact'=>'Exact country match'")&&str_contains($lib,"'regional'=>'Regional coverage'")&&str_contains($lib,"'global'=>'Global / remote coverage'"),'location fallback tiers defined');
+$assert(str_contains($lib,"'city'=>'Exact city match'"),'city territory matching supported');
+$assert(str_contains($page,'Provider ordering is separate from TechSelectAI software evaluation'),'neutrality disclosed');
+$assert(str_contains($page,'Relationship evidence'),'verification evidence exposed');
+$assert(str_contains($links,'Find verified vendors & implementation partners'),'software page CTA present');
+$assert(str_contains($matrix,'Find verified vendors / implementation partners'),'post-shortlist CTA present');
+$assert(str_contains($ht,'RewriteRule ^partners/?$ partner_discovery.php'),'partner route wired');
+$assert(str_contains($ht,'RewriteRule ^software/[a-z0-9-]+/?$ partner_links_page.php'),'software pages use partner CTA wrapper');
+$failed=array_filter($checks,fn($c)=>!$c['ok']);
+echo json_encode(['ok'=>!$failed,'checks'=>$checks],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n";
+exit($failed?1:0);
