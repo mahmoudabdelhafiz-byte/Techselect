@@ -34,7 +34,6 @@ foreach($pdo->query($productSql) as $r){
 }
 
 // Category pages become indexable only when at least two products pass the same product readiness gate.
-// lastmod follows the newest qualifying product so catalog expansion and evidence refreshes are visible to crawlers.
 $categorySql="SELECT c.slug,MAX(p.updated_at) last_updated
 FROM categories c
 JOIN products p ON p.category_id=c.id AND p.status='active'
@@ -86,6 +85,13 @@ if(count($indexableProducts)>=2){
     add_url($urls,'/compare/'.implode('-vs-',$pair),'weekly','0.7');
   }
 }
+
+// Programmatically generated SEO pages are sitemap-eligible only after an explicit quality-gate pass.
+// Draft, noindex and not-generated records are deliberately excluded even if the URL exists.
+try{
+  $generatedSql="SELECT canonical_path,updated_at FROM seo_generated_pages WHERE status='published' AND quality_decision='indexable' ORDER BY canonical_path";
+  foreach($pdo->query($generatedSql) as $r)add_url($urls,$r['canonical_path'],'weekly','0.7',$r['updated_at']);
+}catch(Throwable $e){}
 
 try{
   $caseSql="SELECT slug,updated_at FROM customer_outcomes
