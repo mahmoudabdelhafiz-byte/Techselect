@@ -1,12 +1,22 @@
 # TechSelectAI public crawl policy
 # Public advisory, software, category, capability, integration, comparison and methodology pages are crawlable.
 
+# OpenAI search crawler used for ChatGPT search discovery.
 User-agent: OAI-SearchBot
 Allow: /
 
+# User-triggered OpenAI fetches.
 User-agent: ChatGPT-User
 Allow: /
 
+# Mainstream search crawlers commonly used directly or indirectly by AI retrieval experiences.
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Anthropic and Perplexity crawler families are explicitly allowed where they honor robots.txt.
 User-agent: Claude-SearchBot
 Allow: /
 
@@ -14,6 +24,9 @@ User-agent: Claude-User
 Allow: /
 
 User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
 Allow: /
 
 User-agent: *
@@ -30,6 +43,15 @@ Disallow: /my-consultations
 Disallow: /resume-consultation/
 Disallow: /buyer-analytics
 Disallow: /ai-referrals
+Disallow: /vendor-portal
+Disallow: /vendor-self-service-admin
+Disallow: /software-submission-admin
+Disallow: /vendor-relationship-claims-admin
+Disallow: /decision-pack
+Disallow: /selection-projects
+Disallow: /decision-matrix
+Disallow: /rfp-builder
+Disallow: /roi-tco
 Disallow: /api/
 
 Sitemap: https://techselectai.com/sitemap.xml
