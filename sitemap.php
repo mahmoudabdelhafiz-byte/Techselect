@@ -11,6 +11,7 @@ add_url($urls,'/','weekly','1.0');
 add_url($urls,'/software','daily','0.9');
 add_url($urls,'/trust','monthly','0.7');
 add_url($urls,'/methodology','monthly','0.6');
+add_url($urls,'/about-techselectai','monthly','0.7');
 add_url($urls,'/case-studies','weekly','0.8');
 add_url($urls,'/guides/crm-saudi-arabia','weekly','0.8');
 add_url($urls,'/guides/salesforce-vs-dynamics-enterprise','weekly','0.8');
