@@ -4,7 +4,7 @@ final class AdminControlCenter {
         $out=['products'=>['active'=>0,'draft'=>0,'archived'=>0],'queues'=>[],'generated_at'=>gmdate('c')];
         try{$rows=$pdo->query("SELECT status,COUNT(*) c FROM products GROUP BY status")->fetchAll(PDO::FETCH_ASSOC);foreach($rows as $r){$k=(string)$r['status'];if(array_key_exists($k,$out['products']))$out['products'][$k]=(int)$r['c'];}}catch(Throwable $e){}
         $out['queues']=[
-            self::metric($pdo,'Products needing review',"SELECT COUNT(*) FROM products WHERE status IN ('draft','active') AND (last_reviewed_at IS NULL OR last_reviewed_at < DATE_SUB(NOW(),INTERVAL 180 DAY))",'/admin#software','Review stale or never-reviewed products.'),
+            self::metric($pdo,'Products needing review',"SELECT COUNT(*) FROM products WHERE status IN ('draft','active') AND (last_reviewed_at IS NULL OR last_reviewed_at < DATE_SUB(NOW(),INTERVAL 180 DAY))",'/software-management','Review stale or never-reviewed products.'),
             self::metric($pdo,'Evidence attention',"SELECT COUNT(*) FROM evidence_sources WHERE verification_status IN ('unverified','outdated','broken','disputed','placeholder')",'/evidence-inbox','Verify, refresh or retire weak evidence.'),
             self::metric($pdo,'PRI source policy',"SELECT COUNT(*) FROM public_review_sources WHERE access_policy='pending_review'",'/pri-source-policy','Review public-source access policy before analysis.'),
             self::metric($pdo,'Reviews awaiting moderation',"SELECT COUNT(*) FROM user_reviews WHERE status IN ('pending','under_review')",'/review-moderation','Moderate user reviews waiting for a decision.'),
@@ -20,7 +20,7 @@ final class AdminControlCenter {
     public static function navigation(string $role): array {
         $all=[
             ['key'=>'overview','label'=>'Overview','href'=>'/admin','roles'=>['reviewer','data_editor','admin','super_admin']],
-            ['key'=>'software','label'=>'Software','href'=>'/admin#software','roles'=>['reviewer','data_editor','admin','super_admin']],
+            ['key'=>'software','label'=>'Software','href'=>'/software-management','roles'=>['reviewer','data_editor','admin','super_admin']],
             ['key'=>'evidence','label'=>'Evidence','href'=>'/evidence-inbox','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'evaluations','label'=>'AI Evaluations','href'=>'/evaluation-control','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'community','label'=>'Community Intelligence','href'=>'/community-intelligence-admin','roles'=>['reviewer','admin','super_admin']],

@@ -10,7 +10,7 @@ $target=null;
 if(in_array($path,$brandRoutes,true))$target='brand_page.php';
 else{
  $map=[
-  '/evidence-refresh'=>'evidence_refresh_review.php','/evidence-inbox'=>'evidence_inbox.php','/evaluation-control'=>'evaluation_control.php','/community-intelligence-admin'=>'community_intelligence_admin.php','/software-submission-admin'=>'software_submission_admin.php','/vendor-relationship-claims-admin'=>'vendor_relationship_claim_admin.php','/vendor-self-service-admin'=>'vendor_self_service_admin.php','/indexation-health'=>'indexation_health.php','/search-console'=>'search_console_dashboard.php','/seo-quality-gates'=>'seo_quality_gates_admin.php','/long-tail-seo'=>'long_tail_seo_admin.php','/customer-outcomes-admin'=>'customer_outcomes_admin.php','/authority-admin'=>'authority_admin.php'];
+  '/software-management'=>'software_management.php','/evidence-refresh'=>'evidence_refresh_review.php','/evidence-inbox'=>'evidence_inbox.php','/evaluation-control'=>'evaluation_control.php','/community-intelligence-admin'=>'community_intelligence_admin.php','/software-submission-admin'=>'software_submission_admin.php','/vendor-relationship-claims-admin'=>'vendor_relationship_claim_admin.php','/vendor-self-service-admin'=>'vendor_self_service_admin.php','/indexation-health'=>'indexation_health.php','/search-console'=>'search_console_dashboard.php','/seo-quality-gates'=>'seo_quality_gates_admin.php','/long-tail-seo'=>'long_tail_seo_admin.php','/customer-outcomes-admin'=>'customer_outcomes_admin.php','/authority-admin'=>'authority_admin.php'];
  $clean=rtrim($path,'/')?:'/';$target=$map[$clean]??null;
 }
 if(!$target||!is_file(__DIR__.'/'.$target)){http_response_code(404);exit('Not found');}
