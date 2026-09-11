@@ -46,6 +46,10 @@ final class ProjectDecisionMatrix {
     $price=$pdo->prepare("SELECT amount_min,currency FROM product_pricing WHERE product_id=? ORDER BY COALESCE(amount_min,999999999) ASC LIMIT 1");
     $countryCodes=json_decode((string)($project['country_codes_json']??'[]'),true);$country=is_array($countryCodes)&&!empty($countryCodes[0])?strtoupper((string)$countryCodes[0]):null;
     $regional=$pdo->prepare("SELECT pra.availability_status FROM product_regional_availability pra JOIN countries c ON c.id=pra.country_id WHERE pra.product_id=? AND c.code=? LIMIT 1");
+    $securityInput=json_decode((string)($project['security_compliance_json']??'[]'),true);$securityText=mb_strtolower(implode(' ',is_array($securityInput)?$securityInput:[]));
+    $standards=$pdo->query("SELECT id,name,slug FROM compliance_standards WHERE is_active=1 ORDER BY id")->fetchAll();$requestedStandards=[];
+    foreach($standards as $s){$name=mb_strtolower((string)$s['name']);$slug=mb_strtolower(str_replace('-',' ',(string)$s['slug']));if($securityText!==''&&(mb_stripos($securityText,$name)!==false||mb_stripos($securityText,$slug)!==false))$requestedStandards[]=$s;}
+    $complianceFact=$pdo->prepare("SELECT support_status,confidence_score FROM product_compliance WHERE product_id=? AND compliance_standard_id=? LIMIT 1");
 
     $results=[];
     foreach($products as $p){
@@ -57,14 +61,15 @@ final class ProjectDecisionMatrix {
       if($depId){$depFact->execute([$p['id'],$depId]);$f=$depFact->fetch();$dims['deployment']=round(Scoring::support($f['support_status']??'not_yet_verified')*100,2);}
       if(!empty($project['budget_max'])){$price->execute([$p['id']]);$pr=$price->fetch();if($pr&&$pr['amount_min']!==null){$ratio=(float)$pr['amount_min']/(float)$project['budget_max'];$dims['commercial']=$ratio<=.8?100:($ratio<=1?90:($ratio<=1.2?65:($ratio<=1.5?35:10)));}else $dims['commercial']=40;}
       if($country){$regional->execute([$p['id'],$country]);$rf=$regional->fetch();$dims['regional']=round(Scoring::regional($rf['availability_status']??'not_yet_verified')*100,2);}
+      $complianceRows=[];if($requestedStandards){$vals=[];foreach($requestedStandards as $s){$complianceFact->execute([$p['id'],$s['id']]);$cf=$complianceFact->fetch();$status=$cf['support_status']??'not_yet_verified';$vals[]=Scoring::support($status)*100;$complianceRows[]=['slug'=>$s['slug'],'name'=>$s['name'],'support_status'=>$status];}$dims['security']=round(array_sum($vals)/count($vals),2);}
       $fit=self::weightedOverall($dims,$weights);
       $contrib=[];$usedWeight=0;foreach($weights as $k=>$w){if(($dims[$k]??null)!==null&&$w>0)$usedWeight+=$w;}foreach($weights as $k=>$w){$contrib[$k]=($usedWeight>0&&($dims[$k]??null)!==null)?round(((float)$dims[$k]*$w)/$usedWeight,2):null;}
       $tradeoffs=[];foreach($dims as $k=>$v){if($v!==null&&$v<60)$tradeoffs[]=$k.' fit is weak or insufficiently verified';}
       if($gaps)$tradeoffs[]=$gaps.' mandatory requirement(s) remain unresolved';
-      $results[]=['product'=>$p,'project_fit_score'=>$fit,'baseline_evaluation_score'=>null,'baseline_evaluation_status'=>'not_available_in_current_model','mandatory_gap_count'=>$gaps,'dimensions'=>$dims,'contributions'=>$contrib,'tradeoffs'=>$tradeoffs,'requirements'=>$rows,'partner_options'=>[],'partner_note'=>'Verified local partner data is not yet available in the current marketplace model.'];
+      $results[]=['product'=>$p,'project_fit_score'=>$fit,'baseline_evaluation_score'=>null,'baseline_evaluation_status'=>'not_available_in_current_model','mandatory_gap_count'=>$gaps,'dimensions'=>$dims,'contributions'=>$contrib,'tradeoffs'=>$tradeoffs,'requirements'=>$rows,'requested_compliance'=>$complianceRows,'partner_options'=>[],'partner_note'=>'Verified local partner data is not yet available in the current marketplace model.'];
     }
     usort($results,fn($a,$b)=>$a['mandatory_gap_count']<=>$b['mandatory_gap_count'] ?: $b['project_fit_score']<=>$a['project_fit_score'] ?: strcmp($a['product']['name'],$b['product']['name']));
     foreach($results as $i=>&$r)$r['rank']=$i+1;unset($r);
-    return ['scoring_version'=>self::VERSION,'category_id'=>$categoryId,'weights'=>$weights,'results'=>$results];
+    return ['scoring_version'=>self::VERSION,'category_id'=>$categoryId,'weights'=>$weights,'requested_compliance'=>array_column($requestedStandards,'slug'),'results'=>$results];
   }
 }
