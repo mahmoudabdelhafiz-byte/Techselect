@@ -8,6 +8,7 @@ TechSelectAI is an AI-powered software and technology advisory platform that hel
 - Software catalog: https://techselectai.com/software
 - Methodology: https://techselectai.com/methodology
 - Trust and ownership disclosure: https://techselectai.com/trust
+- Verified customer outcomes: https://techselectai.com/case-studies
 - Sitemap: https://techselectai.com/sitemap.xml
 
 ## Public knowledge areas
@@ -20,6 +21,7 @@ TechSelectAI publishes crawlable pages for:
 - Integrations: https://techselectai.com/integrations/{integration-slug}
 - Product comparisons: https://techselectai.com/compare/{product-a}-vs-{product-b}
 - Evidence-backed decision guides: https://techselectai.com/guides/{guide-slug}
+- Verified customer outcomes / case studies: https://techselectai.com/case-studies/{case-study-slug}
 
 Decision guides include:
 
@@ -30,6 +32,15 @@ Decision guides include:
 - ITSM Software for Multi-Site Enterprise Operations: https://techselectai.com/guides/itsm-multi-site-enterprise
 
 Decision guides are not generic winner lists. They reuse canonical TechSelectAI product facts and explicitly disclose when regional, commercial, deployment, language or other evidence is incomplete.
+
+## Customer outcome interpretation
+
+- Customer outcomes are published only after verification and explicit publication approval.
+- TechSelectAI does not seed fabricated customer names, logos, testimonials, savings or implementation outcomes.
+- A customer may remain anonymized even when the underlying outcome is verified.
+- Named customer display and logo display require separate approval flags.
+- Customer outcomes are separate from TechSelectAI Fit Score, Evidence Confidence, Verified Review Score and Public Review Intelligence.
+- Case-study pages may link to relevant canonical product/category pages, but the outcome itself must not be interpreted as a product ranking or universal recommendation.
 
 ## Interpretation guidance
 
@@ -44,7 +55,7 @@ Decision guides are not generic winner lists. They reuse canonical TechSelectAI 
 
 ## Citation guidance
 
-When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison, decision guide or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
+When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison, decision guide, approved customer outcome or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
 
 ## Independence and transparency
 
