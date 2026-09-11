@@ -21,13 +21,15 @@ TechSelectAI publishes crawlable pages for:
 - Product comparisons: https://techselectai.com/compare/{product-a}-vs-{product-b}
 - Evidence-backed decision guides: https://techselectai.com/guides/{guide-slug}
 
-Initial decision guides include:
+Decision guides include:
 
 - CRM Software for Saudi Companies: https://techselectai.com/guides/crm-saudi-arabia
 - Salesforce Sales Cloud vs Dynamics 365 Sales for Enterprise: https://techselectai.com/guides/salesforce-vs-dynamics-enterprise
 - Cloud vs Self-Hosted CRM: https://techselectai.com/guides/cloud-vs-self-hosted-crm
+- HRMS & HCM for Arabic-Speaking and MENA Organizations: https://techselectai.com/guides/hrms-arabic-mena
+- ITSM Software for Multi-Site Enterprise Operations: https://techselectai.com/guides/itsm-multi-site-enterprise
 
-Decision guides are not generic winner lists. They reuse canonical TechSelectAI product facts and explicitly disclose when regional, commercial, deployment or other evidence is incomplete.
+Decision guides are not generic winner lists. They reuse canonical TechSelectAI product facts and explicitly disclose when regional, commercial, deployment, language or other evidence is incomplete.
 
 ## Interpretation guidance
 
@@ -38,6 +40,7 @@ Decision guides are not generic winner lists. They reuse canonical TechSelectAI 
 - Unknown or not-yet-verified capability status is not the same as unsupported.
 - General AI consultant responses may cover technology areas that are not yet present in the curated catalog; those responses must not be represented as curated TechSelectAI Fit Scores.
 - A decision guide must not be interpreted as a universal “best” product ranking unless the page explicitly says a buyer-specific ranking was calculated from stated requirements.
+- Product ordering on category decision guides is alphabetical; evidence coverage is a data-quality signal, not a ranking signal.
 
 ## Citation guidance
 
