@@ -14,6 +14,8 @@ add_url($urls,'/methodology','monthly','0.6');
 add_url($urls,'/guides/crm-saudi-arabia','weekly','0.8');
 add_url($urls,'/guides/salesforce-vs-dynamics-enterprise','weekly','0.8');
 add_url($urls,'/guides/cloud-vs-self-hosted-crm','weekly','0.8');
+add_url($urls,'/guides/hrms-arabic-mena','weekly','0.8');
+add_url($urls,'/guides/itsm-multi-site-enterprise','weekly','0.8');
 
 $productSql="SELECT p.id,p.slug,p.updated_at
 FROM products p
