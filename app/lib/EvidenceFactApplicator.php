@@ -1,7 +1,7 @@
 <?php
 final class EvidenceFactApplicator{
   private const SUPPORT_STATUSES=['supported','partially_supported','not_supported','not_yet_verified'];
-  private const DOMAINS=['capability','integration','deployment','pricing'];
+  private const DOMAINS=['capability','integration','deployment','pricing','compliance'];
 
   public static function apply(PDO $pdo,int $proposalId,array $mapping,int $actorUserId):array{
     $domain=trim((string)($mapping['target_domain']??''));
@@ -15,7 +15,9 @@ final class EvidenceFactApplicator{
       $allowedFields=['pricing_model','billing_period','currency','amount_min','amount_max','unit_label','notes'];
     }else{
       if(!preg_match('/^[a-z0-9][a-z0-9-]{0,189}$/',$slug))throw new InvalidArgumentException('invalid_target_slug');
-      $allowedFields=$domain==='capability'?['support_status','confidence_score','limitations']:['support_status','confidence_score'];
+      if($domain==='capability')$allowedFields=['support_status','confidence_score','limitations'];
+      elseif($domain==='compliance')$allowedFields=['support_status','confidence_score','scope_notes'];
+      else $allowedFields=['support_status','confidence_score'];
     }
     if(!in_array($field,$allowedFields,true))throw new InvalidArgumentException('invalid_target_field');
     if(mb_strlen($notes)>4000)throw new InvalidArgumentException('application_notes_too_long');
@@ -53,18 +55,21 @@ final class EvidenceFactApplicator{
         $pdo->prepare("INSERT INTO product_deployments(product_id,deployment_model_id,support_status,confidence_score) VALUES(?,?,'not_yet_verified',0) ON DUPLICATE KEY UPDATE product_id=VALUES(product_id)")->execute([$productId,(int)$targetId]);
         if($field==='support_status')$pdo->prepare('UPDATE product_deployments SET support_status=? WHERE product_id=? AND deployment_model_id=?')->execute([$normalized,$productId,(int)$targetId]);else $pdo->prepare('UPDATE product_deployments SET confidence_score=? WHERE product_id=? AND deployment_model_id=?')->execute([$normalized,$productId,(int)$targetId]);
         $q=$pdo->prepare('SELECT support_status,confidence_score FROM product_deployments WHERE product_id=? AND deployment_model_id=?');$q->execute([$productId,(int)$targetId]);$r=$q->fetch();$after=['support_status'=>$r['support_status'],'confidence_score'=>(float)$r['confidence_score']];
+      }elseif($domain==='compliance'){
+        $s=$pdo->prepare('SELECT id FROM compliance_standards WHERE slug=? AND is_active=1 LIMIT 1');$s->execute([$slug]);$standardId=$s->fetchColumn();if(!$standardId)throw new RuntimeException('target_not_found');
+        $q=$pdo->prepare('SELECT id,support_status,confidence_score,scope_notes,source_url,last_verified_at FROM product_compliance WHERE product_id=? AND compliance_standard_id=? FOR UPDATE');$q->execute([$productId,(int)$standardId]);$row=$q->fetch();
+        if(!$row){$pdo->prepare("INSERT INTO product_compliance(product_id,compliance_standard_id,support_status,confidence_score,source_url,last_verified_at) VALUES(?,?,'not_yet_verified',0,?,NOW())")->execute([$productId,(int)$standardId,$proposal['source_url']?:null]);$targetId=(int)$pdo->lastInsertId();$row=['id'=>$targetId,'support_status'=>'not_yet_verified','confidence_score'=>0,'scope_notes'=>null,'source_url'=>$proposal['source_url']?:null,'last_verified_at'=>null];}else{$targetId=(int)$row['id'];}
+        $before=self::complianceSnapshot($row);
+        $sql="UPDATE product_compliance SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
+        $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
+        $q=$pdo->prepare('SELECT id,support_status,confidence_score,scope_notes,source_url,last_verified_at FROM product_compliance WHERE id=?');$q->execute([$targetId]);$after=self::complianceSnapshot($q->fetch());
       }else{
         $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE product_id=? AND edition_id IS NULL ORDER BY id FOR UPDATE');
         $q->execute([$productId]);$rows=$q->fetchAll();
         if(count($rows)>1)throw new RuntimeException('ambiguous_pricing_scope');
-        if(!$rows){
-          $pdo->prepare("INSERT INTO product_pricing(product_id,edition_id,pricing_model,billing_period,source_url,last_verified_at) VALUES(?,NULL,'unknown','unknown',?,NOW())")->execute([$productId,$proposal['source_url']?:null]);
-          $row=['id'=>(int)$pdo->lastInsertId(),'pricing_model'=>'unknown','billing_period'=>'unknown','currency'=>null,'amount_min'=>null,'amount_max'=>null,'unit_label'=>null,'notes'=>null,'source_url'=>$proposal['source_url']?:null,'last_verified_at'=>null];
-        }else{$row=$rows[0];}
-        $targetId=(int)$row['id'];
-        $before=self::pricingSnapshot($row);
-        $sql="UPDATE product_pricing SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
-        $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
+        if(!$rows){$pdo->prepare("INSERT INTO product_pricing(product_id,edition_id,pricing_model,billing_period,source_url,last_verified_at) VALUES(?,NULL,'unknown','unknown',?,NOW())")->execute([$productId,$proposal['source_url']?:null]);$row=['id'=>(int)$pdo->lastInsertId(),'pricing_model'=>'unknown','billing_period'=>'unknown','currency'=>null,'amount_min'=>null,'amount_max'=>null,'unit_label'=>null,'notes'=>null,'source_url'=>$proposal['source_url']?:null,'last_verified_at'=>null];}else{$row=$rows[0];}
+        $targetId=(int)$row['id'];$before=self::pricingSnapshot($row);
+        $sql="UPDATE product_pricing SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";$pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
         $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE id=?');$q->execute([$targetId]);$pricingRow=$q->fetch();
         if($pricingRow['amount_min']!==null&&$pricingRow['amount_max']!==null&&(float)$pricingRow['amount_min']>(float)$pricingRow['amount_max'])throw new InvalidArgumentException('invalid_pricing_range');
         $after=self::pricingSnapshot($pricingRow);
@@ -81,33 +86,17 @@ final class EvidenceFactApplicator{
 
   private static function normalizeValue(string $domain,string $field,mixed $value):mixed{
     if($domain==='pricing'){
-      if(in_array($field,['amount_min','amount_max'],true)){
-        if($value===null||trim((string)$value)==='')return null;
-        if(!is_numeric($value)||(float)$value<0)throw new InvalidArgumentException('invalid_pricing_amount');
-        return round((float)$value,2);
-      }
-      $v=trim((string)$value);
-      if(in_array($field,['pricing_model','billing_period'],true)&&$v==='')throw new InvalidArgumentException('pricing_value_required');
-      if($field==='currency'){
-        if($v==='')return null;
-        $v=strtoupper($v);if(!preg_match('/^[A-Z]{3}$/',$v))throw new InvalidArgumentException('invalid_currency');return $v;
-      }
-      $limit=$field==='notes'?8000:($field==='unit_label'?100:40);
-      if(mb_strlen($v)>$limit)throw new InvalidArgumentException('pricing_value_too_long');
-      return $v!==''?$v:null;
+      if(in_array($field,['amount_min','amount_max'],true)){if($value===null||trim((string)$value)==='')return null;if(!is_numeric($value)||(float)$value<0)throw new InvalidArgumentException('invalid_pricing_amount');return round((float)$value,2);}
+      $v=trim((string)$value);if(in_array($field,['pricing_model','billing_period'],true)&&$v==='')throw new InvalidArgumentException('pricing_value_required');
+      if($field==='currency'){if($v==='')return null;$v=strtoupper($v);if(!preg_match('/^[A-Z]{3}$/',$v))throw new InvalidArgumentException('invalid_currency');return $v;}
+      $limit=$field==='notes'?8000:($field==='unit_label'?100:40);if(mb_strlen($v)>$limit)throw new InvalidArgumentException('pricing_value_too_long');return $v!==''?$v:null;
     }
     if($field==='support_status'){$v=trim((string)$value);if(!in_array($v,self::SUPPORT_STATUSES,true))throw new InvalidArgumentException('invalid_support_status');return $v;}
     if($field==='confidence_score'){if(!is_numeric($value))throw new InvalidArgumentException('invalid_confidence_score');$v=(float)$value;if($v<0||$v>1)throw new InvalidArgumentException('invalid_confidence_score');return round($v,3);}
-    $v=trim((string)$value);if(mb_strlen($v)>8000)throw new InvalidArgumentException('limitations_too_long');return $v!==''?$v:null;
+    $v=trim((string)$value);if(mb_strlen($v)>8000)throw new InvalidArgumentException($domain==='compliance'?'scope_notes_too_long':'limitations_too_long');return $v!==''?$v:null;
   }
 
-  private static function pricingSnapshot(array $row):array{
-    return ['pricing_model'=>$row['pricing_model'],'billing_period'=>$row['billing_period'],'currency'=>$row['currency'],'amount_min'=>$row['amount_min']===null?null:(float)$row['amount_min'],'amount_max'=>$row['amount_max']===null?null:(float)$row['amount_max'],'unit_label'=>$row['unit_label'],'notes'=>$row['notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];
-  }
-
-  private static function domainCompatible(string $proposalDomain,string $targetDomain,string $field):bool{
-    if($proposalDomain==='pricing_commercial'&&$targetDomain==='pricing')return true;
-    if($proposalDomain===$targetDomain)return true;
-    return $proposalDomain==='limitation'&&$targetDomain==='capability'&&$field==='limitations';
-  }
+  private static function pricingSnapshot(array $row):array{return ['pricing_model'=>$row['pricing_model'],'billing_period'=>$row['billing_period'],'currency'=>$row['currency'],'amount_min'=>$row['amount_min']===null?null:(float)$row['amount_min'],'amount_max'=>$row['amount_max']===null?null:(float)$row['amount_max'],'unit_label'=>$row['unit_label'],'notes'=>$row['notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];}
+  private static function complianceSnapshot(array $row):array{return ['support_status'=>$row['support_status'],'confidence_score'=>(float)$row['confidence_score'],'scope_notes'=>$row['scope_notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];}
+  private static function domainCompatible(string $proposalDomain,string $targetDomain,string $field):bool{if($proposalDomain==='pricing_commercial'&&$targetDomain==='pricing')return true;if($proposalDomain===$targetDomain)return true;return $proposalDomain==='limitation'&&$targetDomain==='capability'&&$field==='limitations';}
 }
