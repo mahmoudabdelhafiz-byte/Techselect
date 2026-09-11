@@ -35,7 +35,7 @@ Avoid bulk SEO directories, article farms, automated reciprocal-link networks an
 
 ## Preferred TechSelectAI link targets
 
-- General factual description: `/about-techselectai`
+- General product/company context: `/`
 - Independence/ownership: `/trust`
 - Scoring explanation: `/methodology`
 - Product evidence: `/software/{slug}`
@@ -44,22 +44,7 @@ Avoid bulk SEO directories, article farms, automated reciprocal-link networks an
 - High-intent educational content: `/guides/{slug}`
 - Verified real-world proof: `/case-studies/{slug}`
 
-## Tracking convention
-
-For outreach-controlled links, use UTM tags so first-party referral measurement works even when browser referrer information is limited.
-
-Recommended pattern:
-
-`https://techselectai.com/<asset>?utm_source=<domain>&utm_medium=referral&utm_campaign=authority_<initiative>`
-
-Examples of campaign names:
-- `authority_partner_profile`
-- `authority_customer_case_study`
-- `authority_directory_profile`
-- `authority_guest_article`
-- `authority_event_speaker`
-
-Do not put customer names, email addresses, private deal data or other sensitive information in UTM parameters.
+A dedicated public citation/about resource and referral-correlation work are tracked separately in #168 and should not be treated as deployed until that issue is completed.
 
 ## Workflow
 
@@ -69,8 +54,7 @@ Do not put customer names, email addresses, private deal data or other sensitive
 4. Contact the source manually with factual, non-spammy copy.
 5. When published, save the exact published URL.
 6. Verify the link before setting backlink status to `active`.
-7. Review `/authority-analytics` for tagged referral activity.
-8. Recheck active backlinks periodically; mark lost/removed links accurately.
+7. Recheck active backlinks periodically; mark lost/removed links accurately.
 
 ## Recommended outreach value propositions
 
@@ -89,8 +73,7 @@ Track:
 - outreach contacted/follow-up
 - approved published references
 - verified active/lost backlinks
-- UTM-tagged referral sessions
-- resulting consultations where measurable
+- resulting referrals/consultations once the separate referral-correlation phase is implemented
 - AI referral traffic separately through the existing AI referral analytics
 
 Backlink count alone is not a success metric. Relevance, legitimacy, referral quality and discoverability matter more.
