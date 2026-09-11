@@ -20,6 +20,7 @@ add_url($urls,'/guides/cloud-vs-self-hosted-crm','weekly','0.8');
 add_url($urls,'/guides/hrms-arabic-mena','weekly','0.8');
 add_url($urls,'/guides/itsm-multi-site-enterprise','weekly','0.8');
 
+// Public catalog indexing is evidence-gated. Adding a product to the database alone is not enough.
 $productSql="SELECT p.id,p.slug,p.updated_at
 FROM products p
 WHERE p.status='active'
@@ -32,15 +33,18 @@ foreach($pdo->query($productSql) as $r){
   add_url($urls,'/software/'.$r['slug'],'weekly','0.8',$r['updated_at']);
 }
 
-$categorySql="SELECT c.slug
+// Category pages become indexable only when at least two products pass the same product readiness gate.
+// lastmod follows the newest qualifying product so catalog expansion and evidence refreshes are visible to crawlers.
+$categorySql="SELECT c.slug,MAX(p.updated_at) last_updated
 FROM categories c
+JOIN products p ON p.category_id=c.id AND p.status='active'
 WHERE c.is_active=1
-AND (SELECT COUNT(*) FROM products p
-     WHERE p.category_id=c.id AND p.status='active'
-       AND (SELECT COUNT(*) FROM product_capabilities pc WHERE pc.product_id=p.id AND pc.edition_id IS NULL)>=3
-       AND EXISTS(SELECT 1 FROM evidence_sources e WHERE e.product_id=p.id))>=2
+  AND (SELECT COUNT(*) FROM product_capabilities pc WHERE pc.product_id=p.id AND pc.edition_id IS NULL)>=3
+  AND EXISTS(SELECT 1 FROM evidence_sources e WHERE e.product_id=p.id)
+GROUP BY c.id,c.slug
+HAVING COUNT(DISTINCT p.id)>=2
 ORDER BY c.slug";
-foreach($pdo->query($categorySql) as $r)add_url($urls,'/categories/'.$r['slug'],'weekly','0.8');
+foreach($pdo->query($categorySql) as $r)add_url($urls,'/categories/'.$r['slug'],'weekly','0.8',$r['last_updated']);
 
 $capabilitySql="SELECT c.slug,MAX(pc.last_verified_at) last_verified
 FROM capabilities c
