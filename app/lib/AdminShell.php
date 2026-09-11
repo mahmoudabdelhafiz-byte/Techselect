@@ -24,7 +24,7 @@ final class AdminShell {
             'reviews'=>str_contains($path,'review-'),
             'taxonomy'=>str_contains($path,'taxonomy'),
             'seo'=>str_contains($path,'search-console')||str_contains($path,'indexation')||str_contains($path,'seo-quality')||str_contains($path,'long-tail'),
-            'ai_visibility'=>str_contains($path,'ai-referrals'),
+            'ai_visibility'=>str_contains($path,'ai-visibility')||str_contains($path,'ai-referrals'),
             'buyers'=>str_contains($path,'buyer-analytics'),
             'authority'=>str_contains($path,'authority'),
             'users'=>str_contains($path,'admin-users'),
