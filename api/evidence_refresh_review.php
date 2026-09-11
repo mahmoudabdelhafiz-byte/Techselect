@@ -2,6 +2,7 @@
 require_once __DIR__.'/../app/lib/Db.php';
 require_once __DIR__.'/../app/lib/Security.php';
 require_once __DIR__.'/../app/lib/EvidenceFactExtractor.php';
+require_once __DIR__.'/../app/lib/EvidenceFactApplicator.php';
 $config=require __DIR__.'/../app/config.php';
 $pdo=Db::pdo();Security::start();$user=Security::requireRole(['admin','super_admin','data_editor']);
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';$method=$_SERVER['REQUEST_METHOD']??'GET';
@@ -26,6 +27,14 @@ if(preg_match('#^/api/evidence-refresh/proposals/(\d+)/disposition$#',$path,$m)&
   Security::sameOrigin($config);Security::rateLimit($pdo,'evidence-fact-proposal-review',40,300);Security::requireCsrf();$id=(int)$m[1];$b=er_body();$next=(string)($b['status']??'');$notes=trim((string)($b['review_notes']??''));if(!in_array($next,['approved_for_application','rejected'],true)||mb_strlen($notes)>4000)er_out(['error'=>'invalid_disposition'],422);
   $st=$pdo->prepare('SELECT id,status,candidate_id,fact_domain,field_key,previous_value,proposed_value,confidence FROM evidence_fact_proposals WHERE id=? LIMIT 1');$st->execute([$id]);$before=$st->fetch();if(!$before)er_out(['error'=>'proposal_not_found'],404);if($before['status']!=='proposed')er_out(['error'=>'proposal_already_dispositioned'],409);
   $pdo->prepare("UPDATE evidence_fact_proposals SET status=?,reviewed_at=NOW(),reviewed_by_user_id=?,review_notes=? WHERE id=? AND status='proposed'")->execute([$next,(int)$user['id'],$notes!==''?$notes:null,$id]);Security::audit($pdo,(int)$user['id'],'EVIDENCE_FACT_PROPOSAL_DISPOSITION','evidence_fact_proposal',(string)$id,$before,['status'=>$next,'review_notes'=>$notes]);er_out(['updated'=>true,'proposal_id'=>$id,'status'=>$next]);
+}
+if(preg_match('#^/api/evidence-refresh/proposals/(\d+)/apply$#',$path,$m)&&$method==='POST'){
+  Security::sameOrigin($config);Security::rateLimit($pdo,'evidence-fact-application',20,300);Security::requireCsrf();$id=(int)$m[1];$b=er_body();
+  try{$result=EvidenceFactApplicator::apply($pdo,$id,$b,(int)$user['id']);}
+  catch(InvalidArgumentException $e){er_out(['error'=>$e->getMessage()],422);}
+  catch(RuntimeException $e){$code=in_array($e->getMessage(),['proposal_not_approved','proposal_already_applied','proposal_domain_mismatch'],true)?409:404;er_out(['error'=>$e->getMessage()],$code);}
+  catch(Throwable $e){Security::audit($pdo,(int)$user['id'],'EVIDENCE_FACT_APPLICATION_FAILED','evidence_fact_proposal',(string)$id,null,['error'=>substr($e->getMessage(),0,500)]);er_out(['error'=>'application_failed'],500);}
+  Security::audit($pdo,(int)$user['id'],'EVIDENCE_FACT_APPLIED','evidence_fact_proposal',(string)$id,$result['before'],$result);er_out(['applied'=>true,'application'=>$result]);
 }
 if(preg_match('#^/api/evidence-refresh/candidates/(\d+)/disposition$#',$path,$m)&&$method==='PUT'){
   Security::sameOrigin($config);Security::rateLimit($pdo,'evidence-refresh-review',40,300);Security::requireCsrf();$id=(int)$m[1];$b=er_body();$next=(string)($b['status']??'');$notes=trim((string)($b['review_notes']??''));$allowed=['no_material_change','rejected','needs_fact_extraction'];if(!in_array($next,$allowed,true)||mb_strlen($notes)>4000)er_out(['error'=>'invalid_disposition'],422);
