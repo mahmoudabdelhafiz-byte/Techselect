@@ -6,6 +6,10 @@ final class Scoring {
     'third_party_integration'=>0.55,'unknown'=>0.40,'not_yet_verified'=>0.40,
     'not_supported'=>0.00,
   ];
+  private const REGIONAL = [
+    'available'=>1.00,'limited_availability'=>0.65,
+    'not_yet_verified'=>0.40,'not_available'=>0.00,
+  ];
   private const PRIORITY = ['must_have'=>5.0,'important'=>3.0,'nice_to_have'=>1.0];
 
   // Approved TechSelectAI methodology. Fit and evidence confidence remain separate.
@@ -22,6 +26,7 @@ final class Scoring {
   ];
 
   public static function support(string $status): float { return self::SUPPORT[$status] ?? 0.40; }
+  public static function regional(string $status): float { return self::REGIONAL[$status] ?? 0.40; }
   public static function priority(string $priority): float { return self::PRIORITY[$priority] ?? 1.0; }
   public static function weights(): array { return self::WEIGHTS; }
 
