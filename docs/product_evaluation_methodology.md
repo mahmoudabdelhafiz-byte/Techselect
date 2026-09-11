@@ -56,6 +56,20 @@ TechSelectAI should distinguish:
 
 Unknown means not yet verified. It must not be interpreted as unsupported.
 
+## Public presentation
+
+A published evaluation may appear on the public software profile with:
+- the overall TechSelectAI Product Evaluation score;
+- evidence confidence;
+- best-for guidance;
+- dimension-level scores and rationale;
+- linked evidence count;
+- evaluation date;
+- methodology version;
+- limitations where applicable.
+
+If a product has no published evaluation, the software profile remains available without inventing or inferring a score. Draft, proposed, stale, or unapproved evaluations are not shown as published scores.
+
 ## Publication workflow
 
 Product evaluations are versioned and use controlled publication states. The initial workflow is:
