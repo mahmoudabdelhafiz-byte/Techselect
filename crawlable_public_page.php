@@ -1,7 +1,7 @@
 <?php
 /**
  * Final crawlability wrapper for public knowledge pages.
- * Injects canonical/search metadata without changing the underlying page renderer.
+ * Injects canonical/search metadata and public conversion tracking without changing scoring/recommendations.
  */
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 $target=null;
@@ -21,7 +21,6 @@ $canonicalPath=preg_replace('#/+$#','',$path)?:'/';
 if($canonicalPath==='')$canonicalPath='/';
 $canonical=$base.($canonicalPath==='/'?'/':$canonicalPath);
 
-// Remove accidental duplicate canonicals/robots injected by child renderers before adding one authoritative set.
 $html=preg_replace('#<link\s+[^>]*rel=["\']canonical["\'][^>]*>#i','',$html)??$html;
 $meta='<link rel="canonical" href="'.htmlspecialchars($canonical,ENT_QUOTES,'UTF-8').'">'
      .'<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">'
@@ -29,7 +28,10 @@ $meta='<link rel="canonical" href="'.htmlspecialchars($canonical,ENT_QUOTES,'UTF
      .'<meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">';
 $html=str_ireplace('</head>',$meta.'</head>',$html);
 
-// Approved generated decision guides receive inbound links from relevant public knowledge pages.
+// Measure contextual decision-journey CTA exposure/clicks. This analytics layer is separate from ranking/scoring.
+$tracking='<script id="ts-public-conversion-tracking">(()=>{const source='.json_encode($canonicalPath,JSON_UNESCAPED_SLASHES).';const cta=[...document.querySelectorAll("section.cta a.btn, section.cta a[href^=\"/?\"]")][0];if(!cta)return;cta.dataset.tsConversionCta="selection_journey";const send=(eventType)=>{const body=JSON.stringify({event_type:eventType,source_path:source,destination_path:cta.getAttribute("href")||"",cta_id:"selection_journey"});try{if(navigator.sendBeacon){navigator.sendBeacon("/api/public-conversion",new Blob([body],{type:"application/json"}));return;}fetch("/api/public-conversion",{method:"POST",headers:{"Content-Type":"application/json"},body,keepalive:true,credentials:"same-origin"}).catch(()=>{});}catch(e){}};if(!sessionStorage.getItem("ts_cta_seen:"+source)){sessionStorage.setItem("ts_cta_seen:"+source,"1");send("cta_impression");}cta.addEventListener("click",()=>send("cta_click"),{passive:true});})();</script>';
+$html=str_ireplace('</body>',$tracking.'</body>',$html);
+
 try{
     require_once __DIR__.'/app/lib/Db.php';
     require_once __DIR__.'/app/lib/LongTailSeoLinks.php';
