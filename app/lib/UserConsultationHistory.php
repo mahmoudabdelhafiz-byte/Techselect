@@ -1,14 +1,18 @@
 <?php
 final class UserConsultationHistory {
-  public static function create(PDO $pdo, ?array $user, string $businessProblem, string $source='ai_chat'): array {
+  public static function create(PDO $pdo, ?array $user, string $businessProblem, string $source='ai_chat', array $acquisition=[]): array {
     $visitorRaw=bin2hex(random_bytes(24));
     $visitorHash=hash('sha256',$visitorRaw,true);
     $public=bin2hex(random_bytes(24));
     $uid=$user ? (int)$user['id'] : null;
+    $utmSource=self::clean($acquisition['utm_source']??null,190);
+    $utmMedium=self::clean($acquisition['utm_medium']??null,190);
+    $utmCampaign=self::clean($acquisition['utm_campaign']??null,190);
+    $referrer=self::clean($acquisition['referrer']??null,1000);
     $pdo->beginTransaction();
     try {
-      $st=$pdo->prepare("INSERT INTO visitor_sessions(session_token_hash,user_id) VALUES(?,?)");
-      $st->execute([$visitorHash,$uid]);
+      $st=$pdo->prepare("INSERT INTO visitor_sessions(session_token_hash,user_id,utm_source,utm_medium,utm_campaign,referrer) VALUES(?,?,?,?,?,?)");
+      $st->execute([$visitorHash,$uid,$utmSource,$utmMedium,$utmCampaign,$referrer]);
       $visitorId=(int)$pdo->lastInsertId();
       $st=$pdo->prepare("INSERT INTO consultations(public_token,visitor_session_id,user_id,business_problem,original_user_request,consultation_source,status) VALUES(?,?,?,?,?,?,'in_progress')");
       $st->execute([$public,$visitorId,$uid,$businessProblem,$businessProblem,$source]);
@@ -21,6 +25,8 @@ final class UserConsultationHistory {
       throw $e;
     }
   }
+
+  private static function clean($v,int $max):?string{$v=trim((string)$v);return $v===''?null:mb_substr($v,0,$max);}
 
   public static function claim(PDO $pdo, int $userId, string $visitorToken): int {
     if(!preg_match('/^[a-f0-9]{48}$/',$visitorToken)) return 0;
