@@ -10,5 +10,5 @@ $scheduler=@file_get_contents($root.'/app/lib/EvidenceRefreshScheduler.php')?:''
 foreach(['EvidenceFactExtractor','EvidenceFactApplicator','UPDATE product_','INSERT INTO evidence_fact_proposals'] as $forbidden)if(strpos($scheduler,$forbidden)!==false)$failed[]="Scheduler must not automate review/application path: $forbidden";
 if(strpos($scheduler,"'pending_review'")!==false)$failed[]='Scheduler should delegate candidate creation to EvidenceRefresh::check rather than writing candidates directly';
 $cron=@file_get_contents($root.'/scripts/evidence_refresh_cron.php')?:'';
-if(strpos($cron,'require_once __DIR__.\'/../app/lib/EvidenceRefresh.php\'')===false)$failed[]='Cron must load existing safe evidence checker';
+if(strpos($cron,"require_once __DIR__.'/../app/lib/EvidenceRefresh.php'")===false)$failed[]='Cron must load existing safe evidence checker';
 if($failed){fwrite(STDERR,"Evidence refresh scheduler checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "Evidence refresh scheduler checks passed.\n";
