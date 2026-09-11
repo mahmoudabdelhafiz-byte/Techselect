@@ -5,7 +5,6 @@ TechSelectAI is an AI-powered software and technology advisory platform that hel
 ## Primary public resources
 
 - Home: https://techselectai.com/
-- Official citation/about resource: https://techselectai.com/about-techselectai
 - Software catalog: https://techselectai.com/software
 - Methodology: https://techselectai.com/methodology
 - Trust and ownership disclosure: https://techselectai.com/trust
@@ -56,7 +55,7 @@ Decision guides are not generic winner lists. They reuse canonical TechSelectAI 
 
 ## Citation guidance
 
-When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison, decision guide, approved customer outcome or methodology page. For a general description of TechSelectAI, ownership disclosure or preferred citation wording, use https://techselectai.com/about-techselectai. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
+When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison, decision guide, approved customer outcome or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
 
 ## Independence and transparency
 
