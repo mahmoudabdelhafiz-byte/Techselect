@@ -20,5 +20,5 @@ $failed=[];
 foreach($checks as [$file,$needle]){$path=$root.'/'.$file;$text=is_file($path)?file_get_contents($path):false;if($text===false||strpos($text,$needle)===false)$failed[]=$file.' :: '.$needle;}
 // Safety boundary: the public/admin API accepts no caller-provided URL for probing.
 $api=@file_get_contents($root.'/api/indexation_health.php')?:'';
-if(strpos($api,"$b['url']")!==false||strpos($api,'url_required')!==false)$failed[]='api accepts arbitrary probe URL';
+if(strpos($api,"['url']")!==false||strpos($api,'url_required')!==false)$failed[]='api accepts arbitrary probe URL';
 if($failed){fwrite(STDERR,"Indexation health completion contract FAILED\n - ".implode("\n - ",$failed)."\n");exit(1);}echo "Indexation health completion contract OK\n";
