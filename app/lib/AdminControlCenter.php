@@ -27,7 +27,7 @@ final class AdminControlCenter {
             ['key'=>'reviews','label'=>'User Reviews','href'=>'/review-moderation','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'taxonomy','label'=>'Taxonomy','href'=>'/taxonomy-queue','roles'=>['reviewer','data_editor','admin','super_admin']],
             ['key'=>'seo','label'=>'SEO & Indexing','href'=>'/search-console','roles'=>['reviewer','admin','super_admin']],
-            ['key'=>'ai_visibility','label'=>'AI Visibility','href'=>'/ai-referrals','roles'=>['reviewer','admin','super_admin']],
+            ['key'=>'ai_visibility','label'=>'AI Visibility','href'=>'/ai-visibility','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'buyers','label'=>'Buyer Analytics','href'=>'/buyer-analytics','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'authority','label'=>'Authority & Backlinks','href'=>'/authority-admin','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'users','label'=>'Users & Roles','href'=>'/admin-users','roles'=>['admin','super_admin']],
