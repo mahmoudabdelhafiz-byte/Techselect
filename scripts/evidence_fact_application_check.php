@@ -2,7 +2,7 @@
 $root=dirname(__DIR__);
 $checks=[
  'db/mysql/026_evidence_fact_application.sql'=>['CREATE TABLE IF NOT EXISTS evidence_fact_applications','UNIQUE KEY uq_evidence_fact_application_proposal','before_value JSON','after_value JSON','applied_by_user_id'],
- 'app/lib/EvidenceFactApplicator.php'=>['approved_for_application','proposal_already_applied','proposal_domain_mismatch','target_not_found','supported','partially_supported','not_supported','not_yet_verified','product_capability_evidence','evidence_fact_applications','last_reviewed_at','status=\'applied\'','pricing_commercial','product_pricing','ambiguous_pricing_scope','invalid_pricing_scope','source_url','last_verified_at'],
+ 'app/lib/EvidenceFactApplicator.php'=>['approved_for_application','proposal_already_applied','proposal_domain_mismatch','target_not_found','supported','partially_supported','not_supported','not_yet_verified','product_capability_evidence','evidence_fact_applications','last_reviewed_at','status=\'applied\'','pricing_commercial','product_pricing','ambiguous_pricing_scope','invalid_pricing_scope','source_url','last_verified_at','pricing_value_required','invalid_pricing_range'],
  'api/evidence_refresh_review.php'=>['EvidenceFactApplicator','/apply','evidence-fact-application','Security::requireCsrf','Security::sameOrigin','EVIDENCE_FACT_APPLIED','EVIDENCE_FACT_APPLICATION_FAILED'],
  'evidence_refresh_review.js'=>['Human mapping required before canonical application','data-map-domain','data-map-slug','data-map-field','data-map-value','data-apply-proposal','Pricing / commercial','product-level only','/apply'],
  'evidence_refresh_review.php'=>['explicitly map approved facts before any canonical update','application-map']
@@ -17,4 +17,6 @@ if(strpos($svc,"['support_status','confidence_score']")===false)$failed[]='Integ
 if(strpos($svc,"['pricing_model','billing_period','currency','amount_min','amount_max','unit_label','notes']")===false)$failed[]='Pricing field allowlist missing';
 if(strpos($svc,"if($slug!=='product')")===false)$failed[]='Pricing must remain product-level only';
 if(strpos($svc,"if(count($rows)>1)throw new RuntimeException('ambiguous_pricing_scope')")===false)$failed[]='Pricing application must fail closed on ambiguous product-level rows';
+if(strpos($svc,"in_array($field,['pricing_model','billing_period'],true)&&$v===''" )===false)$failed[]='Required pricing text fields must reject empty values';
+if(strpos($svc,"$pricingRow['amount_min']!==null&&$pricingRow['amount_max']!==null")===false)$failed[]='Pricing min/max relationship must be validated';
 if($failed){fwrite(STDERR,"Evidence fact application checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "Evidence fact application checks passed.\n";
