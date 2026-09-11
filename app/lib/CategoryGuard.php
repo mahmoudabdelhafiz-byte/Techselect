@@ -5,7 +5,10 @@ final class CategoryGuard {
     'hrms'=>['hrms','hcm','human resources management','human capital management','hr system','hr software'],
     'itsm'=>['itsm','it service management','service desk','help desk','helpdesk'],
     'erp'=>['erp','enterprise resource planning'],
-    'project-management'=>['project management','project-management','work management','ppm'],
+    'endpoint-security'=>['endpoint security','endpoint protection','edr','endpoint detection and response','antivirus for business','business antivirus'],
+    'backup-disaster-recovery'=>['backup','backup software','disaster recovery','backup and recovery','data protection','cyber recovery','business continuity backup'],
+    'business-intelligence-analytics'=>['business intelligence','bi software','analytics platform','data visualization','dashboard software','reporting software','power bi alternative'],
+    'project-management'=>['project management','project-management','work management','ppm','project portfolio management','task management'],
     'corporate-identity-digital-business-cards'=>['digital business card','digital business cards','corporate identity','employee identity','identity verification','email signature','meeting background','business card platform'],
   ];
 
