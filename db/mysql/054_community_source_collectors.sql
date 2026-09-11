@@ -1,0 +1,77 @@
+-- TechSelectAI compliant Community Intelligence source collectors
+SET NAMES utf8mb4;
+
+CREATE TABLE IF NOT EXISTS public_review_connectors (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,
+  connector_type VARCHAR(40) NOT NULL,
+  source_type VARCHAR(50) NOT NULL,
+  source_name VARCHAR(190) NOT NULL,
+  base_url TEXT NOT NULL,
+  config_json JSON NULL,
+  policy_status VARCHAR(32) NOT NULL DEFAULT 'pending_review',
+  policy_checked_at DATETIME NULL,
+  policy_notes TEXT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'active',
+  interval_minutes INT NOT NULL DEFAULT 1440,
+  last_run_at DATETIME NULL,
+  next_run_at DATETIME NULL,
+  last_error VARCHAR(500) NULL,
+  created_by_user_id BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_prc_due(status,policy_status,next_run_at),
+  KEY idx_prc_product(product_id,status),
+  FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY(created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS public_review_collection_runs (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  connector_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'running',
+  items_seen INT NOT NULL DEFAULT 0,
+  items_new INT NOT NULL DEFAULT 0,
+  items_duplicate INT NOT NULL DEFAULT 0,
+  items_rejected INT NOT NULL DEFAULT 0,
+  response_meta_json JSON NULL,
+  error_code VARCHAR(100) NULL,
+  error_message VARCHAR(500) NULL,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME NULL,
+  KEY idx_prcr_connector(connector_id,started_at),
+  KEY idx_prcr_product(product_id,started_at),
+  FOREIGN KEY(connector_id) REFERENCES public_review_connectors(id) ON DELETE CASCADE,
+  FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS public_review_collected_items (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  connector_id BIGINT UNSIGNED NOT NULL,
+  collection_run_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  source_id BIGINT UNSIGNED NULL,
+  external_id VARCHAR(255) NULL,
+  external_id_hash BINARY(32) NULL,
+  canonical_url TEXT NOT NULL,
+  canonical_url_hash BINARY(32) NOT NULL,
+  title VARCHAR(500) NULL,
+  author_label VARCHAR(190) NULL,
+  source_published_at DATETIME NULL,
+  retrieved_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  content_fingerprint BINARY(32) NOT NULL,
+  analysis_text MEDIUMTEXT NULL,
+  processing_status VARCHAR(32) NOT NULL DEFAULT 'pending_analysis',
+  exclusion_reason VARCHAR(190) NULL,
+  analyzed_at DATETIME NULL,
+  purge_after DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_prci_connector_content(connector_id,content_fingerprint),
+  KEY idx_prci_pending(product_id,processing_status,retrieved_at),
+  KEY idx_prci_url(canonical_url_hash),
+  FOREIGN KEY(connector_id) REFERENCES public_review_connectors(id) ON DELETE CASCADE,
+  FOREIGN KEY(collection_run_id) REFERENCES public_review_collection_runs(id) ON DELETE CASCADE,
+  FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY(source_id) REFERENCES public_review_sources(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
