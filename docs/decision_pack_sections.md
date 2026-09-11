@@ -1,0 +1,1 @@
+Executive summary; business need/objectives; confirmed requirements; market scan; methodology; weighted decision matrix; shortlist/recommendation; preferred software rationale; verified partners; risks/assumptions; ROI/TCO; business case; RFP reference; final recommendation.
