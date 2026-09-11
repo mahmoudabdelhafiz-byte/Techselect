@@ -48,15 +48,20 @@ final class AuthorityCampaigns {
   public static function recordEvent(PDO $pdo,int $targetId,array $b,int $actor):array{
     $type=(string)($b['event_type']??'note');if(!in_array($type,self::EVENTS,true))throw new InvalidArgumentException('invalid_event_type');
     $channel=trim((string)($b['channel']??''));if($channel!==''&&!in_array($channel,self::CHANNELS,true))throw new InvalidArgumentException('invalid_channel');
-    $st=$pdo->prepare("SELECT t.*,a.id source_id FROM authority_campaign_targets t JOIN authority_sources a ON a.id=t.authority_source_id WHERE t.id=?");$st->execute([$targetId]);$t=$st->fetch();if(!$t)throw new InvalidArgumentException('campaign_target_not_found');
+    $external=self::urlOrNull($b['external_reference']??null);
+    $st=$pdo->prepare("SELECT t.*,a.id source_id,a.source_type,a.mention_requires_approval,a.mention_approved,a.published_url FROM authority_campaign_targets t JOIN authority_sources a ON a.id=t.authority_source_id WHERE t.id=?");$st->execute([$targetId]);$t=$st->fetch();if(!$t)throw new InvalidArgumentException('campaign_target_not_found');
+    if($type==='backlink_verified'){
+      if($external===null&&empty($t['published_url']))throw new InvalidArgumentException('published_url_required_for_backlink_verification');
+      if(!empty($t['mention_requires_approval'])&&empty($t['mention_approved']))throw new InvalidArgumentException('mention_approval_required_before_backlink_verification');
+    }
     $pdo->beginTransaction();
     try{
       $ins=$pdo->prepare("INSERT INTO authority_outreach_events(campaign_target_id,event_type,channel,occurred_at,subject,notes,external_reference,actor_user_id) VALUES(?,?,?,?,?,?,?,?)");
-      $ins->execute([$targetId,$type,$channel!==''?$channel:null,self::dateOrNull($b['occurred_at']??null)?:date('Y-m-d H:i:s'),self::nullable($b['subject']??null,255),self::nullable($b['notes']??null,4000),self::urlOrNull($b['external_reference']??null),$actor]);
+      $ins->execute([$targetId,$type,$channel!==''?$channel:null,self::dateOrNull($b['occurred_at']??null)?:date('Y-m-d H:i:s'),self::nullable($b['subject']??null,255),self::nullable($b['notes']??null,4000),$external,$actor]);
       $status=self::statusForEvent($type);
       if($status){$pdo->prepare("UPDATE authority_campaign_targets SET status=?,next_action_at=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")->execute([$status,self::dateOrNull($b['next_action_at']??null),$targetId]);}
       if(in_array($type,['contacted','follow_up','accepted','declined','published'],true))$pdo->prepare("UPDATE authority_sources SET outreach_status=?,updated_by=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")->execute([$type,$actor,$t['source_id']]);
-      if($type==='backlink_verified')$pdo->prepare("UPDATE authority_sources SET backlink_status='active',first_verified_at=COALESCE(first_verified_at,NOW()),last_checked_at=NOW(),updated_by=? WHERE id=?")->execute([$actor,$t['source_id']]);
+      if($type==='backlink_verified'){$published=$external?:$t['published_url'];$pdo->prepare("UPDATE authority_sources SET outreach_status='published',backlink_status='active',published_url=?,first_verified_at=COALESCE(first_verified_at,NOW()),last_checked_at=NOW(),updated_by=? WHERE id=?")->execute([$published,$actor,$t['source_id']]);}
       if($type==='backlink_lost')$pdo->prepare("UPDATE authority_sources SET backlink_status='lost',last_checked_at=NOW(),updated_by=? WHERE id=?")->execute([$actor,$t['source_id']]);
       $pdo->commit();
     }catch(Throwable $e){$pdo->rollBack();throw $e;}
