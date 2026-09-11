@@ -18,5 +18,5 @@ if(strpos($svc,"['pricing_model','billing_period','currency','amount_min','amoun
 if(strpos($svc,"if($slug!=='product')")===false)$failed[]='Pricing must remain product-level only';
 if(strpos($svc,"if(count($rows)>1)throw new RuntimeException('ambiguous_pricing_scope')")===false)$failed[]='Pricing application must fail closed on ambiguous product-level rows';
 if(strpos($svc,"in_array($field,['pricing_model','billing_period'],true)&&$v===''" )===false)$failed[]='Required pricing text fields must reject empty values';
-if(strpos($svc,"$pricingRow['amount_min']!==null&&$pricingRow['amount_max']!==null")===false)$failed[]='Pricing min/max relationship must be validated';
+if(strpos($svc,'$pricingRow[\'amount_min\']!==null&&$pricingRow[\'amount_max\']!==null')===false)$failed[]='Pricing min/max relationship must be validated';
 if($failed){fwrite(STDERR,"Evidence fact application checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "Evidence fact application checks passed.\n";
