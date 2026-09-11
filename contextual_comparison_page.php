@@ -1,0 +1,29 @@
+<?php
+$path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
+if(!preg_match('#^/compare/([a-z0-9-]+)-vs-([a-z0-9-]+)/?$#',$path,$m)){http_response_code(404);exit('Not found');}
+ob_start();require __DIR__.'/customer_outcome_links_page.php';$html=ob_get_clean();
+if(stripos($html,'<html')===false){echo $html;return;}
+try{
+  require_once __DIR__.'/app/lib/Db.php';
+  require_once __DIR__.'/app/lib/ContextualComparison.php';
+  $ctx=ContextualComparison::allowedContext($_GET);
+  $cmp=ContextualComparison::compare(Db::pdo(),[$m[1],$m[2]],$ctx);
+  $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+  $checked=static fn($v)=>$v?' checked':'';
+  $form='<section class="ctx-compare" id="context-fit" data-citation-section="context-fit"><div class="eyebrow">Contextual Fit</div><h2>Which product fits this buyer context?</h2><p class="ctx-note">Adjust the context below. Context Fit is calculated from the same published TechSelectAI evaluation signals and scoring methodology; it does not replace verified product facts or the saved project Decision Matrix.</p><form method="get" class="ctx-form"><label>Company size<select name="company_size"><option value="small"'.($ctx['company_size']==='small'?' selected':'').'>Small</option><option value="mid"'.($ctx['company_size']==='mid'?' selected':'').'>Mid-market</option><option value="enterprise"'.($ctx['company_size']==='enterprise'?' selected':'').'>Enterprise</option></select></label><label>Industry<input name="industry" value="'.$esc($ctx['industry']).'" placeholder="e.g. Logistics"></label><label>Geography<input name="geography" value="'.$esc($ctx['geography']).'" placeholder="e.g. KSA"></label><label>Primary use case<input name="use_case" value="'.$esc($ctx['use_case']).'" placeholder="What are you trying to solve?"></label><label>Implementation capacity<select name="implementation_capacity"><option value="low"'.($ctx['implementation_capacity']==='low'?' selected':'').'>Low</option><option value="medium"'.($ctx['implementation_capacity']==='medium'?' selected':'').'>Medium</option><option value="high"'.($ctx['implementation_capacity']==='high'?' selected':'').'>High</option></select></label><label class="ctx-check"><input type="checkbox" name="integration_priority" value="1"'.$checked($ctx['integration_priority']).'> Integration is critical</label><label class="ctx-check"><input type="checkbox" name="security_priority" value="1"'.$checked($ctx['security_priority']).'> Security/compliance is critical</label><label class="ctx-check"><input type="checkbox" name="budget_priority" value="1"'.$checked($ctx['budget_priority']).'> Budget sensitivity is high</label><button type="submit">Recalculate fit</button></form>';
+  if($cmp['results']){
+    $form.='<div class="ctx-results">';
+    foreach($cmp['results'] as $i=>$r){
+      $form.='<article class="ctx-card"><div class="ctx-rank">'.($i+1).'</div><div><h3>'.$esc($r['product']['name']).'</h3><div class="ctx-score">'.number_format((float)$r['fit_score'],0).'% <span>context fit</span></div>';
+      if($r['reasons']){$form.='<h4>Why</h4><ul>';foreach(array_slice($r['reasons'],0,4) as $x)$form.='<li>'.$esc($x).'</li>';$form.='</ul>';}
+      if($r['tradeoffs']){$form.='<h4>Trade-offs</h4><ul>';foreach($r['tradeoffs'] as $x)$form.='<li>'.$esc($x).'</li>';$form.='</ul>';}
+      $form.='<p class="ctx-meta">Scoring '.$esc($cmp['scoring_version']).($r['evaluation']?' · Product Evaluation '.$esc($r['evaluation']['methodology_version']).' · '.intval($r['evaluation']['evidence_count']).' linked evidence items':' · Published Product Evaluation not available').'. <a href="/software/'.$esc($r['product']['slug']).'">Review product evidence</a>.</p></div></article>';
+    }
+    $form.='</div>';
+  }
+  $form.='<p class="ctx-note"><strong>What could change this recommendation?</strong> Confirmed requirements, must-have failures, exact integrations, regional availability, pricing, security requirements, and implementation capacity can materially change fit. For a saved, reproducible decision with custom weights, use a <a href="/selection-projects">Selection Project</a>.</p></section>';
+  $css='<style id="contextual-comparison-style">.ctx-compare{margin:30px 0;padding:24px;border:1px solid #d7e5ee;border-radius:16px;background:#f8fbfd}.ctx-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0}.ctx-form label{font-size:12px;font-weight:700;color:#475569}.ctx-form input,.ctx-form select{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid #cbd5e1;border-radius:9px;background:#fff}.ctx-check{display:flex;gap:7px;align-items:center;font-weight:600!important}.ctx-check input{width:auto;margin:0}.ctx-form button{padding:10px 14px;border:0;border-radius:9px;background:#123b67;color:#fff;font-weight:750;cursor:pointer}.ctx-results{display:grid;gap:14px;margin-top:20px}.ctx-card{display:grid;grid-template-columns:42px 1fr;gap:14px;padding:17px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}.ctx-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eaf2f8;color:#123b67;font-weight:800}.ctx-card h3{margin:0}.ctx-score{font-size:30px;font-weight:850;color:#123b67}.ctx-score span{font-size:12px;color:#64748b}.ctx-card h4{margin:12px 0 4px;font-size:13px}.ctx-card ul{margin:0;padding-left:18px;color:#536174}.ctx-note,.ctx-meta{color:#64748b;font-size:12px;line-height:1.55}.ctx-meta{margin-top:12px}@media(max-width:560px){.ctx-compare{padding:18px}.ctx-card{grid-template-columns:1fr}.ctx-rank{display:none}}</style>';
+  $html=str_ireplace('</head>',$css.'</head>',$html);
+  $html=preg_replace('#<section class="cta">#',$form.'<section class="cta">',$html,1)??$html;
+}catch(Throwable $e){}
+echo $html;
