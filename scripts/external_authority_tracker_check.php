@@ -11,5 +11,5 @@ $failed=[];
 foreach($checks as $file=>$needles){$text=@file_get_contents($root.'/'.$file)?:'';foreach($needles as $needle){if(strpos($text,$needle)===false)$failed[]="$file missing $needle";}}
 $service=@file_get_contents($root.'/app/lib/AuthoritySources.php')?:'';
 foreach(['curl_exec','file_get_contents($publishedUrl','mail(','wp_remote_post','INSERT INTO ai_referral_events'] as $forbidden){if(strpos($service,$forbidden)!==false)$failed[]="Authority tracker must not automate outreach/link creation or fake referral events: $forbidden";}
-if(strpos($service,"$backlink==='active'&&$publishedUrl===null")!==false)$failed[]='Regression guard string interpolation error';
+foreach(["\$backlink==='active'&&\$publishedUrl===null","\$requires&&!\$approved&&(\$backlink==='active'||\$outreach==='published')"] as $required){if(strpos($service,$required)===false)$failed[]="Authority tracker missing publication safeguard: $required";}
 if($failed){fwrite(STDERR,"External authority tracker checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "External authority tracker checks passed.\n";
