@@ -1,7 +1,8 @@
 <?php
 final class EvidenceFactApplicator{
   private const SUPPORT_STATUSES=['supported','partially_supported','not_supported','not_yet_verified'];
-  private const DOMAINS=['capability','integration','deployment','pricing','compliance'];
+  private const REGIONAL_STATUSES=['available','limited_availability','not_available','not_yet_verified'];
+  private const DOMAINS=['capability','integration','deployment','pricing','compliance','regional'];
 
   public static function apply(PDO $pdo,int $proposalId,array $mapping,int $actorUserId):array{
     $domain=trim((string)($mapping['target_domain']??''));
@@ -13,6 +14,11 @@ final class EvidenceFactApplicator{
     if($domain==='pricing'){
       if($slug!=='product')throw new InvalidArgumentException('invalid_pricing_scope');
       $allowedFields=['pricing_model','billing_period','currency','amount_min','amount_max','unit_label','notes'];
+    }elseif($domain==='regional'){
+      $countryCode=strtoupper($slug);
+      if(!preg_match('/^[A-Z]{2}$/',$countryCode))throw new InvalidArgumentException('invalid_country_code');
+      $slug=strtolower($countryCode);
+      $allowedFields=['availability_status','confidence_score','availability_notes'];
     }else{
       if(!preg_match('/^[a-z0-9][a-z0-9-]{0,189}$/',$slug))throw new InvalidArgumentException('invalid_target_slug');
       if($domain==='capability')$allowedFields=['support_status','confidence_score','limitations'];
@@ -63,6 +69,14 @@ final class EvidenceFactApplicator{
         $sql="UPDATE product_compliance SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
         $q=$pdo->prepare('SELECT id,support_status,confidence_score,scope_notes,source_url,last_verified_at FROM product_compliance WHERE id=?');$q->execute([$targetId]);$after=self::complianceSnapshot($q->fetch());
+      }elseif($domain==='regional'){
+        $countryCode=strtoupper($slug);$s=$pdo->prepare('SELECT id FROM countries WHERE code=? LIMIT 1');$s->execute([$countryCode]);$countryId=$s->fetchColumn();if(!$countryId)throw new RuntimeException('target_not_found');
+        $q=$pdo->prepare('SELECT id,availability_status,confidence_score,availability_notes,source_url,last_verified_at FROM product_regional_availability WHERE product_id=? AND country_id=? FOR UPDATE');$q->execute([$productId,(int)$countryId]);$row=$q->fetch();
+        if(!$row){$pdo->prepare("INSERT INTO product_regional_availability(product_id,country_id,availability_status,confidence_score,source_url,last_verified_at) VALUES(?,?,'not_yet_verified',0,?,NOW())")->execute([$productId,(int)$countryId,$proposal['source_url']?:null]);$targetId=(int)$pdo->lastInsertId();$row=['id'=>$targetId,'availability_status'=>'not_yet_verified','confidence_score'=>0,'availability_notes'=>null,'source_url'=>$proposal['source_url']?:null,'last_verified_at'=>null];}else{$targetId=(int)$row['id'];}
+        $before=self::regionalSnapshot($row);
+        $sql="UPDATE product_regional_availability SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
+        $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
+        $q=$pdo->prepare('SELECT id,availability_status,confidence_score,availability_notes,source_url,last_verified_at FROM product_regional_availability WHERE id=?');$q->execute([$targetId]);$after=self::regionalSnapshot($q->fetch());
       }else{
         $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE product_id=? AND edition_id IS NULL ORDER BY id FOR UPDATE');
         $q->execute([$productId]);$rows=$q->fetchAll();
@@ -91,12 +105,14 @@ final class EvidenceFactApplicator{
       if($field==='currency'){if($v==='')return null;$v=strtoupper($v);if(!preg_match('/^[A-Z]{3}$/',$v))throw new InvalidArgumentException('invalid_currency');return $v;}
       $limit=$field==='notes'?8000:($field==='unit_label'?100:40);if(mb_strlen($v)>$limit)throw new InvalidArgumentException('pricing_value_too_long');return $v!==''?$v:null;
     }
+    if($domain==='regional'&&$field==='availability_status'){$v=trim((string)$value);if(!in_array($v,self::REGIONAL_STATUSES,true))throw new InvalidArgumentException('invalid_availability_status');return $v;}
     if($field==='support_status'){$v=trim((string)$value);if(!in_array($v,self::SUPPORT_STATUSES,true))throw new InvalidArgumentException('invalid_support_status');return $v;}
     if($field==='confidence_score'){if(!is_numeric($value))throw new InvalidArgumentException('invalid_confidence_score');$v=(float)$value;if($v<0||$v>1)throw new InvalidArgumentException('invalid_confidence_score');return round($v,3);}
-    $v=trim((string)$value);if(mb_strlen($v)>8000)throw new InvalidArgumentException($domain==='compliance'?'scope_notes_too_long':'limitations_too_long');return $v!==''?$v:null;
+    $v=trim((string)$value);if(mb_strlen($v)>8000)throw new InvalidArgumentException($domain==='compliance'?'scope_notes_too_long':($domain==='regional'?'availability_notes_too_long':'limitations_too_long'));return $v!==''?$v:null;
   }
 
   private static function pricingSnapshot(array $row):array{return ['pricing_model'=>$row['pricing_model'],'billing_period'=>$row['billing_period'],'currency'=>$row['currency'],'amount_min'=>$row['amount_min']===null?null:(float)$row['amount_min'],'amount_max'=>$row['amount_max']===null?null:(float)$row['amount_max'],'unit_label'=>$row['unit_label'],'notes'=>$row['notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];}
   private static function complianceSnapshot(array $row):array{return ['support_status'=>$row['support_status'],'confidence_score'=>(float)$row['confidence_score'],'scope_notes'=>$row['scope_notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];}
-  private static function domainCompatible(string $proposalDomain,string $targetDomain,string $field):bool{if($proposalDomain==='pricing_commercial'&&$targetDomain==='pricing')return true;if($proposalDomain===$targetDomain)return true;return $proposalDomain==='limitation'&&$targetDomain==='capability'&&$field==='limitations';}
+  private static function regionalSnapshot(array $row):array{return ['availability_status'=>$row['availability_status'],'confidence_score'=>(float)$row['confidence_score'],'availability_notes'=>$row['availability_notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];}
+  private static function domainCompatible(string $proposalDomain,string $targetDomain,string $field):bool{if($proposalDomain==='pricing_commercial'&&$targetDomain==='pricing')return true;if($proposalDomain==='regional_availability'&&$targetDomain==='regional')return true;if($proposalDomain===$targetDomain)return true;return $proposalDomain==='limitation'&&$targetDomain==='capability'&&$field==='limitations';}
 }
