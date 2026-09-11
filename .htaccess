@@ -15,6 +15,10 @@ RewriteRule ^ https://techselectai.com%{REQUEST_URI} [R=301,L,NE]
 RewriteRule ^(?:app|db|docs|scripts)/ - [F,L]
 RewriteRule ^(?:\.env|README\.md) - [F,L]
 RewriteRule ^favicon\.ico$ favicon.svg [L]
+
+# Unified admin shell. Existing specialist renderers remain intact behind this wrapper.
+RewriteRule ^(?:admin|evidence-refresh|evidence-inbox|evaluation-control|community-intelligence-admin|software-submission-admin|vendor-relationship-claims-admin|vendor-self-service-admin|indexation-health|search-console|seo-quality-gates|long-tail-seo|customer-outcomes-admin|authority-admin|review-moderation|review-rewards|taxonomy-queue|pri-source-policy|buyer-analytics|ai-referrals)/?$ admin_shell_page.php [QSA,L]
+
 RewriteRule ^resume-consultation/[a-f0-9]{48}/?$ resume_consultation.php [QSA,L]
 RewriteRule ^account-settings/?$ account_settings.php [QSA,L]
 RewriteRule ^my-business-cases/?$ my_business_cases.php [QSA,L]
