@@ -11,16 +11,16 @@ final class PartnerDiscovery {
         'other_verified_partner'=>'Other verified partner',
     ];
 
-    public static function find(PDO $pdo,int $productId,string $countryCode='',array $serviceTypes=[]): array {
-        $countryCode=strtoupper(trim($countryCode));
+    public static function find(PDO $pdo,int $productId,string $countryCode='',array $serviceTypes=[],string $city=''): array {
+        $countryCode=strtoupper(trim($countryCode));$city=trim($city);
         $allowed=array_keys(self::SERVICE_TYPES);
         $serviceTypes=array_values(array_intersect($allowed,$serviceTypes));
         $rows=VendorPortfolio::partnersForProduct($pdo,$productId,null);
         $matches=[];
         foreach($rows as $row){
             if($serviceTypes && !in_array($row['relationship_type'],$serviceTypes,true))continue;
-            $tier=self::matchTier($row['territories']??[],$countryCode);
-            if($countryCode!=='' && $tier===null)continue;
+            $tier=self::matchTier($row['territories']??[],$countryCode,$city);
+            if(($countryCode!==''||$city!=='') && $tier===null)continue;
             $row['match_tier']=$tier??'unscoped';
             $row['match_label']=self::tierLabel($row['match_tier']);
             $row['freshness']=self::freshness($row);
@@ -28,7 +28,7 @@ final class PartnerDiscovery {
             $matches[]=$row;
         }
         usort($matches,static function($a,$b){
-            $tier=['exact'=>0,'regional'=>1,'global'=>2,'unscoped'=>3];
+            $tier=['city'=>0,'exact'=>1,'regional'=>2,'global'=>3,'unscoped'=>4];
             $ta=$tier[$a['match_tier']]??9;$tb=$tier[$b['match_tier']]??9;
             if($ta!==$tb)return $ta<=>$tb;
             if($a['provider_score']!==$b['provider_score'])return $b['provider_score']<=>$a['provider_score'];
@@ -37,23 +37,24 @@ final class PartnerDiscovery {
         return $matches;
     }
 
-    public static function matchTier(array $territories,string $countryCode): ?string {
-        $countryCode=strtoupper(trim($countryCode));
-        if($countryCode==='')return 'unscoped';
-        $regional=[];$global=false;
+    public static function matchTier(array $territories,string $countryCode,string $city=''): ?string {
+        $countryCode=strtoupper(trim($countryCode));$city=mb_strtolower(trim($city),'UTF-8');
+        $regional=[];$global=false;$country=false;
         foreach($territories as $t){
-            $code=strtoupper((string)($t['territory_code']??''));
-            if($code===$countryCode)return 'exact';
+            $code=strtoupper((string)($t['territory_code']??''));$type=strtolower((string)($t['territory_type']??''));$name=mb_strtolower(trim((string)($t['territory_name']??'')),'UTF-8');
+            if($city!==''&&$type==='city'&&($name===$city||mb_strtolower($code,'UTF-8')===$city))return 'city';
+            if($countryCode!==''&&$code===$countryCode)$country=true;
             if($code==='GLOBAL')$global=true;
             if($code==='GCC'&&in_array($countryCode,['SA','AE','BH','KW','OM','QA'],true))$regional[]='GCC';
             if($code==='MENA'&&in_array($countryCode,['SA','AE','BH','KW','OM','QA','EG','JO','LB','MA','TN','DZ','IQ'],true))$regional[]='MENA';
         }
+        if($country)return 'exact';
         if($regional)return 'regional';
         return $global?'global':null;
     }
 
     public static function tierLabel(string $tier): string {
-        return ['exact'=>'Exact country match','regional'=>'Regional coverage','global'=>'Global / remote coverage','unscoped'=>'Verified relationship'][$tier]??'Verified relationship';
+        return ['city'=>'Exact city match','exact'=>'Exact country match','regional'=>'Regional coverage','global'=>'Global / remote coverage','unscoped'=>'Verified relationship'][$tier]??'Verified relationship';
     }
 
     private static function providerScore(array $row): int {
