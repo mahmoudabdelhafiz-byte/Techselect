@@ -11,6 +11,7 @@ add_url($urls,'/','weekly','1.0');
 add_url($urls,'/software','daily','0.9');
 add_url($urls,'/trust','monthly','0.7');
 add_url($urls,'/methodology','monthly','0.6');
+add_url($urls,'/case-studies','weekly','0.8');
 add_url($urls,'/guides/crm-saudi-arabia','weekly','0.8');
 add_url($urls,'/guides/salesforce-vs-dynamics-enterprise','weekly','0.8');
 add_url($urls,'/guides/cloud-vs-self-hosted-crm','weekly','0.8');
@@ -79,6 +80,14 @@ if(count($indexableProducts)>=2){
     add_url($urls,'/compare/'.implode('-vs-',$pair),'weekly','0.7');
   }
 }
+
+try{
+  $caseSql="SELECT slug,updated_at FROM customer_outcomes
+    WHERE verification_status='verified' AND publication_status='published'
+      AND approved_by IS NOT NULL AND approved_at IS NOT NULL AND published_at IS NOT NULL
+    ORDER BY slug";
+  foreach($pdo->query($caseSql) as $r)add_url($urls,'/case-studies/'.$r['slug'],'monthly','0.7',$r['updated_at']);
+}catch(Throwable $e){}
 
 echo '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 foreach($urls as $u){
