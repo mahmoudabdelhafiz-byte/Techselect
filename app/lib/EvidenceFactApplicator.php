@@ -65,7 +65,9 @@ final class EvidenceFactApplicator{
         $before=self::pricingSnapshot($row);
         $sql="UPDATE product_pricing SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
-        $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE id=?');$q->execute([$targetId]);$after=self::pricingSnapshot($q->fetch());
+        $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE id=?');$q->execute([$targetId]);$pricingRow=$q->fetch();
+        if($pricingRow['amount_min']!==null&&$pricingRow['amount_max']!==null&&(float)$pricingRow['amount_min']>(float)$pricingRow['amount_max'])throw new InvalidArgumentException('invalid_pricing_range');
+        $after=self::pricingSnapshot($pricingRow);
       }
 
       $ins=$pdo->prepare('INSERT INTO evidence_fact_applications(proposal_id,candidate_id,product_id,evidence_source_id,target_domain,target_slug,target_field,before_value,after_value,application_notes,applied_by_user_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
@@ -85,6 +87,7 @@ final class EvidenceFactApplicator{
         return round((float)$value,2);
       }
       $v=trim((string)$value);
+      if(in_array($field,['pricing_model','billing_period'],true)&&$v==='')throw new InvalidArgumentException('pricing_value_required');
       if($field==='currency'){
         if($v==='')return null;
         $v=strtoupper($v);if(!preg_match('/^[A-Z]{3}$/',$v))throw new InvalidArgumentException('invalid_currency');return $v;
