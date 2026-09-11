@@ -31,6 +31,9 @@ Decision guides include:
 - Cloud vs Self-Hosted CRM: https://techselectai.com/guides/cloud-vs-self-hosted-crm
 - HRMS & HCM for Arabic-Speaking and MENA Organizations: https://techselectai.com/guides/hrms-arabic-mena
 - ITSM Software for Multi-Site Enterprise Operations: https://techselectai.com/guides/itsm-multi-site-enterprise
+- CRM Software for Egyptian B2B Companies: https://techselectai.com/guides/crm-egypt-b2b
+- ERP Software for UAE Mid-Market and Enterprise Organizations: https://techselectai.com/guides/erp-uae-enterprise
+- Project Management Software for Construction and Engineering Teams in MENA: https://techselectai.com/guides/project-management-construction-mena
 
 Decision guides are not generic winner lists. They reuse canonical TechSelectAI product facts and explicitly disclose when regional, commercial, deployment, language or other evidence is incomplete.
 
