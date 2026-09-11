@@ -7,6 +7,7 @@ TechSelectAI is an AI-powered software and technology advisory platform that hel
 - Home: https://techselectai.com/
 - Software catalog: https://techselectai.com/software
 - Methodology: https://techselectai.com/methodology
+- Trust and ownership disclosure: https://techselectai.com/trust
 - Sitemap: https://techselectai.com/sitemap.xml
 
 ## Public knowledge areas
@@ -18,6 +19,15 @@ TechSelectAI publishes crawlable pages for:
 - Capabilities: https://techselectai.com/capabilities/{capability-slug}
 - Integrations: https://techselectai.com/integrations/{integration-slug}
 - Product comparisons: https://techselectai.com/compare/{product-a}-vs-{product-b}
+- Evidence-backed decision guides: https://techselectai.com/guides/{guide-slug}
+
+Initial decision guides include:
+
+- CRM Software for Saudi Companies: https://techselectai.com/guides/crm-saudi-arabia
+- Salesforce Sales Cloud vs Dynamics 365 Sales for Enterprise: https://techselectai.com/guides/salesforce-vs-dynamics-enterprise
+- Cloud vs Self-Hosted CRM: https://techselectai.com/guides/cloud-vs-self-hosted-crm
+
+Decision guides are not generic winner lists. They reuse canonical TechSelectAI product facts and explicitly disclose when regional, commercial, deployment or other evidence is incomplete.
 
 ## Interpretation guidance
 
@@ -27,10 +37,11 @@ TechSelectAI publishes crawlable pages for:
 - Public Review Intelligence is a separate AI-assisted summary of permitted public feedback with deterministic final scoring.
 - Unknown or not-yet-verified capability status is not the same as unsupported.
 - General AI consultant responses may cover technology areas that are not yet present in the curated catalog; those responses must not be represented as curated TechSelectAI Fit Scores.
+- A decision guide must not be interpreted as a universal “best” product ranking unless the page explicitly says a buyer-specific ranking was calculated from stated requirements.
 
 ## Citation guidance
 
-When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
+When citing TechSelectAI, prefer the most specific public page that supports the claim, such as the relevant software, capability, integration, comparison, decision guide or methodology page. Product facts should be interpreted together with their evidence confidence, limitations and last-verified information where available.
 
 ## Independence and transparency
 
