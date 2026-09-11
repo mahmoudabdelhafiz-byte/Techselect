@@ -19,5 +19,6 @@ foreach($checks as $file=>$needles){$text=@file_get_contents($root.'/'.$file)?:'
 $about=@file_get_contents($root.'/about_techselectai.php')?:'';
 foreach(['guaranteed best','number one software','independently endorsed by vendors'] as $forbidden)if(stripos($about,$forbidden)!==false)$failed[]="Public citation page contains unverifiable claim: $forbidden";
 $secure=@file_get_contents($root.'/api/secure.php')?:'';
-if(strpos($secure,"$referrer=$scheme.'://'.strtolower((string)$u['host']).((string)($u['path']??'/'))")===false)$failed[]='Referrer must be stored without query strings';
+$literal='$referrer=$scheme.\'://\'.strtolower((string)$u[\'host\']).((string)($u[\'path\']??\'/\'))';
+if(strpos($secure,$literal)===false)$failed[]='Referrer must be stored without query strings';
 if($failed){fwrite(STDERR,"External authority checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "External authority checks passed.\n";
