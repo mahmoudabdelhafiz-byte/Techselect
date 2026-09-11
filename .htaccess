@@ -17,7 +17,7 @@ RewriteRule ^(?:\.env|README\.md) - [F,L]
 RewriteRule ^favicon\.ico$ favicon.svg [L]
 
 # Unified admin shell. Existing specialist renderers remain intact behind this wrapper.
-RewriteRule ^(?:admin|evidence-refresh|evidence-inbox|evaluation-control|community-intelligence-admin|software-submission-admin|vendor-relationship-claims-admin|vendor-self-service-admin|indexation-health|search-console|seo-quality-gates|long-tail-seo|customer-outcomes-admin|authority-admin|review-moderation|review-rewards|taxonomy-queue|pri-source-policy|buyer-analytics|ai-referrals)/?$ admin_shell_page.php [QSA,L]
+RewriteRule ^(?:admin|software-management|evidence-refresh|evidence-inbox|evaluation-control|community-intelligence-admin|software-submission-admin|vendor-relationship-claims-admin|vendor-self-service-admin|indexation-health|search-console|seo-quality-gates|long-tail-seo|customer-outcomes-admin|authority-admin|review-moderation|review-rewards|taxonomy-queue|pri-source-policy|buyer-analytics|ai-referrals)/?$ admin_shell_page.php [QSA,L]
 
 RewriteRule ^resume-consultation/[a-f0-9]{48}/?$ resume_consultation.php [QSA,L]
 RewriteRule ^account-settings/?$ account_settings.php [QSA,L]
@@ -90,6 +90,7 @@ RewriteRule ^api/indexation-health(?:/.*)?$ api/indexation_health.php [QSA,L]
 RewriteRule ^api/search-console(?:/.*)?$ api/search_console.php [QSA,L]
 RewriteRule ^api/seo-quality-gates(?:/.*)?$ api/seo_quality_gates.php [QSA,L]
 RewriteRule ^api/long-tail-seo(?:/.*)?$ api/long_tail_seo.php [QSA,L]
+RewriteRule ^api/software-management(?:/.*)?$ api/software_management.php [QSA,L]
 RewriteRule ^api/selection-projects/[0-9]+/(?:matrix|matrix-export|shortlist/[0-9]+)/?$ api/project_matrix.php [QSA,L]
 RewriteRule ^api/selection-projects(?:/.*)?$ api/selection_projects.php [QSA,L]
 RewriteRule ^api/evidence-refresh(?:/.*)?$ api/evidence_refresh_review.php [QSA,L]
