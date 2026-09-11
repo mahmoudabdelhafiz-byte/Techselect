@@ -30,9 +30,9 @@ final class AdminControlCenter {
             ['key'=>'ai_visibility','label'=>'AI Visibility','href'=>'/ai-referrals','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'buyers','label'=>'Buyer Analytics','href'=>'/buyer-analytics','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'authority','label'=>'Authority & Backlinks','href'=>'/authority-admin','roles'=>['reviewer','admin','super_admin']],
-            ['key'=>'users','label'=>'Users & Roles','href'=>'/admin#users-roles','roles'=>['admin','super_admin']],
-            ['key'=>'audit','label'=>'Audit Log','href'=>'/admin#audit-log','roles'=>['admin','super_admin']],
-            ['key'=>'health','label'=>'System Health','href'=>'/admin#system-health','roles'=>['admin','super_admin']],
+            ['key'=>'users','label'=>'Users & Roles','href'=>'/admin-users','roles'=>['admin','super_admin']],
+            ['key'=>'audit','label'=>'Audit Log','href'=>'/admin-audit','roles'=>['admin','super_admin']],
+            ['key'=>'health','label'=>'System Health','href'=>'/health','roles'=>['admin','super_admin']],
         ];return array_values(array_filter($all,fn($x)=>in_array($role,$x['roles'],true)));
     }
     private static function metric(PDO $pdo,string $label,string $sql,string $href,string $hint): array {try{$value=(int)$pdo->query($sql)->fetchColumn();}catch(Throwable $e){$value=null;}return ['label'=>$label,'value'=>$value,'href'=>$href,'hint'=>$hint];}

@@ -17,7 +17,7 @@ final class AdminShell {
     private static function active(string $path,string $key): bool {
         return match($key){
             'overview'=>$path==='/admin'||$path==='/admin/'||$path==='/admin.php',
-            'software'=>false,
+            'software'=>str_contains($path,'software-management'),
             'evidence'=>str_contains($path,'evidence'),
             'evaluations'=>str_contains($path,'evaluation'),
             'community'=>str_contains($path,'community')||str_contains($path,'pri-source'),
