@@ -1,7 +1,7 @@
 <?php
 final class EvidenceFactApplicator{
   private const SUPPORT_STATUSES=['supported','partially_supported','not_supported','not_yet_verified'];
-  private const DOMAINS=['capability','integration','deployment'];
+  private const DOMAINS=['capability','integration','deployment','pricing'];
 
   public static function apply(PDO $pdo,int $proposalId,array $mapping,int $actorUserId):array{
     $domain=trim((string)($mapping['target_domain']??''));
@@ -10,15 +10,20 @@ final class EvidenceFactApplicator{
     $value=$mapping['target_value']??null;
     $notes=trim((string)($mapping['application_notes']??''));
     if(!in_array($domain,self::DOMAINS,true))throw new InvalidArgumentException('invalid_target_domain');
-    if(!preg_match('/^[a-z0-9][a-z0-9-]{0,189}$/',$slug))throw new InvalidArgumentException('invalid_target_slug');
-    $allowedFields=$domain==='capability'?['support_status','confidence_score','limitations']:['support_status','confidence_score'];
+    if($domain==='pricing'){
+      if($slug!=='product')throw new InvalidArgumentException('invalid_pricing_scope');
+      $allowedFields=['pricing_model','billing_period','currency','amount_min','amount_max','unit_label','notes'];
+    }else{
+      if(!preg_match('/^[a-z0-9][a-z0-9-]{0,189}$/',$slug))throw new InvalidArgumentException('invalid_target_slug');
+      $allowedFields=$domain==='capability'?['support_status','confidence_score','limitations']:['support_status','confidence_score'];
+    }
     if(!in_array($field,$allowedFields,true))throw new InvalidArgumentException('invalid_target_field');
     if(mb_strlen($notes)>4000)throw new InvalidArgumentException('application_notes_too_long');
-    $normalized=self::normalizeValue($field,$value);
+    $normalized=self::normalizeValue($domain,$field,$value);
 
     $pdo->beginTransaction();
     try{
-      $st=$pdo->prepare("SELECT p.id,p.status,p.fact_domain,p.candidate_id,c.evidence_source_id,es.product_id FROM evidence_fact_proposals p JOIN evidence_change_candidates c ON c.id=p.candidate_id JOIN evidence_sources es ON es.id=c.evidence_source_id WHERE p.id=? FOR UPDATE");
+      $st=$pdo->prepare("SELECT p.id,p.status,p.fact_domain,p.candidate_id,c.evidence_source_id,es.product_id,es.source_url FROM evidence_fact_proposals p JOIN evidence_change_candidates c ON c.id=p.candidate_id JOIN evidence_sources es ON es.id=c.evidence_source_id WHERE p.id=? FOR UPDATE");
       $st->execute([$proposalId]);$proposal=$st->fetch();
       if(!$proposal)throw new RuntimeException('proposal_not_found');
       if($proposal['status']!=='approved_for_application')throw new RuntimeException('proposal_not_approved');
@@ -42,12 +47,25 @@ final class EvidenceFactApplicator{
         $pdo->prepare("INSERT INTO product_integrations(product_id,integration_id,support_status,confidence_score) VALUES(?,?,'not_yet_verified',0) ON DUPLICATE KEY UPDATE product_id=VALUES(product_id)")->execute([$productId,(int)$targetId]);
         if($field==='support_status')$pdo->prepare('UPDATE product_integrations SET support_status=? WHERE product_id=? AND integration_id=?')->execute([$normalized,$productId,(int)$targetId]);else $pdo->prepare('UPDATE product_integrations SET confidence_score=? WHERE product_id=? AND integration_id=?')->execute([$normalized,$productId,(int)$targetId]);
         $q=$pdo->prepare('SELECT support_status,confidence_score FROM product_integrations WHERE product_id=? AND integration_id=?');$q->execute([$productId,(int)$targetId]);$r=$q->fetch();$after=['support_status'=>$r['support_status'],'confidence_score'=>(float)$r['confidence_score']];
-      }else{
+      }elseif($domain==='deployment'){
         $s=$pdo->prepare('SELECT id FROM deployment_models WHERE slug=? LIMIT 1');$s->execute([$slug]);$targetId=$s->fetchColumn();if(!$targetId)throw new RuntimeException('target_not_found');
         $q=$pdo->prepare('SELECT support_status,confidence_score FROM product_deployments WHERE product_id=? AND deployment_model_id=? FOR UPDATE');$q->execute([$productId,(int)$targetId]);$row=$q->fetch();$before=$row?['support_status'=>$row['support_status'],'confidence_score'=>(float)$row['confidence_score']]:['support_status'=>'not_yet_verified','confidence_score'=>0.0];
         $pdo->prepare("INSERT INTO product_deployments(product_id,deployment_model_id,support_status,confidence_score) VALUES(?,?,'not_yet_verified',0) ON DUPLICATE KEY UPDATE product_id=VALUES(product_id)")->execute([$productId,(int)$targetId]);
         if($field==='support_status')$pdo->prepare('UPDATE product_deployments SET support_status=? WHERE product_id=? AND deployment_model_id=?')->execute([$normalized,$productId,(int)$targetId]);else $pdo->prepare('UPDATE product_deployments SET confidence_score=? WHERE product_id=? AND deployment_model_id=?')->execute([$normalized,$productId,(int)$targetId]);
         $q=$pdo->prepare('SELECT support_status,confidence_score FROM product_deployments WHERE product_id=? AND deployment_model_id=?');$q->execute([$productId,(int)$targetId]);$r=$q->fetch();$after=['support_status'=>$r['support_status'],'confidence_score'=>(float)$r['confidence_score']];
+      }else{
+        $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE product_id=? AND edition_id IS NULL ORDER BY id FOR UPDATE');
+        $q->execute([$productId]);$rows=$q->fetchAll();
+        if(count($rows)>1)throw new RuntimeException('ambiguous_pricing_scope');
+        if(!$rows){
+          $pdo->prepare("INSERT INTO product_pricing(product_id,edition_id,pricing_model,billing_period,source_url,last_verified_at) VALUES(?,NULL,'unknown','unknown',?,NOW())")->execute([$productId,$proposal['source_url']?:null]);
+          $row=['id'=>(int)$pdo->lastInsertId(),'pricing_model'=>'unknown','billing_period'=>'unknown','currency'=>null,'amount_min'=>null,'amount_max'=>null,'unit_label'=>null,'notes'=>null,'source_url'=>$proposal['source_url']?:null,'last_verified_at'=>null];
+        }else{$row=$rows[0];}
+        $targetId=(int)$row['id'];
+        $before=self::pricingSnapshot($row);
+        $sql="UPDATE product_pricing SET {$field}=?,source_url=?,last_verified_at=NOW() WHERE id=?";
+        $pdo->prepare($sql)->execute([$normalized,$proposal['source_url']?:null,$targetId]);
+        $q=$pdo->prepare('SELECT id,pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE id=?');$q->execute([$targetId]);$after=self::pricingSnapshot($q->fetch());
       }
 
       $ins=$pdo->prepare('INSERT INTO evidence_fact_applications(proposal_id,candidate_id,product_id,evidence_source_id,target_domain,target_slug,target_field,before_value,after_value,application_notes,applied_by_user_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
@@ -55,17 +73,37 @@ final class EvidenceFactApplicator{
       $pdo->prepare("UPDATE evidence_fact_proposals SET status='applied' WHERE id=? AND status='approved_for_application'")->execute([$proposalId]);
       $pdo->prepare('UPDATE products SET last_reviewed_at=NOW() WHERE id=?')->execute([$productId]);
       $pdo->commit();
-      return ['proposal_id'=>$proposalId,'candidate_id'=>(int)$proposal['candidate_id'],'product_id'=>$productId,'evidence_source_id'=>$sourceId,'target_domain'=>$domain,'target_slug'=>$slug,'target_field'=>$field,'before'=>$before,'after'=>$after];
+      return ['proposal_id'=>$proposalId,'candidate_id'=>(int)$proposal['candidate_id'],'product_id'=>$productId,'evidence_source_id'=>$sourceId,'target_domain'=>$domain,'target_slug'=>$slug,'target_field'=>$field,'target_id'=>$targetId,'before'=>$before,'after'=>$after];
     }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
   }
 
-  private static function normalizeValue(string $field,mixed $value):mixed{
+  private static function normalizeValue(string $domain,string $field,mixed $value):mixed{
+    if($domain==='pricing'){
+      if(in_array($field,['amount_min','amount_max'],true)){
+        if($value===null||trim((string)$value)==='')return null;
+        if(!is_numeric($value)||(float)$value<0)throw new InvalidArgumentException('invalid_pricing_amount');
+        return round((float)$value,2);
+      }
+      $v=trim((string)$value);
+      if($field==='currency'){
+        if($v==='')return null;
+        $v=strtoupper($v);if(!preg_match('/^[A-Z]{3}$/',$v))throw new InvalidArgumentException('invalid_currency');return $v;
+      }
+      $limit=$field==='notes'?8000:($field==='unit_label'?100:40);
+      if(mb_strlen($v)>$limit)throw new InvalidArgumentException('pricing_value_too_long');
+      return $v!==''?$v:null;
+    }
     if($field==='support_status'){$v=trim((string)$value);if(!in_array($v,self::SUPPORT_STATUSES,true))throw new InvalidArgumentException('invalid_support_status');return $v;}
     if($field==='confidence_score'){if(!is_numeric($value))throw new InvalidArgumentException('invalid_confidence_score');$v=(float)$value;if($v<0||$v>1)throw new InvalidArgumentException('invalid_confidence_score');return round($v,3);}
     $v=trim((string)$value);if(mb_strlen($v)>8000)throw new InvalidArgumentException('limitations_too_long');return $v!==''?$v:null;
   }
 
+  private static function pricingSnapshot(array $row):array{
+    return ['pricing_model'=>$row['pricing_model'],'billing_period'=>$row['billing_period'],'currency'=>$row['currency'],'amount_min'=>$row['amount_min']===null?null:(float)$row['amount_min'],'amount_max'=>$row['amount_max']===null?null:(float)$row['amount_max'],'unit_label'=>$row['unit_label'],'notes'=>$row['notes'],'source_url'=>$row['source_url'],'last_verified_at'=>$row['last_verified_at']];
+  }
+
   private static function domainCompatible(string $proposalDomain,string $targetDomain,string $field):bool{
+    if($proposalDomain==='pricing_commercial'&&$targetDomain==='pricing')return true;
     if($proposalDomain===$targetDomain)return true;
     return $proposalDomain==='limitation'&&$targetDomain==='capability'&&$field==='limitations';
   }
