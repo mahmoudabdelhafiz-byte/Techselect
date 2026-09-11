@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS seo_long_tail_pages (
+  page_id BIGINT UNSIGNED PRIMARY KEY,
+  template_key VARCHAR(64) NOT NULL,
+  category_id BIGINT UNSIGNED NULL,
+  primary_product_id BIGINT UNSIGNED NULL,
+  secondary_product_id BIGINT UNSIGNED NULL,
+  context_type VARCHAR(48) NOT NULL,
+  context_label VARCHAR(190) NOT NULL,
+  context_value VARCHAR(190) NOT NULL,
+  product_ids_json JSON NOT NULL,
+  render_payload_json JSON NOT NULL,
+  generated_by_user_id BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_long_tail_page FOREIGN KEY(page_id) REFERENCES seo_generated_pages(id) ON DELETE CASCADE,
+  CONSTRAINT fk_long_tail_category FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL,
+  CONSTRAINT fk_long_tail_primary_product FOREIGN KEY(primary_product_id) REFERENCES products(id) ON DELETE SET NULL,
+  CONSTRAINT fk_long_tail_secondary_product FOREIGN KEY(secondary_product_id) REFERENCES products(id) ON DELETE SET NULL,
+  CONSTRAINT fk_long_tail_user FOREIGN KEY(generated_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  KEY idx_long_tail_template(template_key),
+  KEY idx_long_tail_context(context_type,context_value)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
