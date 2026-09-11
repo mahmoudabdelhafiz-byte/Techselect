@@ -18,6 +18,7 @@ final class AdminShell {
         return match($key){
             'overview'=>$path==='/admin'||$path==='/admin/'||$path==='/admin.php',
             'software'=>str_contains($path,'software-management'),
+            'catalog_expansion'=>str_contains($path,'catalog-expansion'),
             'evidence'=>str_contains($path,'evidence'),
             'evaluations'=>str_contains($path,'evaluation'),
             'community'=>str_contains($path,'community')||str_contains($path,'pri-source'),
