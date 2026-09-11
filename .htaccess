@@ -38,6 +38,7 @@ RewriteRule ^customer-outcomes-admin/?$ customer_outcomes_admin.php [QSA,L]
 RewriteRule ^authority-admin/?$ authority_admin.php [QSA,L]
 RewriteRule ^case-studies/?$ case_studies.php [QSA,L]
 RewriteRule ^case-studies/[a-z0-9-]+/?$ case_study.php [QSA,L]
+RewriteRule ^vendors/[a-z0-9-]+/?$ vendor_profile.php [QSA,L]
 
 RewriteRule ^(login|register|verify-email|reset-password)/?$ brand_page.php [QSA,L]
 RewriteRule ^admin/?$ brand_page.php [QSA,L]
