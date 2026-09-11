@@ -2,10 +2,7 @@
 final class AdminControlCenter {
     public static function overview(PDO $pdo): array {
         $out=['products'=>['active'=>0,'draft'=>0,'archived'=>0],'queues'=>[],'generated_at'=>gmdate('c')];
-        try{
-            $rows=$pdo->query("SELECT status,COUNT(*) c FROM products GROUP BY status")->fetchAll(PDO::FETCH_ASSOC);
-            foreach($rows as $r){$k=(string)$r['status'];if(array_key_exists($k,$out['products']))$out['products'][$k]=(int)$r['c'];}
-        }catch(Throwable $e){}
+        try{$rows=$pdo->query("SELECT status,COUNT(*) c FROM products GROUP BY status")->fetchAll(PDO::FETCH_ASSOC);foreach($rows as $r){$k=(string)$r['status'];if(array_key_exists($k,$out['products']))$out['products'][$k]=(int)$r['c'];}}catch(Throwable $e){}
         $out['queues']=[
             self::metric($pdo,'Products needing review',"SELECT COUNT(*) FROM products WHERE status IN ('draft','active') AND (last_reviewed_at IS NULL OR last_reviewed_at < DATE_SUB(NOW(),INTERVAL 180 DAY))",'/admin#software','Review stale or never-reviewed products.'),
             self::metric($pdo,'Evidence attention',"SELECT COUNT(*) FROM evidence_sources WHERE verification_status IN ('unverified','outdated','broken','disputed','placeholder')",'/evidence-inbox','Verify, refresh or retire weak evidence.'),
@@ -18,10 +15,8 @@ final class AdminControlCenter {
             self::metric($pdo,'Community intelligence review',"SELECT COUNT(*) FROM community_intelligence WHERE publication_status IN ('draft','pending_review')",'/community-intelligence-admin','Review unpublished community intelligence.'),
             self::metric($pdo,'Vendor claims waiting',"SELECT COUNT(*) FROM vendor_profile_claims WHERE status='pending_review'",'/vendor-self-service-admin','Verify company/vendor profile claims.'),
             self::metric($pdo,'Relationship claims waiting',"SELECT COUNT(*) FROM vendor_relationship_claims WHERE status='pending'",'/vendor-relationship-claims-admin','Review reseller/implementation territory claims.'),
-        ];
-        return $out;
+        ];return $out;
     }
-
     public static function navigation(string $role): array {
         $all=[
             ['key'=>'overview','label'=>'Overview','href'=>'/admin','roles'=>['reviewer','data_editor','admin','super_admin']],
@@ -35,15 +30,10 @@ final class AdminControlCenter {
             ['key'=>'ai_visibility','label'=>'AI Visibility','href'=>'/ai-referrals','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'buyers','label'=>'Buyer Analytics','href'=>'/buyer-analytics','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'authority','label'=>'Authority & Backlinks','href'=>'/authority-admin','roles'=>['reviewer','admin','super_admin']],
-            ['key'=>'users','label'=>'Users & Roles','href'=>'/admin-users','roles'=>['admin','super_admin']],
-            ['key'=>'audit','label'=>'Audit Log','href'=>'/admin-audit','roles'=>['admin','super_admin']],
-            ['key'=>'health','label'=>'System Health','href'=>'/health','roles'=>['admin','super_admin']],
-        ];
-        return array_values(array_filter($all,fn($x)=>in_array($role,$x['roles'],true)));
+            ['key'=>'users','label'=>'Users & Roles','href'=>'/admin#users-roles','roles'=>['admin','super_admin']],
+            ['key'=>'audit','label'=>'Audit Log','href'=>'/admin#audit-log','roles'=>['admin','super_admin']],
+            ['key'=>'health','label'=>'System Health','href'=>'/admin#system-health','roles'=>['admin','super_admin']],
+        ];return array_values(array_filter($all,fn($x)=>in_array($role,$x['roles'],true)));
     }
-
-    private static function metric(PDO $pdo,string $label,string $sql,string $href,string $hint): array {
-        try{$value=(int)$pdo->query($sql)->fetchColumn();}catch(Throwable $e){$value=null;}
-        return ['label'=>$label,'value'=>$value,'href'=>$href,'hint'=>$hint];
-    }
+    private static function metric(PDO $pdo,string $label,string $sql,string $href,string $hint): array {try{$value=(int)$pdo->query($sql)->fetchColumn();}catch(Throwable $e){$value=null;}return ['label'=>$label,'value'=>$value,'href'=>$href,'hint'=>$hint];}
 }
