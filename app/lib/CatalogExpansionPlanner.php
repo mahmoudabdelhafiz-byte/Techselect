@@ -19,8 +19,10 @@ final class CatalogExpansionPlanner {
       COUNT(DISTINCT es.id) evidence_sources,
       COUNT(DISTINCT CASE WHEN es.verification_status='verified' THEN es.id END) verified_sources,
       COUNT(DISTINCT pc.id) capability_rows,
-      SUM(CASE WHEN pc.support_status<>'not_yet_verified' THEN 1 ELSE 0 END) known_capability_rows,
-      ROUND(AVG(CASE WHEN pc.support_status<>'not_yet_verified' THEN pc.confidence_score END)*100,1) avg_known_confidence
+      COUNT(DISTINCT CASE WHEN pc.support_status<>'not_yet_verified' THEN pc.id END) known_capability_rows,
+      (SELECT ROUND(AVG(pc3.confidence_score)*100,1)
+       FROM product_capabilities pc3 JOIN products p3 ON p3.id=pc3.product_id
+       WHERE p3.category_id=c.id AND p3.status='active' AND pc3.edition_id IS NULL AND pc3.support_status<>'not_yet_verified') avg_known_confidence
       FROM categories c
       LEFT JOIN products p ON p.category_id=c.id AND p.status='active'
       LEFT JOIN evidence_sources es ON es.product_id=p.id
