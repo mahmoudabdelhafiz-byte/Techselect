@@ -9,6 +9,10 @@ final class CategoryGuard {
     'backup-disaster-recovery'=>['backup','backup software','disaster recovery','backup and recovery','data protection','cyber recovery','business continuity backup'],
     'business-intelligence-analytics'=>['business intelligence','bi software','analytics platform','data visualization','dashboard software','reporting software','power bi alternative'],
     'project-management'=>['project management','project-management','work management','ppm','project portfolio management','task management'],
+    'ai-platforms'=>['ai platform','ai platforms','generative ai platform','genai platform','foundation model platform','machine learning platform','ai development platform','agent platform','ai agents'],
+    'healthcare-ehr'=>['ehr','electronic health record','electronic medical record','emr','hospital information system','healthcare information system','clinical information system'],
+    'retail-pos'=>['pos','point of sale','retail pos','retail point of sale','store pos','retail management system'],
+    'cad-engineering'=>['cad','computer aided design','computer-aided design','3d cad','2d cad','engineering design software','mechanical cad','product design software'],
     'corporate-identity-digital-business-cards'=>['digital business card','digital business cards','corporate identity','employee identity','identity verification','email signature','meeting background','business card platform'],
   ];
 
