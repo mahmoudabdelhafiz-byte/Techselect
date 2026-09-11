@@ -30,9 +30,9 @@ final class AuthorityReferralAnalytics {
   public static function summary(PDO $pdo,int $days=30):array{
     $days=max(1,min(365,$days));$domains=[];
     try{foreach($pdo->query("SELECT domain,source_type FROM authority_sources") as $r)$domains[strtolower((string)$r['domain'])]=(string)$r['source_type'];}catch(Throwable $e){}
-    $st=$pdo->prepare("SELECT utm_source,utm_medium,utm_campaign,referrer,COUNT(*) visits FROM visitor_sessions WHERE first_seen_at>=DATE_SUB(NOW(),INTERVAL ? DAY) AND (utm_source IS NOT NULL OR referrer IS NOT NULL) GROUP BY utm_source,utm_medium,utm_campaign,referrer ORDER BY visits DESC LIMIT 250");$st->execute([$days]);
-    $categories=[];$sources=[];$total=0;
-    foreach($st->fetchAll()?:[] as $r){$n=(int)$r['visits'];$total+=$n;$category=self::classify($r['utm_source']??null,$r['utm_medium']??null,$r['referrer']??null,$domains);$categories[$category]=($categories[$category]??0)+$n;$host=strtolower((string)parse_url((string)($r['referrer']??''),PHP_URL_HOST));$host=preg_replace('/^www\./','',$host??'');$label=$host?:((string)($r['utm_source']??'tagged'));$key=$category.'|'.$label;$sources[$key]=($sources[$key]??0)+$n;}
+    $sql="SELECT utm_source,utm_medium,utm_campaign,referrer,COUNT(*) visits FROM visitor_sessions WHERE first_seen_at>=DATE_SUB(NOW(),INTERVAL ".$days." DAY) AND (utm_source IS NOT NULL OR referrer IS NOT NULL) GROUP BY utm_source,utm_medium,utm_campaign,referrer ORDER BY visits DESC LIMIT 250";
+    $rows=$pdo->query($sql)->fetchAll()?:[];$categories=[];$sources=[];$total=0;
+    foreach($rows as $r){$n=(int)$r['visits'];$total+=$n;$category=self::classify($r['utm_source']??null,$r['utm_medium']??null,$r['referrer']??null,$domains);$categories[$category]=($categories[$category]??0)+$n;$host=strtolower((string)parse_url((string)($r['referrer']??''),PHP_URL_HOST));$host=preg_replace('/^www\./','',$host??'');$label=$host?:((string)($r['utm_source']??'tagged'));$key=$category.'|'.$label;$sources[$key]=($sources[$key]??0)+$n;}
     arsort($categories);arsort($sources);$top=[];foreach(array_slice($sources,0,50,true) as $key=>$visits){[$category,$label]=explode('|',$key,2);$top[]=['category'=>$category,'source'=>$label,'visits'=>$visits];}
     return ['days'=>$days,'external_or_tagged_sessions'=>$total,'by_category'=>$categories,'top_sources'=>$top];
   }
