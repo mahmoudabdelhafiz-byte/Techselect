@@ -2,6 +2,7 @@
 require_once __DIR__.'/../app/lib/Db.php';
 require_once __DIR__.'/../app/lib/Security.php';
 require_once __DIR__.'/../app/lib/UserConsultationHistory.php';
+require_once __DIR__.'/../app/lib/AuthorityReferralAnalytics.php';
 $config=require __DIR__.'/../app/config.php';
 $pdo=Db::pdo();
 Security::start();
@@ -29,12 +30,17 @@ function consultation_context_authorize(array $c): void {
   $u=Security::user();
   if(!$u || (int)$u['id']!==(int)$c['user_id']) consultation_context_out(['error'=>'forbidden'],403);
 }
+function consultation_acquisition(): array {
+  $raw=(string)($_COOKIE['ts_acq']??'');$decoded=[];
+  if($raw!==''){$json=base64_decode(strtr($raw,'-_','+/'),true);if($json!==false){$tmp=json_decode($json,true);if(is_array($tmp))$decoded=$tmp;}}
+  return AuthorityReferralAnalytics::sanitizeAcquisition($decoded);
+}
 
 if($path==='/api/consultations' && $method==='POST'){
   $body=json_decode(file_get_contents('php://input'),true)?:[];
   $problem=trim((string)($body['business_problem']??''));
   if(strlen($problem)<5){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['error'=>'business_problem_required']);exit;}
-  try{$created=UserConsultationHistory::create($pdo,Security::user(),$problem,'ai_chat');}
+  try{$created=UserConsultationHistory::create($pdo,Security::user(),$problem,'ai_chat',consultation_acquisition());}
   catch(Throwable $e){http_response_code(500);header('Content-Type: application/json; charset=utf-8');echo json_encode(['error'=>'consultation_create_failed']);exit;}
   http_response_code(201);header('Content-Type: application/json; charset=utf-8');echo json_encode($created,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;
 }
