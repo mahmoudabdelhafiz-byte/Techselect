@@ -28,5 +28,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Clean install from committed lockfile
         run: npm ci --ignore-scripts
+      - name: Consultation UI regression contract
+        run: npm run check:consultation-ui
       - name: Build
         run: npm run build
