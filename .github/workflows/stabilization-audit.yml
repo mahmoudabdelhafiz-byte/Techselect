@@ -8,6 +8,10 @@ on:
       - 'db/mysql/**'
       - 'scripts/security_control_audit.php'
       - 'scripts/migration_integrity_check.php'
+      - 'scripts/community_intelligence_auto_publish.php'
+      - 'software_logo_page.php'
+      - 'community_intelligence_admin.php'
+      - 'community_intelligence_admin.js'
       - 'project_decision_matrix.php'
       - '.github/workflows/stabilization-audit.yml'
   push:
@@ -19,6 +23,10 @@ on:
       - 'db/mysql/**'
       - 'scripts/security_control_audit.php'
       - 'scripts/migration_integrity_check.php'
+      - 'scripts/community_intelligence_auto_publish.php'
+      - 'software_logo_page.php'
+      - 'community_intelligence_admin.php'
+      - 'community_intelligence_admin.js'
       - 'project_decision_matrix.php'
       - '.github/workflows/stabilization-audit.yml'
   workflow_dispatch:
@@ -31,7 +39,13 @@ jobs:
       - name: PHP syntax checks
         run: |
           php -l app/lib/Mailer.php
+          php -l app/lib/CommunityIntelligenceAutoPublisher.php
+          php -l app/lib/PublicReviewAdminService.php
           php -l api/auth.php
+          php -l api/community_intelligence_admin.php
+          php -l software_logo_page.php
+          php -l community_intelligence_admin.php
+          php -l scripts/community_intelligence_auto_publish.php
           php -l project_decision_matrix.php
           php -l scripts/security_control_audit.php
           php -l scripts/migration_integrity_check.php
