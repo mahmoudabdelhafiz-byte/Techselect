@@ -16,6 +16,7 @@ on:
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
       - 'scripts/external_auth_check.php'
+      - 'scripts/admin_shell_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -40,6 +41,7 @@ on:
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
       - 'scripts/external_auth_check.php'
+      - 'scripts/admin_shell_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -61,6 +63,7 @@ jobs:
           php -l app/lib/PublicReviewAdminService.php
           php -l app/lib/ComparisonSeoPriority.php
           php -l app/lib/ExternalAuth.php
+          php -l app/lib/AdminShell.php
           php -l api/auth.php
           php -l account.php
           php -l api/community_intelligence_admin.php
@@ -74,6 +77,7 @@ jobs:
           php -l scripts/comparison_seo_check.php
           php -l scripts/trusted_vendor_catalog_check.php
           php -l scripts/external_auth_check.php
+          php -l scripts/admin_shell_check.php
           php -l project_decision_matrix.php
           php -l scripts/security_control_audit.php
           php -l scripts/migration_integrity_check.php
@@ -89,3 +93,5 @@ jobs:
         run: php scripts/trusted_vendor_catalog_check.php
       - name: External authentication contract
         run: php scripts/external_auth_check.php
+      - name: Admin shell layout/CSP contract
+        run: php scripts/admin_shell_check.php
