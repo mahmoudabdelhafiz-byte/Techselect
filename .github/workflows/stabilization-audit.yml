@@ -10,6 +10,10 @@ on:
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
       - 'scripts/community_auto_publish_check.php'
+      - 'scripts/comparison_seo_priority_report.php'
+      - 'scripts/comparison_seo_check.php'
+      - 'sitemap.php'
+      - 'crawlable_public_page.php'
       - 'software_logo_page.php'
       - 'community_intelligence_admin.php'
       - 'community_intelligence_admin.js'
@@ -26,6 +30,10 @@ on:
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
       - 'scripts/community_auto_publish_check.php'
+      - 'scripts/comparison_seo_priority_report.php'
+      - 'scripts/comparison_seo_check.php'
+      - 'sitemap.php'
+      - 'crawlable_public_page.php'
       - 'software_logo_page.php'
       - 'community_intelligence_admin.php'
       - 'community_intelligence_admin.js'
@@ -43,12 +51,17 @@ jobs:
           php -l app/lib/Mailer.php
           php -l app/lib/CommunityIntelligenceAutoPublisher.php
           php -l app/lib/PublicReviewAdminService.php
+          php -l app/lib/ComparisonSeoPriority.php
           php -l api/auth.php
           php -l api/community_intelligence_admin.php
           php -l software_logo_page.php
           php -l community_intelligence_admin.php
+          php -l crawlable_public_page.php
+          php -l sitemap.php
           php -l scripts/community_intelligence_auto_publish.php
           php -l scripts/community_auto_publish_check.php
+          php -l scripts/comparison_seo_priority_report.php
+          php -l scripts/comparison_seo_check.php
           php -l project_decision_matrix.php
           php -l scripts/security_control_audit.php
           php -l scripts/migration_integrity_check.php
@@ -58,3 +71,5 @@ jobs:
         run: php scripts/migration_integrity_check.php
       - name: Community Intelligence publication contract
         run: php scripts/community_auto_publish_check.php
+      - name: Comparison SEO contract
+        run: php scripts/comparison_seo_check.php
