@@ -12,7 +12,15 @@ on:
       - '.github/workflows/stabilization-audit.yml'
   push:
     branches:
-      - fix/264-stabilization-sweep
+      - main
+    paths:
+      - 'api/**'
+      - 'app/lib/**'
+      - 'db/mysql/**'
+      - 'scripts/security_control_audit.php'
+      - 'scripts/migration_integrity_check.php'
+      - 'project_decision_matrix.php'
+      - '.github/workflows/stabilization-audit.yml'
   workflow_dispatch:
 
 jobs:
