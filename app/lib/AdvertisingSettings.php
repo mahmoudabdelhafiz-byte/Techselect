@@ -41,7 +41,7 @@ final class AdvertisingSettings {
 
     public static function headScript(PDO $pdo,string $pageType): string {
         $s=self::get($pdo);
-        if(!$s['enabled']||!in_array($pageType,$s['page_types'],true))return '';
+        if(!$s['enabled']||!$s['auto_ads_enabled']||!in_array($pageType,$s['page_types'],true))return '';
         $client=(string)$s['adsense_client_id'];
         if(!preg_match('/^ca-pub-\d{10,24}$/',$client))return '';
         $clientEsc=htmlspecialchars($client,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
