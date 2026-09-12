@@ -51,15 +51,14 @@ final class ComparisonSeoPriority
 
     public static function isProtected(string $a,string $b):bool
     {
-        $key=implode('|',self::canonicalPair($a,$b));
-        return $key==='blinq|cardiq';
+        return implode('|',self::canonicalPair($a,$b))==='blinq|cardiq';
     }
 
     public static function backlog(PDO $pdo,int $days=90):array
     {
         $days=max(7,min(365,$days));$out=[];
         foreach(self::PAIRS as [$left,$right,$base,$category,$intent,$tier]){
-            $row=self::assess($pdo,$left,$right,$days);
+            $row=self::assess($pdo,$left,$right);
             if(!$row)continue;
             $row['editorial_category']=$category;$row['buyer_intent']=$intent;$row['tier']=$tier;$row['base_priority']=$base;
             $gsc=self::gsc($pdo,$row['path'],$row['products'][0]['name'],$row['products'][1]['name'],$days);
@@ -97,7 +96,7 @@ final class ComparisonSeoPriority
         return null;
     }
 
-    private static function assess(PDO $pdo,string $left,string $right,int $days):?array
+    private static function assess(PDO $pdo,string $left,string $right):?array
     {
         $pair=self::canonicalPair($left,$right);
         $st=$pdo->prepare("SELECT p.id,p.name,p.slug,p.category_id,p.last_reviewed_at,c.name category,c.slug category_slug FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.slug IN (?,?) AND p.status='active'");
@@ -125,7 +124,7 @@ final class ComparisonSeoPriority
     private static function gsc(PDO $pdo,string $path,string $nameA,string $nameB,int $days):array
     {
         try{
-            $st=$pdo->prepare("SELECT COALESCE(SUM(impressions),0) impressions,COALESCE(SUM(clicks),0) clicks,CASE WHEN SUM(impressions)>0 THEN SUM(position_sum)/SUM(impressions) ELSE NULL END avg_position FROM search_console_performance WHERE metric_date>=DATE_SUB(CURDATE(),INTERVAL {$days} DAY) AND (page_url LIKE ? OR (LOWER(query_text) LIKE ? AND LOWER(query_text) LIKE ?))");
+            $st=$pdo->prepare("SELECT COALESCE(SUM(impressions),0) impressions,COALESCE(SUM(clicks),0) clicks,CASE WHEN SUM(impressions)>0 THEN SUM(position*impressions)/SUM(impressions) ELSE NULL END avg_position FROM search_console_performance WHERE metric_date>=DATE_SUB(CURDATE(),INTERVAL {$days} DAY) AND (page_url LIKE ? OR (LOWER(query_text) LIKE ? AND LOWER(query_text) LIKE ?))");
             $st->execute(['%'.$path.'%','%'.strtolower($nameA).'%','%'.strtolower($nameB).'%']);$r=$st->fetch(PDO::FETCH_ASSOC)?:[];
             return ['impressions'=>(float)($r['impressions']??0),'clicks'=>(float)($r['clicks']??0),'avg_position'=>isset($r['avg_position'])?(float)$r['avg_position']:null,'window_days'=>$days];
         }catch(Throwable $e){return ['impressions'=>0,'clicks'=>0,'avg_position'=>null,'window_days'=>$days];}
