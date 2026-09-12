@@ -1,0 +1,29 @@
+name: Business case CSP regression
+
+on:
+  pull_request:
+    paths:
+      - 'business_case_builder.php'
+      - 'my_business_cases.php'
+      - 'scripts/business_case_csp_check.php'
+      - '.github/workflows/business-case-csp.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'business_case_builder.php'
+      - 'my_business_cases.php'
+      - 'scripts/business_case_csp_check.php'
+      - '.github/workflows/business-case-csp.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l business_case_builder.php
+          php -l my_business_cases.php
+          php -l scripts/business_case_csp_check.php
+      - name: CSP contract
+        run: php scripts/business_case_csp_check.php
