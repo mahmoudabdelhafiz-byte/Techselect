@@ -6,6 +6,8 @@ on:
       - 'api/**'
       - 'app/lib/**'
       - 'db/mysql/**'
+      - 'account.php'
+      - '.env.shared.example'
       - 'scripts/security_control_audit.php'
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
@@ -13,6 +15,7 @@ on:
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
+      - 'scripts/external_auth_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -27,6 +30,8 @@ on:
       - 'api/**'
       - 'app/lib/**'
       - 'db/mysql/**'
+      - 'account.php'
+      - '.env.shared.example'
       - 'scripts/security_control_audit.php'
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
@@ -34,6 +39,7 @@ on:
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
+      - 'scripts/external_auth_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -54,7 +60,9 @@ jobs:
           php -l app/lib/CommunityIntelligenceAutoPublisher.php
           php -l app/lib/PublicReviewAdminService.php
           php -l app/lib/ComparisonSeoPriority.php
+          php -l app/lib/ExternalAuth.php
           php -l api/auth.php
+          php -l account.php
           php -l api/community_intelligence_admin.php
           php -l software_logo_page.php
           php -l community_intelligence_admin.php
@@ -65,6 +73,7 @@ jobs:
           php -l scripts/comparison_seo_priority_report.php
           php -l scripts/comparison_seo_check.php
           php -l scripts/trusted_vendor_catalog_check.php
+          php -l scripts/external_auth_check.php
           php -l project_decision_matrix.php
           php -l scripts/security_control_audit.php
           php -l scripts/migration_integrity_check.php
@@ -78,3 +87,5 @@ jobs:
         run: php scripts/comparison_seo_check.php
       - name: Trusted-vendor catalog contract
         run: php scripts/trusted_vendor_catalog_check.php
+      - name: External authentication contract
+        run: php scripts/external_auth_check.php
