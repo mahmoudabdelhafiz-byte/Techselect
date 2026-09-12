@@ -1,4 +1,5 @@
 -- RFP generator storage for #207
+-- Stabilized for #264: correct matrix table reference and schema-unique constraint names.
 SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS rfp_documents (
@@ -16,7 +17,7 @@ CREATE TABLE IF NOT EXISTS rfp_documents (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_rfp_project (project_id, updated_at),
   KEY idx_rfp_user (user_id, updated_at),
-  FOREIGN KEY (project_id) REFERENCES selection_projects(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (matrix_run_id) REFERENCES project_matrix_runs(id) ON DELETE SET NULL
+  CONSTRAINT fk_ts_rfp_project_036 FOREIGN KEY (project_id) REFERENCES selection_projects(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ts_rfp_user_036 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ts_rfp_matrix_run_036 FOREIGN KEY (matrix_run_id) REFERENCES selection_project_matrix_runs(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
