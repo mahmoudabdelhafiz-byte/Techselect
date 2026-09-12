@@ -12,6 +12,7 @@ on:
       - 'scripts/community_auto_publish_check.php'
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
+      - 'scripts/trusted_vendor_catalog_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -32,6 +33,7 @@ on:
       - 'scripts/community_auto_publish_check.php'
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
+      - 'scripts/trusted_vendor_catalog_check.php'
       - 'sitemap.php'
       - 'crawlable_public_page.php'
       - 'software_logo_page.php'
@@ -62,6 +64,7 @@ jobs:
           php -l scripts/community_auto_publish_check.php
           php -l scripts/comparison_seo_priority_report.php
           php -l scripts/comparison_seo_check.php
+          php -l scripts/trusted_vendor_catalog_check.php
           php -l project_decision_matrix.php
           php -l scripts/security_control_audit.php
           php -l scripts/migration_integrity_check.php
@@ -73,3 +76,5 @@ jobs:
         run: php scripts/community_auto_publish_check.php
       - name: Comparison SEO contract
         run: php scripts/comparison_seo_check.php
+      - name: Trusted-vendor catalog contract
+        run: php scripts/trusted_vendor_catalog_check.php
