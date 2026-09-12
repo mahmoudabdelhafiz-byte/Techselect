@@ -81,10 +81,10 @@ final class CommunityIntelligenceAutoPublisher
     {
         $st=$pdo->prepare("SELECT * FROM product_public_review_intelligence WHERE product_id=? LIMIT 1");$st->execute([$productId]);$row=$st->fetch(PDO::FETCH_ASSOC);if(!$row)throw new RuntimeException('Community Intelligence record not found.');
         $candidate=$row;$candidate['strengths']=json_decode($row['strengths_json']??'[]',true)?:[];$candidate['concerns']=json_decode($row['concerns_json']??'[]',true)?:[];$candidate['themes']=json_decode($row['themes_json']??'{}',true)?:[];
-        $decision=self::evaluate($pdo,$productId,$candidate,$row);self::applyDecision($pdo,$productId,$row,$decision);return $decision;
+        $decision=self::evaluate($pdo,$productId,$candidate,$row);self::applyDecision($pdo,$productId,$row,$decision,isset($row['analysis_run_id'])?(int)$row['analysis_run_id']:null);return $decision;
     }
 
-    public static function applyDecision(PDO $pdo,int $productId,array $prior,array $decision): void
+    public static function applyDecision(PDO $pdo,int $productId,array $prior,array $decision,?int $analysisRunId=null): void
     {
         $json=json_encode(['failed_gates'=>$decision['failed_gates'],'gates'=>$decision['gates'],'source_metrics'=>$decision['source_metrics']],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
         $reason=$decision['failed_gates']?implode(', ',array_slice($decision['failed_gates'],0,6)):null;
@@ -95,7 +95,7 @@ final class CommunityIntelligenceAutoPublisher
             $status=$wasPublished?'published':'needs_review';
             $pdo->prepare("UPDATE product_public_review_intelligence SET review_status=?,auto_publish_checked_at=NOW(),auto_publish_decision_json=?,auto_publish_hold_reason=?,previous_published_score=? WHERE product_id=?")->execute([$status,$json,$reason,$decision['prior_published_score'],$productId]);
         }
-        self::auditDecision($pdo,$productId,isset($prior['analysis_run_id'])?(int)$prior['analysis_run_id']:null,$decision);
+        self::auditDecision($pdo,$productId,$analysisRunId,$decision);
     }
 
     private static function sourceMetrics(PDO $pdo,int $productId,int $recentDays): array
