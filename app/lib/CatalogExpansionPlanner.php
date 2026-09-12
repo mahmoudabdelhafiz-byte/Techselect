@@ -1,28 +1,63 @@
 <?php
 final class CatalogExpansionPlanner {
+  private const STRATEGIC_CATEGORIES=['crm','itsm','hrms','endpoint-security-edr','backup-disaster-recovery'];
+  private const EVIDENCE_FRESH_DAYS=180;
+
   public static function dashboard(PDO $pdo,int $days=90):array{
     $days=max(7,min(365,$days));
     $existing=self::existingCategories($pdo,$days);
     $missing=self::taxonomyCandidates($pdo,$days);
     usort($existing,fn($a,$b)=>$b['priority_score']<=>$a['priority_score']);
     usort($missing,fn($a,$b)=>$b['priority_score']<=>$a['priority_score']);
-    return ['window_days'=>$days,'existing_categories'=>$existing,'new_category_candidates'=>$missing,'generated_at'=>gmdate('c'),'policy'=>[
-      'minimum_active_products'=>4,'minimum_ready_products'=>3,'minimum_verified_sources'=>4,'minimum_known_capability_rows'=>12,
-      'note'=>'Demand priority decides research order only. Publication remains evidence/readiness gated; Unknown != Unsupported.'
-    ]];
+    $strategic=[];
+    foreach($existing as $row){
+      if(in_array($row['slug'],self::STRATEGIC_CATEGORIES,true))$strategic[]=$row;
+    }
+    $strategicReady=count(array_filter($strategic,fn($r)=>!empty($r['publication_ready'])));
+    return [
+      'window_days'=>$days,
+      'existing_categories'=>$existing,
+      'strategic_categories'=>$strategic,
+      'strategic_summary'=>[
+        'target_slugs'=>self::STRATEGIC_CATEGORIES,
+        'tracked_count'=>count($strategic),
+        'publication_ready_count'=>$strategicReady,
+        'minimum_ready_before_new_major_subsystem'=>3,
+        'gate_satisfied'=>$strategicReady>=3,
+      ],
+      'new_category_candidates'=>$missing,
+      'generated_at'=>gmdate('c'),
+      'policy'=>[
+        'minimum_active_products'=>4,
+        'minimum_ready_products'=>3,
+        'minimum_verified_sources'=>4,
+        'minimum_known_capability_rows'=>12,
+        'minimum_known_capabilities_per_ready_product'=>3,
+        'minimum_fresh_verified_sources_per_ready_product'=>1,
+        'evidence_fresh_days'=>self::EVIDENCE_FRESH_DAYS,
+        'note'=>'Demand priority decides research order only. Publication remains evidence/readiness gated; Unknown != Unsupported. A ready product needs known capability depth plus recent verified evidence.'
+      ]
+    ];
   }
 
   private static function existingCategories(PDO $pdo,int $days):array{
+    $fresh=self::EVIDENCE_FRESH_DAYS;
     $sql="SELECT c.id,c.name,c.slug,
       COUNT(DISTINCT p.id) active_products,
-      COUNT(DISTINCT CASE WHEN p.status='active' AND (SELECT COUNT(*) FROM product_capabilities pc2 WHERE pc2.product_id=p.id AND pc2.edition_id IS NULL)>=3 AND EXISTS(SELECT 1 FROM evidence_sources es2 WHERE es2.product_id=p.id) THEN p.id END) ready_products,
+      COUNT(DISTINCT CASE WHEN p.status='active'
+        AND (SELECT COUNT(*) FROM product_capabilities pc2 WHERE pc2.product_id=p.id AND pc2.edition_id IS NULL AND pc2.support_status<>'not_yet_verified')>=3
+        AND EXISTS(SELECT 1 FROM evidence_sources es2 WHERE es2.product_id=p.id AND es2.verification_status='verified' AND COALESCE(es2.checked_at,es2.created_at)>=DATE_SUB(NOW(),INTERVAL {$fresh} DAY))
+        THEN p.id END) ready_products,
       COUNT(DISTINCT es.id) evidence_sources,
       COUNT(DISTINCT CASE WHEN es.verification_status='verified' THEN es.id END) verified_sources,
+      COUNT(DISTINCT CASE WHEN es.verification_status='verified' AND COALESCE(es.checked_at,es.created_at)>=DATE_SUB(NOW(),INTERVAL {$fresh} DAY) THEN es.id END) fresh_verified_sources,
       COUNT(DISTINCT pc.id) capability_rows,
       COUNT(DISTINCT CASE WHEN pc.support_status<>'not_yet_verified' THEN pc.id END) known_capability_rows,
       (SELECT ROUND(AVG(pc3.confidence_score)*100,1)
        FROM product_capabilities pc3 JOIN products p3 ON p3.id=pc3.product_id
-       WHERE p3.category_id=c.id AND p3.status='active' AND pc3.edition_id IS NULL AND pc3.support_status<>'not_yet_verified') avg_known_confidence
+       WHERE p3.category_id=c.id AND p3.status='active' AND pc3.edition_id IS NULL AND pc3.support_status<>'not_yet_verified') avg_known_confidence,
+      MAX(p.last_reviewed_at) latest_product_review_at,
+      MAX(CASE WHEN es.verification_status='verified' THEN COALESCE(es.checked_at,es.created_at) END) latest_verified_evidence_at
       FROM categories c
       LEFT JOIN products p ON p.category_id=c.id AND p.status='active'
       LEFT JOIN evidence_sources es ON es.product_id=p.id
@@ -34,9 +69,22 @@ final class CatalogExpansionPlanner {
       $consult=self::scalar($pdo,"SELECT COUNT(*) FROM consultations WHERE category_id=? AND created_at>=DATE_SUB(NOW(),INTERVAL {$days} DAY)",[$cid]);
       $gsc=self::gscForCategory($pdo,$r['slug'],$r['name'],$days);
       $demand=self::demandScore($buyer+$consult,(float)$gsc['impressions'],0);
-      $ready=(int)$r['active_products']>=4&&(int)$r['ready_products']>=3&&(int)$r['verified_sources']>=4&&(int)$r['known_capability_rows']>=12;
-      $coverage=(int)$r['capability_rows']?round(((int)$r['known_capability_rows']*100)/(int)$r['capability_rows'],1):0;
-      $out[]=[...$r,'buyer_events'=>$buyer,'consultations'=>$consult,'gsc_impressions'=>$gsc['impressions'],'gsc_clicks'=>$gsc['clicks'],'evidence_coverage_pct'=>$coverage,'publication_ready'=>$ready,'priority_score'=>$demand,'recommended_action'=>$ready?($demand>=45?'expand_products':'maintain'):($demand>=35?'research_evidence_gap':'hold_publication')];
+      $active=(int)$r['active_products'];$readyProducts=(int)$r['ready_products'];$verified=(int)$r['verified_sources'];$freshVerified=(int)$r['fresh_verified_sources'];$known=(int)$r['known_capability_rows'];
+      $ready=$active>=4&&$readyProducts>=3&&$verified>=4&&$freshVerified>=4&&$known>=12;
+      $coverage=(int)$r['capability_rows']?round(($known*100)/(int)$r['capability_rows'],1):0;
+      $gaps=[];
+      if($active<4)$gaps[]='Need '.(4-$active).' more active product'.((4-$active)===1?'':'s');
+      if($readyProducts<3)$gaps[]='Need '.(3-$readyProducts).' more product'.((3-$readyProducts)===1?'':'s').' with ≥3 known capability facts and fresh verified evidence';
+      if($verified<4)$gaps[]='Need '.(4-$verified).' more verified evidence source'.((4-$verified)===1?'':'s');
+      if($freshVerified<4)$gaps[]='Need '.(4-$freshVerified).' more verified source'.((4-$freshVerified)===1?'':'s').' checked within '.$fresh.' days';
+      if($known<12)$gaps[]='Need '.(12-$known).' more known capability row'.((12-$known)===1?'':'s');
+      $out[]=[...$r,
+        'buyer_events'=>$buyer,'consultations'=>$consult,'gsc_impressions'=>$gsc['impressions'],'gsc_clicks'=>$gsc['clicks'],
+        'evidence_coverage_pct'=>$coverage,'publication_ready'=>$ready,'readiness_gaps'=>$gaps,
+        'strategic_category'=>in_array($r['slug'],self::STRATEGIC_CATEGORIES,true),
+        'priority_score'=>$demand,
+        'recommended_action'=>$ready?($demand>=45?'expand_products':'maintain'):($demand>=35?'research_evidence_gap':'hold_publication')
+      ];
     }
     return $out;
   }
