@@ -1,15 +1,15 @@
 <?php
 /**
  * Final crawlability wrapper for public knowledge pages.
- * Injects canonical/search metadata and public conversion tracking without changing scoring/recommendations.
+ * Injects canonical/search metadata, optional admin-managed advertising, and public conversion tracking without changing scoring/recommendations.
  */
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
-$target=null;
-if(preg_match('#^/software/[a-z0-9-]+/?$#',$path)) $target='partner_links_page.php';
-elseif(preg_match('#^/categories/[a-z0-9-]+/?$#',$path)) $target='customer_outcome_links_page.php';
-elseif(preg_match('#^/capabilities/[a-z0-9-]+/?$#',$path)) $target='brand_page.php';
-elseif(preg_match('#^/integrations/[a-z0-9-]+/?$#',$path)) $target='brand_page.php';
-elseif(preg_match('#^/compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$#',$path)) $target='contextual_comparison_page.php';
+$target=null;$pageType=null;
+if(preg_match('#^/software/[a-z0-9-]+/?$#',$path)){ $target='partner_links_page.php';$pageType='software'; }
+elseif(preg_match('#^/categories/[a-z0-9-]+/?$#',$path)){ $target='customer_outcome_links_page.php';$pageType='category'; }
+elseif(preg_match('#^/capabilities/[a-z0-9-]+/?$#',$path)){ $target='brand_page.php';$pageType='capability'; }
+elseif(preg_match('#^/integrations/[a-z0-9-]+/?$#',$path)){ $target='brand_page.php';$pageType='integration'; }
+elseif(preg_match('#^/compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$#',$path)){ $target='contextual_comparison_page.php';$pageType='comparison'; }
 if(!$target){http_response_code(404);exit('Not found');}
 
 ob_start();require __DIR__.'/'.$target;$html=ob_get_clean();
@@ -26,6 +26,13 @@ $meta='<link rel="canonical" href="'.htmlspecialchars($canonical,ENT_QUOTES,'UTF
      .'<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">'
      .'<meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">'
      .'<meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">';
+
+// Optional AdSense Auto Ads loader. Configuration is display-only and never participates in scoring or recommendations.
+try{
+    require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/AdvertisingSettings.php';
+    $meta.=AdvertisingSettings::headScript(Db::pdo(),(string)$pageType);
+}catch(Throwable $e){}
 $html=str_ireplace('</head>',$meta.'</head>',$html);
 
 // Measure contextual decision-journey CTA exposure/clicks. This analytics layer is separate from ranking/scoring.
@@ -33,7 +40,6 @@ $tracking='<script id="ts-public-conversion-tracking">(()=>{const source='.json_
 $html=str_ireplace('</body>',$tracking.'</body>',$html);
 
 try{
-    require_once __DIR__.'/app/lib/Db.php';
     require_once __DIR__.'/app/lib/LongTailSeoLinks.php';
     $related=LongTailSeoLinks::forPath(Db::pdo(),$canonicalPath,6);
     if($related){
