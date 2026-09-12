@@ -1,0 +1,33 @@
+name: Stabilization audit
+
+on:
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'app/lib/**'
+      - 'db/mysql/**'
+      - 'scripts/security_control_audit.php'
+      - 'scripts/migration_integrity_check.php'
+      - 'project_decision_matrix.php'
+      - '.github/workflows/stabilization-audit.yml'
+  push:
+    branches:
+      - fix/264-stabilization-sweep
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax checks
+        run: |
+          php -l app/lib/Mailer.php
+          php -l api/auth.php
+          php -l project_decision_matrix.php
+          php -l scripts/security_control_audit.php
+          php -l scripts/migration_integrity_check.php
+      - name: API mutation security controls
+        run: php scripts/security_control_audit.php
+      - name: Migration integrity
+        run: php scripts/migration_integrity_check.php
