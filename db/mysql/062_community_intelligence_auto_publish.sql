@@ -9,7 +9,8 @@ ALTER TABLE product_public_review_intelligence
   ADD COLUMN IF NOT EXISTS auto_publish_decision_json JSON NULL AFTER auto_publish_checked_at,
   ADD COLUMN IF NOT EXISTS auto_publish_hold_reason VARCHAR(255) NULL AFTER auto_publish_decision_json,
   ADD COLUMN IF NOT EXISTS auto_publish_manual_hold_reason VARCHAR(255) NULL AFTER auto_publish_hold_reason,
-  ADD COLUMN IF NOT EXISTS previous_published_score DECIMAL(4,2) NULL AFTER auto_publish_manual_hold_reason;
+  ADD COLUMN IF NOT EXISTS auto_publish_candidate_json JSON NULL AFTER auto_publish_manual_hold_reason,
+  ADD COLUMN IF NOT EXISTS previous_published_score DECIMAL(4,2) NULL AFTER auto_publish_candidate_json;
 
 CREATE TABLE IF NOT EXISTS community_intelligence_auto_publish_settings (
   id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
