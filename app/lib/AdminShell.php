@@ -28,6 +28,7 @@ final class AdminShell {
             'ai_visibility'=>str_contains($path,'ai-visibility')||str_contains($path,'ai-referrals'),
             'buyers'=>str_contains($path,'buyer-analytics'),
             'authority'=>str_contains($path,'authority'),
+            'advertising'=>str_contains($path,'admin-advertising'),
             'users'=>str_contains($path,'admin-users'),
             'audit'=>str_contains($path,'admin-audit'),
             'health'=>str_contains($path,'health'),
