@@ -16,10 +16,16 @@ $exceptions = [
     // enforce same-origin + per-route rate limits; CSRF is required only where a
     // logged-in session is being mutated (logout).
     'auth.php' => ['csrf' => 'mixed anonymous/token-based auth routes'],
-    // Legacy/public consultation API creates anonymous visitor consultations and
-    // mutates only resources addressed by high-entropy public tokens. Keep it
-    // same-origin and rate-limited, but do not require a login-session CSRF token.
-    'index.php' => ['csrf' => 'anonymous public-token consultation flow'],
+    // api/index.php retains legacy consultation mutation branches, but .htaccess
+    // routes all /api/consultations traffic to api/secure.php (and recommendation
+    // traffic to api/recommend.php) before the catch-all. A direct /api/index.php
+    // request cannot match those legacy paths. Keep this explicit until dead-code
+    // cleanup removes the old branches.
+    'index.php' => [
+        'origin' => 'legacy mutation branches unreachable through current routing',
+        'csrf' => 'legacy mutation branches unreachable through current routing',
+        'rate' => 'legacy mutation branches unreachable through current routing',
+    ],
     // Anonymous conversion analytics accepts sendBeacon events. It must remain
     // same-origin/rate-limited but does not mutate authenticated user state.
     'public_conversion.php' => ['csrf' => 'anonymous analytics beacon'],
