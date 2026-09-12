@@ -1,6 +1,21 @@
 <?php
-require_once __DIR__.'/../app/lib/Db.php';require_once __DIR__.'/../app/lib/Security.php';require_once __DIR__.'/../app/lib/Entitlements.php';require_once __DIR__.'/../app/lib/Mailer.php';$config=require __DIR__.'/../app/config.php';$pdo=Db::pdo();Security::start();$path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';$method=$_SERVER['REQUEST_METHOD']??'GET';
+require_once __DIR__.'/../app/lib/Db.php';require_once __DIR__.'/../app/lib/Security.php';require_once __DIR__.'/../app/lib/Entitlements.php';require_once __DIR__.'/../app/lib/Mailer.php';require_once __DIR__.'/../app/lib/ExternalAuth.php';$config=require __DIR__.'/../app/config.php';$pdo=Db::pdo();Security::start();$path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';$method=$_SERVER['REQUEST_METHOD']??'GET';
 function out($d,int $s=200){http_response_code($s);header('Content-Type: application/json; charset=utf-8');echo json_encode($d,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;}function body(){return json_decode(file_get_contents('php://input'),true)?:[];}function make_token(PDO $pdo,int $uid,string $purpose,int $ttl=86400):string{$raw=bin2hex(random_bytes(32));$pdo->prepare("INSERT INTO auth_tokens(user_id,token_hash,purpose,expires_at) VALUES(?,?,?,?)")->execute([$uid,hash('sha256',$raw,true),$purpose,date('Y-m-d H:i:s',time()+$ttl)]);return $raw;}
+
+if($path==='/api/auth/oauth/providers'&&$method==='GET'){out(['google'=>ExternalAuth::configured($config,'google'),'microsoft'=>ExternalAuth::configured($config,'microsoft')]);}
+if($path==='/api/auth/oauth/start'&&$method==='GET'){
+  Security::rateLimit($pdo,'oauth-start',20,300);$provider=strtolower(trim((string)($_GET['provider']??'')));$next=ExternalAuth::safeNext($_GET['next']??null);
+  try{$url=ExternalAuth::begin($config,$provider,$next);header('Cache-Control: no-store');header('Location: '.$url, true, 302);exit;}catch(Throwable $e){header('Location: /login?oauth_error=provider_not_configured',true,302);exit;}
+}
+if($path==='/api/auth/oauth/callback'&&$method==='GET'){
+  Security::rateLimit($pdo,'oauth-callback',30,300);$provider=strtolower(trim((string)($_GET['provider']??'')));$state=(string)($_GET['state']??'');$code=(string)($_GET['code']??'');
+  if(isset($_GET['error'])){header('Location: /login?oauth_error=access_denied',true,302);exit;}
+  try{
+    $identity=ExternalAuth::callback($config,$provider,$state,$code);$u=ExternalAuth::signIn($pdo,$identity);session_regenerate_id(true);$_SESSION['user']=$u;Security::audit($pdo,(int)$u['id'],'LOGIN_EXTERNAL','user',(string)$u['id'],['provider'=>$provider]);
+    header('Cache-Control: no-store');header('Location: /login?oauth=success&next='.rawurlencode($identity['next']),true,302);exit;
+  }catch(Throwable $e){header('Cache-Control: no-store');header('Location: /login?oauth_error=signin_failed',true,302);exit;}
+}
+
 if($path==='/api/auth/csrf'&&$method==='GET'){$u=Security::user();out(['csrf_token'=>Security::csrf(),'user'=>$u,'entitlements'=>Entitlements::context($pdo,$u)]);}
 if($path==='/api/auth/me'&&$method==='GET'){$u=Security::user();out(['user'=>$u,'entitlements'=>Entitlements::context($pdo,$u)]);}
 if($path==='/api/auth/register'&&$method==='POST'){Security::sameOrigin($config);Security::rateLimit($pdo,'register',8,300);$b=body();$email=strtolower(trim($b['email']??''));$password=(string)($b['password']??'');$name=trim($b['name']??'');if(!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($password)<10)out(['error'=>'invalid_registration'],422);$hash=password_hash($password,PASSWORD_DEFAULT);try{$pdo->beginTransaction();$st=$pdo->prepare("INSERT INTO users(email,password_hash,full_name,role,status) VALUES(?,?,?,'user','pending')");$st->execute([$email,$hash,$name?:'TechSelectAI User']);$uid=(int)$pdo->lastInsertId();$pdo->prepare("INSERT INTO user_plan_assignments(user_id,plan_code,plan_status,source) VALUES(?,'free_registered','active','registration')")->execute([$uid]);$pdo->commit();}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();out(['error'=>'account_unavailable'],409);} $raw=make_token($pdo,$uid,'verify_email');$url=rtrim($config['site_url'],'/').'/verify-email?token='.$raw;$sent=Mailer::send($config,$email,'Verify your TechSelectAI email',"Verify your email:\n{$url}\n\nThis link expires in 24 hours.");Security::audit($pdo,$uid,'REGISTER','user',(string)$uid);out(['created'=>true,'verification_email_sent'=>$sent],201);}
