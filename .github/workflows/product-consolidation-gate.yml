@@ -1,0 +1,26 @@
+name: Product consolidation gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  workflow_dispatch:
+
+jobs:
+  consolidation-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: PHP syntax
+        run: php -l scripts/consolidation_pr_gate.php
+      - name: Consolidation surface check
+        if: github.event_name == 'pull_request'
+        env:
+          CONSOLIDATION_FREEZE: '1'
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          git diff --name-status "origin/${{ github.base_ref }}...HEAD" | php scripts/consolidation_pr_gate.php
+      - name: Workflow-dispatch contract check
+        if: github.event_name == 'workflow_dispatch'
+        run: printf '' | CONSOLIDATION_FREEZE=1 php scripts/consolidation_pr_gate.php
