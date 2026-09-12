@@ -32,6 +32,7 @@ final class AdminControlCenter {
             ['key'=>'ai_visibility','label'=>'AI Visibility','href'=>'/ai-visibility','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'buyers','label'=>'Buyer Analytics','href'=>'/buyer-analytics','roles'=>['reviewer','admin','super_admin']],
             ['key'=>'authority','label'=>'Authority & Backlinks','href'=>'/authority-admin','roles'=>['reviewer','admin','super_admin']],
+            ['key'=>'advertising','label'=>'Advertising','href'=>'/admin-advertising','roles'=>['admin','super_admin']],
             ['key'=>'users','label'=>'Users & Roles','href'=>'/admin-users','roles'=>['admin','super_admin']],
             ['key'=>'audit','label'=>'Audit Log','href'=>'/admin-audit','roles'=>['admin','super_admin']],
             ['key'=>'health','label'=>'System Health','href'=>'/health','roles'=>['admin','super_admin']],
