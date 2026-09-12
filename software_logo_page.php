@@ -5,89 +5,21 @@ $config=require __DIR__.'/app/config.php';
 $pdo=Db::pdo();
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 
-$logoMeta=null;
-$priMeta=null;
-$productRow=null;
+$logoMeta=null;$priMeta=null;$productRow=null;
 if(preg_match('#^/software/([a-z0-9-]+)/?$#',$path,$m)){
-  $st=$pdo->prepare("SELECT id,name,logo_path,logo_source_url,logo_attribution,logo_last_verified_at,last_reviewed_at FROM products WHERE slug=? AND status='active' LIMIT 1");
-  $st->execute([$m[1]]);
-  $productRow=$st->fetch();
-  if($productRow && !empty($productRow['logo_path'])){
-    $relative=ltrim((string)$productRow['logo_path'],'/');
-    $safe=str_starts_with($relative,'media/software/') && strpos($relative,'..')===false;
-    $absolute=__DIR__.'/'.$relative;
-    if($safe && is_file($absolute)){
-      $logoMeta=[
-        'name'=>(string)$productRow['name'],
-        'web_path'=>'/'.$relative,
-        'source_url'=>(string)($productRow['logo_source_url']??''),
-        'attribution'=>(string)($productRow['logo_attribution']??''),
-        'verified_at'=>$productRow['logo_last_verified_at']??null,
-      ];
-    }
-  }
-
-  // Community Intelligence is optional and must never expose unapproved analysis.
-  if($productRow){
-    try{
-      $q=$pdo->prepare("SELECT score_5,positive_sentiment_pct,confidence_score,confidence_label,sources_analyzed,source_type_count,insufficient_data,strengths_json,concerns_json,methodology_version,last_analyzed_at,themes_json,source_mix_json,date_range_start,date_range_end,review_status,published_at FROM product_public_review_intelligence WHERE product_id=? LIMIT 1");
-      $q->execute([$productRow['id']]);
-      $candidate=$q->fetch()?:null;
-      $priMeta=($candidate && ($candidate['review_status']??'')==='published' && !empty($candidate['published_at']))?$candidate:null;
-    }catch(Throwable $e){
-      $priMeta=null;
-    }
-  }
+  $st=$pdo->prepare("SELECT id,name,logo_path,logo_source_url,logo_attribution,logo_last_verified_at,last_reviewed_at FROM products WHERE slug=? AND status='active' LIMIT 1");$st->execute([$m[1]]);$productRow=$st->fetch();
+  if($productRow && !empty($productRow['logo_path'])){$relative=ltrim((string)$productRow['logo_path'],'/');$safe=str_starts_with($relative,'media/software/')&&strpos($relative,'..')===false;$absolute=__DIR__.'/'.$relative;if($safe&&is_file($absolute)){$logoMeta=['name'=>(string)$productRow['name'],'web_path'=>'/'.$relative,'source_url'=>(string)($productRow['logo_source_url']??''),'attribution'=>(string)($productRow['logo_attribution']??''),'verified_at'=>$productRow['logo_last_verified_at']??null];}}
+  if($productRow){try{$q=$pdo->prepare("SELECT score_5,positive_sentiment_pct,confidence_score,confidence_label,sources_analyzed,source_type_count,insufficient_data,strengths_json,concerns_json,methodology_version,last_analyzed_at,themes_json,source_mix_json,date_range_start,date_range_end,review_status,published_at,publication_mode FROM product_public_review_intelligence WHERE product_id=? LIMIT 1");$q->execute([$productRow['id']]);$candidate=$q->fetch()?:null;$priMeta=($candidate&&($candidate['review_status']??'')==='published'&&!empty($candidate['published_at']))?$candidate:null;}catch(Throwable $e){$priMeta=null;}}
 }
 
-ob_start();
-require __DIR__.'/software_page.php';
-$html=ob_get_clean();
+ob_start();require __DIR__.'/software_page.php';$html=ob_get_clean();$esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+if($logoMeta){$logo='<div class="product-mark official-logo"><img src="'.$esc($logoMeta['web_path']).'" alt="'.$esc($logoMeta['name']).' logo" width="72" height="72" loading="eager" decoding="async"></div>';$html=preg_replace('#<div class="product-mark">.*?</div>#s',$logo,$html,1)??$html;$credit='';if($logoMeta['attribution']!==''||$logoMeta['source_url']!==''){$credit='<div class="logo-credit">Logo: ';if($logoMeta['source_url']!==''){$credit.='<a href="'.$esc($logoMeta['source_url']).'" target="_blank" rel="nofollow noopener">'.$esc($logoMeta['attribution']!==''?$logoMeta['attribution']:'official vendor source').'</a>';}else{$credit.=$esc($logoMeta['attribution']);}$credit.=' · trademark belongs to its respective owner</div>';}if($credit!=='')$html=preg_replace('#</section>\s*<section class="summary">#','</section>'.$credit.'<section class="summary">',$html,1)??$html;$og='<meta property="og:image" content="'.$esc(rtrim((string)$config['site_url'],'/').$logoMeta['web_path']).'">';$html=str_replace('</head>',$og.'</head>',$html);}
 
-$esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+$css='.official-logo{background:#fff;padding:11px}.official-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.logo-credit{margin:-12px 0 20px 108px;font-size:11px;color:var(--muted)}.logo-credit a{color:inherit}.trust-strip{margin:20px 0;padding:13px 15px;border:1px solid #dbe7ef;border-radius:12px;background:#f8fbfd;color:#536174;font-size:12px;line-height:1.55}.trust-strip strong{color:var(--navy)}.trust-stale{background:#fff8e8;border-color:#f3d6a1}.pri{margin-top:38px;padding:22px;border:1px solid var(--line);border-radius:16px;background:#fbfdfe}.pri-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.pri-score{font-size:38px;font-weight:850;color:var(--navy);line-height:1}.pri-score small{font-size:15px;color:var(--muted);font-weight:700}.pri-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}.pri-metric{padding:12px;border-radius:11px;background:#fff;border:1px solid #e6edf2}.pri-metric span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.pri-lists{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.pri-lists h3{font-size:15px;margin:0 0 7px}.pri-lists ul{margin:0;padding-left:19px;color:#536174}.pri-note{margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.pri-mode{display:inline-flex;margin-top:8px;padding:4px 8px;border-radius:999px;background:#e8f7f3;color:#0f766e;font-size:11px;font-weight:800}@media(max-width:620px){.logo-credit{margin:-10px 0 18px}.pri-head{display:block}.pri-score{margin-top:12px}.pri-lists{grid-template-columns:1fr}}';$html=str_replace('</style>',$css.'</style>',$html);
 
-if($logoMeta){
-  $logo='<div class="product-mark official-logo"><img src="'.$esc($logoMeta['web_path']).'" alt="'.$esc($logoMeta['name']).' logo" width="72" height="72" loading="eager" decoding="async"></div>';
-  $html=preg_replace('#<div class="product-mark">.*?</div>#s',$logo,$html,1)??$html;
-
-  $credit='';
-  if($logoMeta['attribution']!=='' || $logoMeta['source_url']!==''){
-    $credit='<div class="logo-credit">Logo: ';
-    if($logoMeta['source_url']!==''){
-      $credit.='<a href="'.$esc($logoMeta['source_url']).'" target="_blank" rel="nofollow noopener">'.$esc($logoMeta['attribution']!==''?$logoMeta['attribution']:'official vendor source').'</a>';
-    }else{$credit.=$esc($logoMeta['attribution']);}
-    $credit.=' · trademark belongs to its respective owner</div>';
-  }
-  if($credit!=='')$html=preg_replace('#</section>\s*<section class="summary">#','</section>'.$credit.'<section class="summary">',$html,1)??$html;
-  $og='<meta property="og:image" content="'.$esc(rtrim((string)$config['site_url'],'/').$logoMeta['web_path']).'">';
-  $html=str_replace('</head>',$og.'</head>',$html);
-}
-
-$css='.official-logo{background:#fff;padding:11px}.official-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.logo-credit{margin:-12px 0 20px 108px;font-size:11px;color:var(--muted)}.logo-credit a{color:inherit}.trust-strip{margin:20px 0;padding:13px 15px;border:1px solid #dbe7ef;border-radius:12px;background:#f8fbfd;color:#536174;font-size:12px;line-height:1.55}.trust-strip strong{color:var(--navy)}.trust-stale{background:#fff8e8;border-color:#f3d6a1}.pri{margin-top:38px;padding:22px;border:1px solid var(--line);border-radius:16px;background:#fbfdfe}.pri-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.pri-score{font-size:38px;font-weight:850;color:var(--navy);line-height:1}.pri-score small{font-size:15px;color:var(--muted);font-weight:700}.pri-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}.pri-metric{padding:12px;border-radius:11px;background:#fff;border:1px solid #e6edf2}.pri-metric span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.pri-lists{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.pri-lists h3{font-size:15px;margin:0 0 7px}.pri-lists ul{margin:0;padding-left:19px;color:#536174}.pri-note{margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.55}@media(max-width:620px){.logo-credit{margin:-10px 0 18px}.pri-head{display:block}.pri-score{margin-top:12px}.pri-lists{grid-template-columns:1fr}}';
-$html=str_replace('</style>',$css.'</style>',$html);
-
-if($productRow){
-  $fresh=TransparencySignals::freshness($productRow['last_reviewed_at']??null);
-  $trust='<div class="trust-strip'.($fresh['stale']?' trust-stale':'').'" data-citation-section="freshness"><strong>Product data freshness:</strong> '.$esc($fresh['label']);
-  if(!empty($productRow['last_reviewed_at']))$trust.=' · Last reviewed '.$esc(date('M j, Y',strtotime((string)$productRow['last_reviewed_at'])));
-  $trust.='. Vendor-provided facts, reviewed evidence, community-derived insights, and TechSelectAI analysis are kept as separate evidence classes. <a href="/methodology">Methodology</a>.</div>';
-  $html=preg_replace('#<section class="summary">#',$trust.'<section class="summary">',$html,1)??$html;
-
-  $priSection='';
-  if(!$priMeta || !empty($priMeta['insufficient_data']) || $priMeta['score_5']===null){
-    $priSection='<section class="pri" id="public-review-intelligence" data-citation-section="public-review-intelligence"><div class="eyebrow">Public Review Intelligence</div><h2>Public feedback analysis</h2><p class="section-intro">No reviewer-approved Community Intelligence score is currently published for '.$esc($productRow['name']).'.</p><p class="pri-note">Community-derived insights are published only after source-policy review, minimum coverage, source-diversity and confidence checks. They remain separate from vendor-certified facts and TechSelectAI Product Evaluation.</p></section>';
-  }else{
-    $strengths=json_decode((string)($priMeta['strengths_json']??'[]'),true);if(!is_array($strengths))$strengths=[];
-    $concerns=json_decode((string)($priMeta['concerns_json']??'[]'),true);if(!is_array($concerns))$concerns=[];
-    $mix=json_decode((string)($priMeta['source_mix_json']??'{}'),true);if(!is_array($mix))$mix=[];
-    $priFresh=TransparencySignals::freshness($priMeta['last_analyzed_at']??null);
-    $period='';if(!empty($priMeta['date_range_start'])||!empty($priMeta['date_range_end'])){$period=($priMeta['date_range_start']?date('M Y',strtotime((string)$priMeta['date_range_start'])):'Unknown').'–'.($priMeta['date_range_end']?date('M Y',strtotime((string)$priMeta['date_range_end'])):'present');}
-    $priSection='<section class="pri" id="public-review-intelligence" data-citation-section="public-review-intelligence"><div class="pri-head"><div><div class="eyebrow">Public Review Intelligence</div><h2>What public users are saying</h2><p class="section-intro">Reviewer-approved, AI-assisted analysis of permitted public-community evidence. This is a community-derived signal, not a vendor-certified fact.</p></div><div class="pri-score">'.number_format((float)$priMeta['score_5'],1).'<small> / 5</small></div></div>';
-    $priSection.='<div class="pri-grid"><div class="pri-metric"><span>Positive sentiment</span><strong>'.number_format((float)$priMeta['positive_sentiment_pct'],0).'%</strong></div><div class="pri-metric"><span>Confidence</span><strong>'.$esc(ucfirst((string)$priMeta['confidence_label'])).'</strong></div><div class="pri-metric"><span>Sources analyzed</span><strong>'.intval($priMeta['sources_analyzed']).'</strong></div><div class="pri-metric"><span>Source diversity</span><strong>'.intval($priMeta['source_type_count']).' types</strong></div><div class="pri-metric"><span>Freshness</span><strong>'.$esc($priFresh['label']).'</strong></div></div>';
-    if($strengths || $concerns){$priSection.='<div class="pri-lists"><div><h3>Common strengths</h3>';if($strengths){$priSection.='<ul>';foreach(array_slice($strengths,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable strength themes yet.</p>';}$priSection.='</div><div><h3>Common concerns</h3>';if($concerns){$priSection.='<ul>';foreach(array_slice($concerns,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable concern themes yet.</p>';}$priSection.='</div></div>';}
-    $priSection.='<p class="pri-note">Methodology '.$esc((string)$priMeta['methodology_version']).' · Source mix: '.$esc(TransparencySignals::sourceMixLabel($mix)).($period?' · Evidence period '.$esc($period):'').($priMeta['last_analyzed_at']?' · Last analyzed '.$esc(date('M j, Y',strtotime((string)$priMeta['last_analyzed_at']))):'').'. Public Review Intelligence is reviewer-approved and calculated from permitted community evidence; it does not affect recommendation ranking. <a href="/methodology">See methodology</a>.</p></section>';
-  }
+if($productRow){$fresh=TransparencySignals::freshness($productRow['last_reviewed_at']??null);$trust='<div class="trust-strip'.($fresh['stale']?' trust-stale':'').'" data-citation-section="freshness"><strong>Product data freshness:</strong> '.$esc($fresh['label']);if(!empty($productRow['last_reviewed_at']))$trust.=' · Last reviewed '.$esc(date('M j, Y',strtotime((string)$productRow['last_reviewed_at'])));$trust.='. Vendor-provided facts, reviewed evidence, community-derived insights, and TechSelectAI analysis are kept as separate evidence classes. <a href="/methodology">Methodology</a>.</div>';$html=preg_replace('#<section class="summary">#',$trust.'<section class="summary">',$html,1)??$html;
+  if(!$priMeta||!empty($priMeta['insufficient_data'])||$priMeta['score_5']===null){$priSection='<section class="pri" id="public-review-intelligence" data-citation-section="public-review-intelligence"><div class="eyebrow">Public Review Intelligence</div><h2>Public feedback analysis</h2><p class="section-intro">No Community Intelligence score currently meets TechSelectAI publication requirements for '.$esc($productRow['name']).'.</p><p class="pri-note">Community-derived insights publish only after source-policy, minimum coverage, source-diversity, confidence and safety checks. Records that do not satisfy the automatic gates remain subject to human review. They remain separate from vendor-certified facts and TechSelectAI Product Evaluation.</p></section>';
+  }else{$strengths=json_decode((string)($priMeta['strengths_json']??'[]'),true);if(!is_array($strengths))$strengths=[];$concerns=json_decode((string)($priMeta['concerns_json']??'[]'),true);if(!is_array($concerns))$concerns=[];$mix=json_decode((string)($priMeta['source_mix_json']??'{}'),true);if(!is_array($mix))$mix=[];$priFresh=TransparencySignals::freshness($priMeta['last_analyzed_at']??null);$period='';if(!empty($priMeta['date_range_start'])||!empty($priMeta['date_range_end'])){$period=($priMeta['date_range_start']?date('M Y',strtotime((string)$priMeta['date_range_start'])):'Unknown').'–'.($priMeta['date_range_end']?date('M Y',strtotime((string)$priMeta['date_range_end'])):'present');}$isAuto=($priMeta['publication_mode']??'')==='auto';$modeLabel=$isAuto?'Automatically published after quality gates':'Human-reviewed publication';$intro=$isAuto?'AI-assisted analysis of permitted public-community evidence that passed TechSelectAI’s automatic coverage, diversity, confidence, concentration, freshness, stability and safety gates.':'AI-assisted analysis of permitted public-community evidence published after human review.';$priSection='<section class="pri" id="public-review-intelligence" data-citation-section="public-review-intelligence"><div class="pri-head"><div><div class="eyebrow">Public Review Intelligence</div><h2>What public users are saying</h2><p class="section-intro">'.$esc($intro).' This is a community-derived signal, not a vendor-certified fact.</p><span class="pri-mode">'.$esc($modeLabel).'</span></div><div class="pri-score">'.number_format((float)$priMeta['score_5'],1).'<small> / 5</small></div></div>';$priSection.='<div class="pri-grid"><div class="pri-metric"><span>Positive sentiment</span><strong>'.number_format((float)$priMeta['positive_sentiment_pct'],0).'%</strong></div><div class="pri-metric"><span>Confidence</span><strong>'.$esc(ucfirst((string)$priMeta['confidence_label'])).'</strong></div><div class="pri-metric"><span>Sources analyzed</span><strong>'.intval($priMeta['sources_analyzed']).'</strong></div><div class="pri-metric"><span>Source diversity</span><strong>'.intval($priMeta['source_type_count']).' types</strong></div><div class="pri-metric"><span>Freshness</span><strong>'.$esc($priFresh['label']).'</strong></div></div>';if($strengths||$concerns){$priSection.='<div class="pri-lists"><div><h3>Common strengths</h3>';if($strengths){$priSection.='<ul>';foreach(array_slice($strengths,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable strength themes yet.</p>';}$priSection.='</div><div><h3>Common concerns</h3>';if($concerns){$priSection.='<ul>';foreach(array_slice($concerns,0,5) as $x)$priSection.='<li>'.$esc(is_array($x)?($x['label']??$x['topic']??json_encode($x)):$x).'</li>';$priSection.='</ul>';}else{$priSection.='<p class="muted">No stable concern themes yet.</p>';}$priSection.='</div></div>';}$publicationText=$isAuto?'automatically published after configured quality gates passed':'published after human review';$priSection.='<p class="pri-note">Methodology '.$esc((string)$priMeta['methodology_version']).' · Source mix: '.$esc(TransparencySignals::sourceMixLabel($mix)).($period?' · Evidence period '.$esc($period):'').($priMeta['last_analyzed_at']?' · Last analyzed '.$esc(date('M j, Y',strtotime((string)$priMeta['last_analyzed_at']))):'').'. Public Review Intelligence is '.$esc($publicationText).' and calculated from permitted community evidence; it does not affect Fit Score, Product Evaluation or recommendation ranking. <a href="/methodology">See methodology</a>.</p></section>';}
   $html=preg_replace('#<section class="cta">#',$priSection.'<section class="cta">',$html,1)??$html;
 }
-
 echo $html;
