@@ -6,7 +6,7 @@ final class SoftwareManagement {
         if(!empty($filters['status'])){$where[]='p.status=?';$args[]=$filters['status'];}
         if(!empty($filters['vendor_id'])){$where[]='p.vendor_id=?';$args[]=(int)$filters['vendor_id'];}
         if(!empty($filters['category_id'])){$where[]='p.category_id=?';$args[]=(int)$filters['category_id'];}
-        $sql="SELECT p.id,p.name,p.slug,p.short_description,p.website_url,p.status,p.last_reviewed_at,p.updated_at,p.vendor_id,p.category_id,v.name vendor,c.name category,
+        $sql="SELECT p.id,p.name,p.slug,p.short_description,p.website_url,p.status,p.last_reviewed_at,p.updated_at,p.vendor_id,p.category_id,p.logo_path,p.logo_last_verified_at,v.name vendor,c.name category,
         (SELECT COUNT(*) FROM evidence_sources e WHERE e.product_id=p.id) evidence_count,
         (SELECT COUNT(*) FROM evidence_sources e WHERE e.product_id=p.id AND e.verification_status IN('outdated','broken','disputed','placeholder','unverified')) evidence_issues,
         (SELECT COUNT(*) FROM product_capabilities pc WHERE pc.product_id=p.id AND pc.edition_id IS NULL) capability_count,
@@ -50,7 +50,11 @@ final class SoftwareManagement {
         $checks['evaluation']=['ok'=>!empty($evalAt)&&strtotime((string)$evalAt)>=strtotime('-180 days'),'label'=>'Fresh published TechSelectAI evaluation','value'=>$evalAt];
         $checks['seo']=['ok'=>$e>=3&&!empty($product['slug'])&&!empty($product['short_description']),'label'=>'Public SEO/indexability basics'];
         $passed=count(array_filter($checks,fn($x)=>$x['ok']));$score=(int)round($passed/max(1,count($checks))*100);
-        return ['score'=>$score,'passed'=>$passed,'total'=>count($checks),'ready'=>$score>=80&&!$bad,'checks'=>$checks];
+        $warnings=[];
+        $logoPath=trim((string)($product['logo_path']??''));$logoVerified=$product['logo_last_verified_at']??null;
+        if($logoPath==='')$warnings[]=['code'=>'missing_verified_logo','label'=>'No approved local software logo. Use Logo discovery before catalog completion.'];
+        elseif(empty($logoVerified))$warnings[]=['code'=>'logo_verification_missing','label'=>'Software logo exists but has no last-verified date.'];
+        return ['score'=>$score,'passed'=>$passed,'total'=>count($checks),'ready'=>$score>=80&&!$bad,'checks'=>$checks,'warnings'=>$warnings];
     }
     public static function referenceData(PDO $pdo): array {return ['vendors'=>self::rows($pdo,"SELECT id,name FROM vendors WHERE status='active' ORDER BY name"),'categories'=>self::rows($pdo,"SELECT id,name FROM categories WHERE is_active=1 ORDER BY name")];}
     private static function rows(PDO $pdo,string $sql,array $args=[]):array{$q=$pdo->prepare($sql);$q->execute($args);return $q->fetchAll(PDO::FETCH_ASSOC);}
