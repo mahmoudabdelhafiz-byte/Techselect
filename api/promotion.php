@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__.'/../app/lib/Db.php';
 require_once __DIR__.'/../app/lib/Security.php';
-require_once __DIR__.'/../app/lib/CardIqPromotion.php';
 $config=require __DIR__.'/../app/config.php';
 $pdo=Db::pdo();
 Security::start();
@@ -12,6 +11,8 @@ function promo_out($d,int $s=200){http_response_code($s);header('Content-Type: a
 if(!preg_match('#^/api/consultations/([a-f0-9]{48})/promotion(?:/(impression|click))?$#',$path,$m))promo_out(['error'=>'not_found'],404);
 $st=$pdo->prepare("SELECT c.* FROM consultations c WHERE c.public_token=? LIMIT 1");$st->execute([$m[1]]);$c=$st->fetch();if(!$c)promo_out(['error'=>'not_found'],404);
 if(!empty($c['user_id'])){$u=Security::user();if(!$u || (int)$u['id']!==(int)$c['user_id'])promo_out(['error'=>'forbidden'],403);}
-if($method==='GET' && empty($m[2])){Security::rateLimit($pdo,'promotion-evaluate',30,60);promo_out(['promotion'=>CardIqPromotion::evaluate($pdo,$c)]);}
-if($method==='POST' && !empty($m[2])){Security::rateLimit($pdo,'promotion-event',30,60);if(Security::user())Security::requireCsrf();$b=json_decode(file_get_contents('php://input'),true)?:[];CardIqPromotion::recordEvent($pdo,$c,$m[2],(string)($b['trigger_group']??'unknown'),(int)($b['relevance_score']??0));promo_out(['recorded'=>true]);}
+// Product-specific consultation promotions are retired. Recommendations must remain
+// entirely organic and use the same scoring/ranking methodology for every product.
+if($method==='GET' && empty($m[2])){Security::rateLimit($pdo,'promotion-evaluate',30,60);promo_out(['promotion'=>null,'retired'=>true]);}
+if($method==='POST' && !empty($m[2])){Security::rateLimit($pdo,'promotion-event',30,60);if(Security::user())Security::requireCsrf();promo_out(['recorded'=>false,'retired'=>true]);}
 promo_out(['error'=>'method_not_allowed'],405);
