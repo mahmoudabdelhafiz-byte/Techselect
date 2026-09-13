@@ -19,6 +19,7 @@ on:
       - 'scripts/catalog_070_identity_expansion_check.php'
       - 'scripts/catalog_071_identity_expansion_check.php'
       - 'scripts/catalog_072_cross_category_check.php'
+      - 'scripts/catalog_074_cross_category_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
       - 'sitemap.php'
@@ -48,6 +49,7 @@ on:
       - 'scripts/catalog_070_identity_expansion_check.php'
       - 'scripts/catalog_071_identity_expansion_check.php'
       - 'scripts/catalog_072_cross_category_check.php'
+      - 'scripts/catalog_074_cross_category_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
       - 'sitemap.php'
@@ -88,6 +90,7 @@ jobs:
           php -l scripts/catalog_070_identity_expansion_check.php
           php -l scripts/catalog_071_identity_expansion_check.php
           php -l scripts/catalog_072_cross_category_check.php
+          php -l scripts/catalog_074_cross_category_check.php
           php -l scripts/external_auth_check.php
           php -l scripts/admin_shell_check.php
           php -l project_decision_matrix.php
@@ -111,6 +114,8 @@ jobs:
         run: php scripts/catalog_071_identity_expansion_check.php
       - name: Cross-category catalog contract
         run: php scripts/catalog_072_cross_category_check.php
+      - name: Cross-category catalog batch 2 contract
+        run: php scripts/catalog_074_cross_category_check.php
       - name: External authentication contract
         run: php scripts/external_auth_check.php
       - name: Admin shell layout/CSP contract
