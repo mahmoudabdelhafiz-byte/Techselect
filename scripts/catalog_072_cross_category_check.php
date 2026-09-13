@@ -24,7 +24,6 @@ $require = static function (bool $ok, string $message) use (&$failures): void {
     }
 };
 
-// This batch must reuse the existing taxonomy rather than creating parallel structures.
 $require(stripos($sql72, 'INSERT INTO categories') === false, '072 must not create categories.');
 $require(stripos($sql72, 'INSERT INTO modules') === false, '072 must not create modules.');
 $require(stripos($sql72, 'INSERT INTO capabilities') === false, '072 must not create capabilities.');
@@ -52,14 +51,13 @@ $require(strpos($sql72, "1,'verified','high'") !== false, 'Evidence must be vend
 $require(stripos($combined, 'g2.com') === false, 'G2 data must not be ingested.');
 $require(stripos($combined, 'capterra') === false, 'Capterra data must not be ingested.');
 
-// Every known fact source should be represented in official evidence either in 072 or the focused 073 completion migration.
 preg_match_all("/\('(?:[^']|'')+','(?:[^']|'')+','(?:supported|partially_supported)',[0-9.]+,(?:NULL|'(?:[^']|'')*'),'([^']+)'\)/", $sql72, $matches);
 foreach ($matches[1] ?? [] as $url) {
     $require(substr_count($combined, "'{$url}'") >= 2, "Known fact source is not represented in evidence: {$url}");
 }
 
 $officialHosts = [
-    'usehalo.com', 'deel.com', 'developer.deel.com', 'sage.com', 'basecamp.com',
+    'usehalo.com', 'deel.com', 'developer.deel.com', 'sage.com', 'basecamp.com', '37signals.com',
     'domo.com', 'domo-webflow.domo.com', 'bitdefender.com', 'rubrik.com'
 ];
 preg_match_all("/'https:\/\/([^\/']+)[^']*'/", $combined, $urls);
@@ -78,7 +76,6 @@ foreach ($urls[1] ?? [] as $host) {
 $require(strpos($sql73, 'endpoint-cross-platform') !== false, '073 must complete the Bitdefender cross-platform evidence link.');
 $require(strpos($sql73, 'gravityzone-platform') !== false, '073 must insert the GravityZone platform source.');
 
-// Guard against duplicate shells elsewhere in the migration history.
 $migrationFiles = glob($root . '/db/mysql/*.sql') ?: [];
 foreach (array_keys($products) as $slug) {
     $otherHits = 0;
