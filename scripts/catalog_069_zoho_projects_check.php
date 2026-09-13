@@ -11,6 +11,14 @@ foreach(['INSERT INTO categories','INSERT INTO modules','INSERT INTO capabilitie
 }
 if(!str_contains($migration,"WHERE slug='project-management'"))$errors[]='069 does not reuse the existing project-management category';
 if(substr_count($migration,"'zoho-projects'")<8)$errors[]='069 does not consistently target the zoho-projects product slug';
+if(!str_contains($migration,'ON DUPLICATE KEY UPDATE'))$errors[]='069 is not idempotent for reruns';
+
+// The added product slug must not already be seeded by an earlier migration.
+foreach(glob($root.'/db/mysql/*.sql')?:[] as $file){
+    if(basename($file)==='069_add_zoho_projects_catalog.sql')continue;
+    $src=file_get_contents($file)?:'';
+    if(str_contains($src,"'zoho-projects'"))$errors[]='zoho-projects is already referenced by earlier migration '.basename($file);
+}
 
 // Evidence-first / Unknown != Unsupported contract.
 foreach([
@@ -44,4 +52,4 @@ if($errors){
     fwrite(STDERR,"Catalog 069 contract failed:\n- ".implode("\n- ",$errors)."\n");
     exit(1);
 }
-echo "Catalog 069 contract passed: Zoho Projects uses existing taxonomy, {$factCount} evidence-linked known facts, and explicit unknown placeholders.\n";
+echo "Catalog 069 contract passed: Zoho Projects is non-duplicate, reuses existing taxonomy, has {$factCount} evidence-linked known facts, and preserves explicit unknowns.\n";
