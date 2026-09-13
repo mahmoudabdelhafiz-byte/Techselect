@@ -56,7 +56,7 @@ INSERT INTO cat71_facts VALUES
 ('linq','central-brand-templates','partially_supported',0.80,'Linq supports branded/custom digital-card products and team use; centralized template-governance depth was not fully verified in this evidence batch.','https://help.linqapp.com/en/articles/all-about-the-hyper-products-from-linq'),
 ('linq','engagement-analytics','supported',0.98,'Linq One documents advanced analytics.','https://help.linqapp.com/en/articles/9845164-what-is-linq-one'),
 ('linq','lead-capture','supported',0.99,'Linq documents lead forms, contact capture and mobile CRM workflows.','https://help.linqapp.com/en/articles/9845164-what-is-linq-one'),
-('linq','crm-integrations','supported',0.99,'Official FAQ lists Salesforce, HubSpot, GoHighLevel and Zapier-backed CRM connectivity depending on plan.','https://help.linqapp.com/en/collections/10106475/general-faq');
+('linq','crm-integrations','supported',0.99,'Official FAQ lists Salesforce, HubSpot, GoHighLevel and Zapier-backed CRM connectivity depending on plan.','https://help.linqapp.com/en/collections/10106475-general-faq');
 
 INSERT INTO product_capabilities(product_id,capability_id,edition_id,support_status,limitations,confidence_score,last_verified_at)
 SELECT p.id,c.id,NULL,f.support_status,f.limitations,f.confidence,NOW()
