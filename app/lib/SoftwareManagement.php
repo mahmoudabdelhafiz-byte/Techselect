@@ -15,13 +15,14 @@ final class SoftwareManagement {
         (SELECT MAX(pe.evaluated_at) FROM product_evaluations pe WHERE pe.product_id=p.id AND pe.status='published') evaluation_at
         FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE ".implode(' AND ',$where)." ORDER BY p.name LIMIT 1000";
         $st=$pdo->prepare($sql);$st->execute($args);$rows=$st->fetchAll(PDO::FETCH_ASSOC);
-        foreach($rows as &$r)$r['readiness']=self::readiness($pdo,(int)$r['id'],$r);unset($r);
+        foreach($rows as &$r){$r['readiness']=self::readiness($pdo,(int)$r['id'],$r);$r['mobile_access']=self::mobileAccess($pdo,(int)$r['id']);}unset($r);
         return $rows;
     }
     public static function detail(PDO $pdo,int $id): ?array {
         $q=$pdo->prepare("SELECT p.*,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.id=? LIMIT 1");$q->execute([$id]);$p=$q->fetch(PDO::FETCH_ASSOC);if(!$p)return null;
         $p['readiness']=self::readiness($pdo,$id,$p);
         $p['capabilities']=self::rows($pdo,"SELECT pc.id,c.name,c.slug,pc.support_status,pc.implementation_type,pc.limitations,pc.confidence_score,pc.last_verified_at FROM product_capabilities pc JOIN capabilities c ON c.id=pc.capability_id WHERE pc.product_id=? AND pc.edition_id IS NULL ORDER BY c.name",[$id]);
+        $p['mobile_access']=self::mobileAccess($pdo,$id);
         $p['pricing']=self::rows($pdo,"SELECT pp.*,pe.name edition_name FROM product_pricing pp LEFT JOIN product_editions pe ON pe.id=pp.edition_id WHERE pp.product_id=? ORDER BY pp.id",[$id]);
         $p['integrations']=self::tryRows($pdo,"SELECT i.name,i.slug,pi.support_status,pi.confidence_score,pi.last_verified_at FROM product_integrations pi JOIN integrations i ON i.id=pi.integration_id WHERE pi.product_id=? ORDER BY i.name",[$id]);
         $p['deployments']=self::tryRows($pdo,"SELECT d.name,d.slug,pd.support_status,pd.confidence_score,pd.last_verified_at FROM product_deployments pd JOIN deployment_models d ON d.id=pd.deployment_model_id WHERE pd.product_id=? ORDER BY d.name",[$id]);
@@ -31,6 +32,9 @@ final class SoftwareManagement {
         $p['aliases']=self::tryRows($pdo,"SELECT id,alias,created_at FROM product_aliases WHERE product_id=? ORDER BY alias",[$id]);
         $p['history']=self::tryRows($pdo,"SELECT id,actor_user_id,action,before_json,after_json,created_at FROM audit_logs WHERE entity_type='product' AND entity_id=? ORDER BY created_at DESC LIMIT 100",[(string)$id]);
         return $p;
+    }
+    public static function mobileAccess(PDO $pdo,int $id): array {
+        return self::tryRows($pdo,"SELECT platform,support_status,scope_status,scope_notes,evidence_url,evidence_type,confidence_score,last_verified_at FROM product_mobile_access WHERE product_id=? ORDER BY FIELD(platform,'android','ios','mobile_web')",[$id]);
     }
     public static function readiness(PDO $pdo,int $id,array $product=[]): array {
         if(!$product){$q=$pdo->prepare('SELECT * FROM products WHERE id=?');$q->execute([$id]);$product=$q->fetch(PDO::FETCH_ASSOC)?:[];}
@@ -42,6 +46,7 @@ final class SoftwareManagement {
         $checks['evidence']=['ok'=>$e>=3,'label'=>'At least 3 evidence sources','value'=>$e];
         $checks['evidence_health']=['ok'=>$bad===0,'label'=>'No critical broken/outdated/disputed evidence','value'=>$bad];
         $checks['capabilities']=['ok'=>(int)self::scalar($pdo,'SELECT COUNT(*) FROM product_capabilities WHERE product_id=? AND edition_id IS NULL',[$id])>=3,'label'=>'Capability coverage'];
+        $checks['mobile_access']=['ok'=>(int)self::tryScalar($pdo,'SELECT COUNT(*) FROM product_mobile_access WHERE product_id=?',[$id])===3,'label'=>'Mobile access validation rows present'];
         $checks['pricing']=['ok'=>(int)self::scalar($pdo,'SELECT COUNT(*) FROM product_pricing WHERE product_id=?',[$id])>0,'label'=>'Pricing evidence'];
         $checks['deployment']=['ok'=>(int)self::tryScalar($pdo,'SELECT COUNT(*) FROM product_deployments WHERE product_id=?',[$id])>0,'label'=>'Deployment coverage'];
         $checks['integrations']=['ok'=>(int)self::tryScalar($pdo,'SELECT COUNT(*) FROM product_integrations WHERE product_id=?',[$id])>0,'label'=>'Integration coverage'];
@@ -54,6 +59,8 @@ final class SoftwareManagement {
         $logoPath=trim((string)($product['logo_path']??''));$logoVerified=$product['logo_last_verified_at']??null;
         if($logoPath==='')$warnings[]=['code'=>'missing_verified_logo','label'=>'No approved local software logo. Use Logo discovery before catalog completion.'];
         elseif(empty($logoVerified))$warnings[]=['code'=>'logo_verification_missing','label'=>'Software logo exists but has no last-verified date.'];
+        $unknown=(int)self::tryScalar($pdo,"SELECT COUNT(*) FROM product_mobile_access WHERE product_id=? AND support_status='not_yet_verified'",[$id]);
+        if($unknown>0)$warnings[]=['code'=>'mobile_access_not_yet_verified','label'=>$unknown.' mobile access item(s) remain not yet verified; do not treat them as unsupported.'];
         return ['score'=>$score,'passed'=>$passed,'total'=>count($checks),'ready'=>$score>=80&&!$bad,'checks'=>$checks,'warnings'=>$warnings];
     }
     public static function referenceData(PDO $pdo): array {return ['vendors'=>self::rows($pdo,"SELECT id,name FROM vendors WHERE status='active' ORDER BY name"),'categories'=>self::rows($pdo,"SELECT id,name FROM categories WHERE is_active=1 ORDER BY name")];}
