@@ -14,7 +14,7 @@ final class PublicReviewConnectorBootstrap
             $summary['products_seen']++;$query=trim((string)$p['name'].' '.(string)$p['vendor_name']);
             $connectors=[
                 ['stackexchange_api','public_forum','Stack Exchange',self::STACK_BASE,['site'=>'stackoverflow','query'=>$query,'tagged'=>'','pagesize'=>25]],
-                ['rss_atom','reddit','Reddit public search','https://old.reddit.com/search.rss?q='.rawurlencode('"'.$p['name'].'" '.$p['vendor_name']).'&sort=new&t=year',['max_items'=>25]],
+                ['rss_atom','reddit','Reddit public search','https://www.reddit.com/search.rss?q='.rawurlencode('"'.$p['name'].'" '.$p['vendor_name']).'&sort=new&t=year',['max_items'=>25]],
                 ['hackernews_algolia_api','other_public','Hacker News',self::HN_BASE,['query'=>$query,'max_items'=>25]],
             ];
             foreach($connectors as [$type,$sourceType,$name,$base,$config]){
