@@ -38,7 +38,6 @@ foreach([
 
 // Every current/future active product with a canonical vendor must receive the explicit
 // software-owner relationship; this is catalog identity verification, not an endorsement.
-foreach(['vendor_product_relationships',"'software_owner'","p.status='active'","v.status='active'","verification_status='verified'",'COALESCE(NULLIF(p.website_url'], as $needle){}
 $coverageNeedles=['vendor_product_relationships',"'software_owner'","p.status='active'","v.status='active'","verification_status='verified'",'COALESCE(NULLIF(p.website_url',"v.verification_status='verified'",'does not affect Fit Score'];
 foreach($coverageNeedles as $needle)if(!str_contains($coverage,$needle))$errors[]="084 vendor coverage is missing: {$needle}";
 foreach(['preferred_vendor','fit_score=','recommendation_rank'] as $needle)if(stripos($coverage,$needle)!==false)$errors[]="084 vendor identity sync must not change recommendation logic: {$needle}";
