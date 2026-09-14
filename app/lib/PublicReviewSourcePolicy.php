@@ -2,7 +2,9 @@
 
 final class PublicReviewSourcePolicy
 {
-    public const VERSION = 'pri-source-policy-v1';
+    public const VERSION = 'pri-source-policy-v2';
+    private const BLOCKED_TYPES = ['g2','capterra'];
+    private const BLOCKED_HOSTS = ['g2.com','capterra.com'];
 
     public static function catalog(): array
     {
@@ -14,8 +16,8 @@ final class PublicReviewSourcePolicy
             'independent_blog' => self::row('Independent blog / implementation commentary','permitted_with_review','Analyze public commentary without republishing long copyrighted passages. Keep source URL and derived signals only.','Prefer identifiable original publications over scraped mirrors.'),
             'public_case_study' => self::row('Public case study / implementation story','permitted_with_review','Useful as implementation evidence, but treat vendor-sponsored case studies as lower-independence context rather than neutral user reviews.','Record sponsorship/vendor authorship in notes.'),
             'review_aggregator' => self::row('Commercial review aggregator','restricted_pending_legal_check','Do not ingest by default. Many commercial review platforms restrict scraping, copying or derivative reuse. Use only with an API/license or explicit terms basis that permits the intended use.','Legal/terms review required before any source can be marked permitted.'),
-            'g2' => self::row('G2','restricted_pending_legal_check','Restricted by default. Do not scrape or use AI to bypass platform restrictions. Require an approved API/license/terms basis for the intended analysis/reuse.','Keep restricted unless written policy review documents permission.'),
-            'capterra' => self::row('Capterra','restricted_pending_legal_check','Restricted by default. Do not scrape or use AI to bypass platform restrictions. Require an approved API/license/terms basis for the intended analysis/reuse.','Keep restricted unless written policy review documents permission.'),
+            'g2' => self::row('G2','blocked','TechSelectAI does not ingest or publish G2-derived Public Review Intelligence.','Blocked by product policy; do not override in admin source review.'),
+            'capterra' => self::row('Capterra','blocked','TechSelectAI does not ingest or publish Capterra-derived Public Review Intelligence.','Blocked by product policy; do not override in admin source review.'),
             'other_public' => self::row('Other public source','restricted_pending_legal_check','Unknown source types require a manual terms/access review before approval. Public availability alone does not make reuse automatically permitted.','Reviewer must document why the specific source is allowed.'),
         ];
     }
@@ -28,7 +30,18 @@ final class PublicReviewSourcePolicy
 
     public static function mayAutoPermit(string $sourceType): bool
     {
-        // Governance presets are advisory only; every source still requires an explicit human policy decision.
+        // Governance presets are advisory only; every non-blocked source still requires an explicit human policy decision.
+        return false;
+    }
+
+    public static function isBlocked(string $sourceType, string $url=''): bool
+    {
+        if (in_array(strtolower(trim($sourceType)), self::BLOCKED_TYPES, true)) return true;
+        $host = strtolower((string)parse_url(trim($url), PHP_URL_HOST));
+        $host = preg_replace('/^www\./', '', $host);
+        foreach (self::BLOCKED_HOSTS as $blocked) {
+            if ($host === $blocked || str_ends_with($host, '.' . $blocked)) return true;
+        }
         return false;
     }
 

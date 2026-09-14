@@ -94,6 +94,8 @@ jobs:
         run: |
           php -l app/lib/Mailer.php
           php -l app/lib/CommunityIntelligenceAutoPublisher.php
+          php -l app/lib/PublicReviewSourcePolicy.php
+          php -l app/lib/PublicReviewIngestion.php
           php -l app/lib/PublicReviewAdminService.php
           php -l app/lib/ComparisonSeoPriority.php
           php -l app/lib/ExternalAuth.php

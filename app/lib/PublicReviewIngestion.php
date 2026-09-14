@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__.'/PublicReviewIntelligence.php';
+require_once __DIR__.'/PublicReviewSourcePolicy.php';
 
 final class PublicReviewIngestion
 {
@@ -8,10 +9,11 @@ final class PublicReviewIngestion
 
     public static function validateSource(array $source):void
     {
+        $sourceType=(string)($source['source_type']??'other_public');
+        $sourceUrl=(string)($source['source_url']??'');
+        if(PublicReviewSourcePolicy::isBlocked($sourceType,$sourceUrl))throw new RuntimeException('Source is blocked by TechSelectAI Public Review Intelligence policy.');
         if(($source['status']??'active')!=='active')throw new RuntimeException('Source is not active.');
         if(($source['access_policy']??'pending_review')!=='permitted')throw new RuntimeException('Source is not permitted for Public Review Intelligence analysis.');
-        $host=strtolower((string)parse_url((string)($source['source_url']??''),PHP_URL_HOST));
-        if($host!==''&&(str_contains($host,'g2.com')||str_contains($host,'capterra.com')))throw new RuntimeException('G2/Capterra ingestion is disabled unless explicit licensed access is configured.');
     }
 
     public static function normalizeDerivedSignal(array $raw):array
