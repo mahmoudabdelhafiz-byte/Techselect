@@ -2,10 +2,11 @@
 require_once __DIR__.'/PublicReviewIngestion.php';
 require_once __DIR__.'/PublicReviewAdminService.php';
 require_once __DIR__.'/ProductMentionResolver.php';
+require_once __DIR__.'/GooglePlayReviewCollector.php';
 
 final class CommunitySourceCollectors
 {
-    public const TYPES=['stackexchange_api','rss_atom'];
+    public const TYPES=['stackexchange_api','rss_atom','google_play_developer_api'];
     private const SOURCE_TYPES=['reddit','public_forum','app_store','vendor_community','independent_blog','public_case_study','other_public'];
 
     public static function list(PDO $pdo):array
@@ -25,6 +26,11 @@ final class CommunitySourceCollectors
             if(strtolower((string)parse_url($base,PHP_URL_HOST))!=='api.stackexchange.com')throw new InvalidArgumentException('stackexchange_api_host_required');
             $site=trim((string)($config['site']??'stackoverflow'));if(!preg_match('/^[a-z0-9.-]{2,80}$/i',$site))throw new InvalidArgumentException('invalid_stackexchange_site');
             $config=['site'=>$site,'query'=>mb_substr(trim((string)($config['query']??$product['name'])),0,190),'tagged'=>mb_substr(trim((string)($config['tagged']??'')),0,100),'pagesize'=>max(1,min(50,(int)($config['pagesize']??25)))];
+        } elseif($type==='google_play_developer_api'){
+            if(strtolower((string)parse_url($base,PHP_URL_HOST))!=='androidpublisher.googleapis.com')throw new InvalidArgumentException('google_play_api_host_required');
+            $package=trim((string)($config['package_name']??''));if(!preg_match('/^[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+$/',$package))throw new InvalidArgumentException('invalid_google_play_package_name');
+            $sourceType='app_store';$lang=trim((string)($config['translation_language']??'en'));if(!preg_match('/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})?$/',$lang))$lang='en';
+            $config=['package_name'=>$package,'translation_language'=>$lang,'max_items'=>max(1,min(100,(int)($config['max_items']??50)))];
         } else {
             $config=['max_items'=>max(1,min(50,(int)($config['max_items']??25)))];
         }
@@ -50,7 +56,7 @@ final class CommunitySourceCollectors
         $c=self::get($pdo,$id);if(($c['status']??'')!=='active')throw new RuntimeException('connector_not_active');if(($c['policy_status']??'')!=='permitted')throw new RuntimeException('connector_policy_not_permitted');
         $run=$pdo->prepare("INSERT INTO public_review_collection_runs(connector_id,product_id,status) VALUES(?,?,'running')");$run->execute([$id,(int)$c['product_id']]);$runId=(int)$pdo->lastInsertId();
         try{
-            $result=match($c['connector_type']){'stackexchange_api'=>self::collectStackExchange($c),'rss_atom'=>self::collectFeed($c),default=>throw new RuntimeException('unsupported_connector')};
+            $result=match($c['connector_type']){'stackexchange_api'=>self::collectStackExchange($c),'rss_atom'=>self::collectFeed($c),'google_play_developer_api'=>GooglePlayReviewCollector::collect($c),default=>throw new RuntimeException('unsupported_connector')};
             $seen=count($result['items']);$new=0;$dup=0;$reject=0;
             foreach($result['items'] as $item){try{$r=self::persistItem($pdo,$c,$runId,$item);if($r==='new')$new++;elseif($r==='duplicate')$dup++;else$reject++;}catch(Throwable $e){$reject++;}}
             $pdo->prepare("UPDATE public_review_collection_runs SET status='completed',items_seen=?,items_new=?,items_duplicate=?,items_rejected=?,response_meta_json=?,completed_at=NOW() WHERE id=?")->execute([$seen,$new,$dup,$reject,json_encode($result['meta']??[],JSON_UNESCAPED_SLASHES),$runId]);
@@ -87,7 +93,7 @@ final class CommunitySourceCollectors
     private static function collectFeed(array $c):array
     {
         $raw=self::httpGet($c['base_url'],2000000);libxml_use_internal_errors(true);$xml=simplexml_load_string($raw['body'],'SimpleXMLElement',LIBXML_NONET|LIBXML_NOCDATA);if(!$xml)throw new RuntimeException('invalid_feed');$limit=(int)($c['config']['max_items']??25);$items=[];
-        if(isset($xml->channel->item))foreach($xml->channel->item as $it){if(count($items)>=$limit)break;$link=trim((string)$it->link;$content=(string)($it->description??'');$ns=$it->getNameSpaces(true);if(isset($ns['content'])){$ce=$it->children($ns['content']);if(isset($ce->encoded))$content=(string)$ce->encoded;}$items[]=self::feedItem((string)($it->guid?:$link),$link,(string)$it->title,(string)($it->author??''),(string)($it->pubDate??''),$content);}
+        if(isset($xml->channel->item))foreach($xml->channel->item as $it){if(count($items)>=$limit)break;$link=trim((string)$it->link);$content=(string)($it->description??'');$ns=$it->getNameSpaces(true);if(isset($ns['content'])){$ce=$it->children($ns['content']);if(isset($ce->encoded))$content=(string)$ce->encoded;}$items[]=self::feedItem((string)($it->guid?:$link),$link,(string)$it->title,(string)($it->author??''),(string)($it->pubDate??''),$content);}
         elseif(isset($xml->entry))foreach($xml->entry as $it){if(count($items)>=$limit)break;$link='';foreach($it->link as $ln){$a=$ln->attributes();if((string)($a['rel']??'alternate')==='alternate'||$link==='')$link=(string)$a['href'];}$content=(string)($it->content?:$it->summary);$items[]=self::feedItem((string)($it->id?:$link),$link,(string)$it->title,(string)($it->author->name??''),(string)($it->published?:$it->updated),$content);}
         return ['items'=>array_values(array_filter($items,fn($x)=>mb_strlen($x['content'])>=80)),'meta'=>['http_status'=>$raw['status'],'format'=>isset($xml->channel)?'rss':'atom']];
     }
@@ -100,7 +106,10 @@ final class CommunitySourceCollectors
 
     private static function persistItem(PDO $pdo,array $c,int $runId,array $item):string
     {
-        $url=self::validatePublicUrl((string)($item['url']??''));$content=trim((string)($item['content']??''));if(mb_strlen($content)<80)return 'rejected';$content=mb_substr($content,0,6000);if(!ProductMentionResolver::matches($pdo,(int)$c['product_id'],$content))return 'rejected';$fp=PublicReviewIngestion::contentFingerprint($content);$uHash=PublicReviewIngestion::urlHash($url);
+        $url=self::validatePublicUrl((string)($item['url']??''));$content=trim((string)($item['content']??''));$isGooglePlay=($c['connector_type']??'')==='google_play_developer_api';$minChars=$isGooglePlay?15:80;if(mb_strlen($content)<$minChars)return 'rejected';$content=mb_substr($content,0,6000);
+        // An authorized Play Developer API package mapping is authoritative product identity; user reviews do not need to repeat the product name.
+        if(!$isGooglePlay&&!ProductMentionResolver::matches($pdo,(int)$c['product_id'],$content))return 'rejected';
+        $fp=PublicReviewIngestion::contentFingerprint($content);$uHash=PublicReviewIngestion::urlHash($url);
         $dup=$pdo->prepare("SELECT id FROM public_review_collected_items WHERE product_id=? AND content_fingerprint=? LIMIT 1");$dup->execute([(int)$c['product_id'],$fp]);if($dup->fetchColumn())return 'duplicate';
         $source=$pdo->prepare("SELECT id FROM public_review_sources WHERE product_id=? AND source_url_hash=? LIMIT 1");$source->execute([(int)$c['product_id'],$uHash]);$sourceId=(int)$source->fetchColumn();if(!$sourceId){$ins=$pdo->prepare("INSERT INTO public_review_sources(product_id,source_url,source_url_hash,source_type,source_name,source_published_at,access_policy,access_policy_checked_at,access_policy_notes,content_fingerprint,status) VALUES(?,?,?,?,?,?,'permitted',NOW(),?,?,'active')");$ins->execute([(int)$c['product_id'],$url,$uHash,$c['source_type'],$c['source_name'],$item['published_at']??null,'Inherited from explicitly permitted connector #'.$c['id'],$fp]);$sourceId=(int)$pdo->lastInsertId();}
         $external=mb_substr((string)($item['external_id']??''),0,255);$extHash=$external!==''?hash('sha256',$external,true):null;$ins=$pdo->prepare("INSERT INTO public_review_collected_items(connector_id,collection_run_id,product_id,source_id,external_id,external_id_hash,canonical_url,canonical_url_hash,title,author_label,source_published_at,retrieved_at,content_fingerprint,analysis_text,processing_status,purge_after) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending_analysis',DATE_ADD(NOW(),INTERVAL 7 DAY))");$ins->execute([(int)$c['id'],$runId,(int)$c['product_id'],$sourceId,$external?:null,$extHash,$url,$uHash,mb_substr((string)($item['title']??''),0,500)?:null,mb_substr((string)($item['author']??''),0,190)?:null,$item['published_at']??null,date('Y-m-d H:i:s'),$fp,$content]);return 'new';

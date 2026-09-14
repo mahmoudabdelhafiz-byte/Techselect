@@ -16,6 +16,7 @@ on:
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
       - 'scripts/community_auto_publish_check.php'
+      - 'scripts/google_play_reviews_check.php'
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
@@ -58,6 +59,7 @@ on:
       - 'scripts/migration_integrity_check.php'
       - 'scripts/community_intelligence_auto_publish.php'
       - 'scripts/community_auto_publish_check.php'
+      - 'scripts/google_play_reviews_check.php'
       - 'scripts/comparison_seo_priority_report.php'
       - 'scripts/comparison_seo_check.php'
       - 'scripts/trusted_vendor_catalog_check.php'
@@ -97,6 +99,8 @@ jobs:
           php -l app/lib/PublicReviewSourcePolicy.php
           php -l app/lib/PublicReviewIngestion.php
           php -l app/lib/PublicReviewAdminService.php
+          php -l app/lib/CommunitySourceCollectors.php
+          php -l app/lib/GooglePlayReviewCollector.php
           php -l app/lib/ComparisonSeoPriority.php
           php -l app/lib/ExternalAuth.php
           php -l app/lib/AdminShell.php
@@ -111,6 +115,7 @@ jobs:
           php -l scripts/software_logo_directory_check.php
           php -l scripts/community_intelligence_auto_publish.php
           php -l scripts/community_auto_publish_check.php
+          php -l scripts/google_play_reviews_check.php
           php -l scripts/comparison_seo_priority_report.php
           php -l scripts/comparison_seo_check.php
           php -l scripts/trusted_vendor_catalog_check.php
@@ -140,6 +145,8 @@ jobs:
         run: php scripts/software_logo_directory_check.php
       - name: Community Intelligence publication contract
         run: php scripts/community_auto_publish_check.php
+      - name: Google Play reviews contract
+        run: php scripts/google_play_reviews_check.php
       - name: Comparison SEO contract
         run: php scripts/comparison_seo_check.php
       - name: Trusted-vendor catalog contract
