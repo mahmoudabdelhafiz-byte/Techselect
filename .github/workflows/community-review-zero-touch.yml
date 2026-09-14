@@ -1,0 +1,28 @@
+name: Community review zero-touch audit
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/088_automatic_public_review_publication.sql'
+      - 'scripts/community_review_automation.php'
+      - 'scripts/community_review_zero_touch_check.php'
+      - '.github/workflows/community-review-zero-touch.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/088_automatic_public_review_publication.sql'
+      - 'scripts/community_review_automation.php'
+      - 'scripts/community_review_zero_touch_check.php'
+      - '.github/workflows/community-review-zero-touch.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l scripts/community_review_automation.php
+          php -l scripts/community_review_zero_touch_check.php
+      - name: Zero-touch review contract
+        run: php scripts/community_review_zero_touch_check.php
