@@ -3,10 +3,12 @@ require_once __DIR__.'/PublicReviewIngestion.php';
 require_once __DIR__.'/PublicReviewAdminService.php';
 require_once __DIR__.'/ProductMentionResolver.php';
 require_once __DIR__.'/GooglePlayReviewCollector.php';
+require_once __DIR__.'/AppleAppStoreReviewCollector.php';
+require_once __DIR__.'/HackerNewsReviewCollector.php';
 
 final class CommunitySourceCollectors
 {
-    public const TYPES=['stackexchange_api','rss_atom','google_play_developer_api'];
+    public const TYPES=['stackexchange_api','rss_atom','google_play_developer_api','apple_app_store_reviews','hackernews_algolia_api'];
     private const SOURCE_TYPES=['reddit','public_forum','app_store','vendor_community','independent_blog','public_case_study','other_public'];
 
     public static function list(PDO $pdo):array
@@ -31,6 +33,13 @@ final class CommunitySourceCollectors
             $package=trim((string)($config['package_name']??''));if(!preg_match('/^[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+$/',$package))throw new InvalidArgumentException('invalid_google_play_package_name');
             $sourceType='app_store';$lang=trim((string)($config['translation_language']??'en'));if(!preg_match('/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})?$/',$lang))$lang='en';
             $config=['package_name'=>$package,'translation_language'=>$lang,'max_items'=>max(1,min(100,(int)($config['max_items']??50)))];
+        } elseif($type==='apple_app_store_reviews'){
+            if(strtolower((string)parse_url($base,PHP_URL_HOST))!=='itunes.apple.com')throw new InvalidArgumentException('apple_app_store_host_required');
+            $appId=(int)($config['app_id']??0);if($appId<1)throw new InvalidArgumentException('apple_app_store_app_id_required');$country=strtolower(trim((string)($config['country']??'us')));if(!preg_match('/^[a-z]{2}$/',$country))$country='us';$sourceType='app_store';
+            $config=['app_id'=>$appId,'country'=>$country,'max_items'=>max(1,min(100,(int)($config['max_items']??50)))];
+        } elseif($type==='hackernews_algolia_api'){
+            if(strtolower((string)parse_url($base,PHP_URL_HOST))!=='hn.algolia.com')throw new InvalidArgumentException('hackernews_api_host_required');$sourceType='other_public';
+            $config=['query'=>mb_substr(trim((string)($config['query']??$product['name'])),0,190),'max_items'=>max(1,min(50,(int)($config['max_items']??25)))];
         } else {
             $config=['max_items'=>max(1,min(50,(int)($config['max_items']??25)))];
         }
@@ -56,7 +65,14 @@ final class CommunitySourceCollectors
         $c=self::get($pdo,$id);if(($c['status']??'')!=='active')throw new RuntimeException('connector_not_active');if(($c['policy_status']??'')!=='permitted')throw new RuntimeException('connector_policy_not_permitted');
         $run=$pdo->prepare("INSERT INTO public_review_collection_runs(connector_id,product_id,status) VALUES(?,?,'running')");$run->execute([$id,(int)$c['product_id']]);$runId=(int)$pdo->lastInsertId();
         try{
-            $result=match($c['connector_type']){'stackexchange_api'=>self::collectStackExchange($c),'rss_atom'=>self::collectFeed($c),'google_play_developer_api'=>GooglePlayReviewCollector::collect($c),default=>throw new RuntimeException('unsupported_connector')};
+            $result=match($c['connector_type']){
+                'stackexchange_api'=>self::collectStackExchange($c),
+                'rss_atom'=>self::collectFeed($c),
+                'google_play_developer_api'=>GooglePlayReviewCollector::collect($c),
+                'apple_app_store_reviews'=>AppleAppStoreReviewCollector::collect($c),
+                'hackernews_algolia_api'=>HackerNewsReviewCollector::collect($c),
+                default=>throw new RuntimeException('unsupported_connector')
+            };
             $seen=count($result['items']);$new=0;$dup=0;$reject=0;
             foreach($result['items'] as $item){try{$r=self::persistItem($pdo,$c,$runId,$item);if($r==='new')$new++;elseif($r==='duplicate')$dup++;else$reject++;}catch(Throwable $e){$reject++;}}
             $pdo->prepare("UPDATE public_review_collection_runs SET status='completed',items_seen=?,items_new=?,items_duplicate=?,items_rejected=?,response_meta_json=?,completed_at=NOW() WHERE id=?")->execute([$seen,$new,$dup,$reject,json_encode($result['meta']??[],JSON_UNESCAPED_SLASHES),$runId]);
@@ -106,9 +122,9 @@ final class CommunitySourceCollectors
 
     private static function persistItem(PDO $pdo,array $c,int $runId,array $item):string
     {
-        $url=self::validatePublicUrl((string)($item['url']??''));$content=trim((string)($item['content']??''));$isGooglePlay=($c['connector_type']??'')==='google_play_developer_api';$minChars=$isGooglePlay?15:80;if(mb_strlen($content)<$minChars)return 'rejected';$content=mb_substr($content,0,6000);
-        // An authorized Play Developer API package mapping is authoritative product identity; user reviews do not need to repeat the product name.
-        if(!$isGooglePlay&&!ProductMentionResolver::matches($pdo,(int)$c['product_id'],$content))return 'rejected';
+        $url=self::validatePublicUrl((string)($item['url']??''));$content=trim((string)($item['content']??''));$authoritativeAppStore=in_array(($c['connector_type']??''),['google_play_developer_api','apple_app_store_reviews'],true);$minChars=$authoritativeAppStore?15:80;if(mb_strlen($content)<$minChars)return 'rejected';$content=mb_substr($content,0,6000);
+        // Authenticated/package-matched app-store connectors establish product identity; review text does not need to repeat the product name.
+        if(!$authoritativeAppStore&&!ProductMentionResolver::matches($pdo,(int)$c['product_id'],$content))return 'rejected';
         $fp=PublicReviewIngestion::contentFingerprint($content);$uHash=PublicReviewIngestion::urlHash($url);
         $dup=$pdo->prepare("SELECT id FROM public_review_collected_items WHERE product_id=? AND content_fingerprint=? LIMIT 1");$dup->execute([(int)$c['product_id'],$fp]);if($dup->fetchColumn())return 'duplicate';
         $source=$pdo->prepare("SELECT id FROM public_review_sources WHERE product_id=? AND source_url_hash=? LIMIT 1");$source->execute([(int)$c['product_id'],$uHash]);$sourceId=(int)$source->fetchColumn();if(!$sourceId){$ins=$pdo->prepare("INSERT INTO public_review_sources(product_id,source_url,source_url_hash,source_type,source_name,source_published_at,access_policy,access_policy_checked_at,access_policy_notes,content_fingerprint,status) VALUES(?,?,?,?,?,?,'permitted',NOW(),?,?,'active')");$ins->execute([(int)$c['product_id'],$url,$uHash,$c['source_type'],$c['source_name'],$item['published_at']??null,'Inherited from explicitly permitted connector #'.$c['id'],$fp]);$sourceId=(int)$pdo->lastInsertId();}

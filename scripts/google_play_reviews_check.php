@@ -11,6 +11,8 @@ foreach(['cardiq','com.card_iq.myapp','google_play_developer_api','app_store','a
 if(!str_contains($env,'TECHSELECT_GOOGLE_PLAY_SERVICE_ACCOUNT_FILE='))$errors[]='service-account environment setting not documented';
 if(str_contains(strtolower($google),'g2.com')||str_contains(strtolower($google),'capterra.com'))$errors[]='Google Play collector must not reference excluded review aggregators';
 foreach(['Scoring::','fit_score','recommendation_rank','recommendation_score'] as $term){if(str_contains($collector,$term)||str_contains($google,$term)||str_contains($migration,$term))$errors[]="Google Play review path must remain independent from scoring/ranking: {$term}";}
-if(!str_contains($collector,'$isGooglePlay&&!ProductMentionResolver::matches'))$errors[]='product-mention bypass is not narrowly limited to the authorized Google Play connector';
+// Product-name bypass is allowed only when app identity is established by an authoritative app-store mapping.
+if(!str_contains($collector,"in_array((\$c['connector_type']??''),['google_play_developer_api','apple_app_store_reviews'],true)"))$errors[]='product-mention bypass must be narrowly limited to authoritative Google Play / Apple App Store connectors';
+if(!str_contains($collector,'if(!$authoritativeAppStore&&!ProductMentionResolver::matches'))$errors[]='all non-app-store review sources must still pass product mention resolution';
 if(!str_contains($migration,'Official authenticated Google Play Developer API'))$errors[]='085 must document authenticated official API basis';
 if($errors){fwrite(STDERR,"Google Play reviews contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}echo "Google Play reviews contract passed.\n";
