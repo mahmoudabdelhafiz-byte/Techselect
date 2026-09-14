@@ -13,12 +13,12 @@ $needManager=[
 ];
 foreach($needManager as $needle){if(strpos($manager,$needle)===false)$fail[]='manager missing: '.$needle;}
 $needBackfill=[
-    ">=75",
-    "candidate_failures",
-    "foreach($candidates as $candidate)",
-    "SoftwareLogoManager::cache",
-    "RETRY",
+    '>=75',
+    'candidate_failures',
+    'foreach($candidates as $candidate)',
+    'SoftwareLogoManager::cache',
+    'RETRY',
 ];
 foreach($needBackfill as $needle){if(strpos($backfill,$needle)===false)$fail[]='backfill missing: '.$needle;}
-if(strpos($manager,"logo_source_not_official_host")===false)$fail[]='official-host restriction must remain enforced';
+if(strpos($manager,'logo_source_not_official_host')===false)$fail[]='official-host restriction must remain enforced';
 if($fail){foreach($fail as $f)fwrite(STDERR,$f.PHP_EOL);exit(1);}echo "Software logo backfill coverage checks passed.\n";
