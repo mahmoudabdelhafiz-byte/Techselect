@@ -2,11 +2,12 @@
 $root=dirname(__DIR__);$errors=[];
 $planner=file_get_contents($root.'/app/lib/CatalogExpansionPlanner.php')?:'';
 $migration=file_get_contents($root.'/db/mysql/067_trusted_vendor_security_backup_depth.sql')?:'';
+$coverage=file_get_contents($root.'/db/mysql/084_vendor_coverage_public_review_automation.sql')?:'';
 
 foreach(['crm','itsm','hrms','endpoint-security-edr','backup-disaster-recovery'] as $slug){
     if(!str_contains($planner,"'{$slug}'"))$errors[]="catalog planner does not track strategic category {$slug}";
 }
-foreach(['009_add_crm_catalog_batch1.sql','010_add_itsm_catalog_batch1.sql','011_add_hrms_catalog_batch1.sql','067_trusted_vendor_security_backup_depth.sql'] as $file){
+foreach(['009_add_crm_catalog_batch1.sql','010_add_itsm_catalog_batch1.sql','011_add_hrms_catalog_batch1.sql','067_trusted_vendor_security_backup_depth.sql','084_vendor_coverage_public_review_automation.sql'] as $file){
     if(!is_file($root.'/db/mysql/'.$file))$errors[]="missing trusted-vendor catalog migration {$file}";
 }
 
@@ -35,4 +36,11 @@ foreach([
     if(!str_contains($migration,$domain))$errors[]="067 missing first-party evidence domain {$domain}";
 }
 
-if($errors){fwrite(STDERR,"Trusted-vendor catalog contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}echo "Trusted-vendor catalog contract passed: {$endpointFacts} endpoint facts, {$backupFacts} backup/DR facts.\n";
+// Every current/future active product with a canonical vendor must receive the explicit
+// software-owner relationship; this is catalog identity verification, not an endorsement.
+foreach(['vendor_product_relationships',"'software_owner'","p.status='active'","v.status='active'","verification_status='verified'",'COALESCE(NULLIF(p.website_url'], as $needle){}
+$coverageNeedles=['vendor_product_relationships',"'software_owner'","p.status='active'","v.status='active'","verification_status='verified'",'COALESCE(NULLIF(p.website_url',"v.verification_status='verified'",'does not affect Fit Score'];
+foreach($coverageNeedles as $needle)if(!str_contains($coverage,$needle))$errors[]="084 vendor coverage is missing: {$needle}";
+foreach(['preferred_vendor','fit_score=','recommendation_rank'] as $needle)if(stripos($coverage,$needle)!==false)$errors[]="084 vendor identity sync must not change recommendation logic: {$needle}";
+
+if($errors){fwrite(STDERR,"Trusted-vendor catalog contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}echo "Trusted-vendor catalog contract passed: {$endpointFacts} endpoint facts, {$backupFacts} backup/DR facts, canonical owner coverage present.\n";
