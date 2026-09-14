@@ -3,6 +3,18 @@ require_once __DIR__.'/app/lib/Db.php';
 require_once __DIR__.'/app/lib/TransparencySignals.php';
 $config=require __DIR__.'/app/config.php';
 $pdo=Db::pdo();
+
+// Reuse this established public software-logo surface for the directory logo map.
+// Only approved, locally cached media paths are exposed; source URLs/attribution remain
+// on the individual product page and in the admin review workflow.
+if(($_GET['logo_map']??'')==='1'){
+  header('Content-Type: application/json; charset=utf-8');
+  header('Cache-Control: public, max-age=300');
+  $q=$pdo->query("SELECT slug,name,logo_path,logo_last_verified_at FROM products WHERE status='active' ORDER BY name");$products=[];
+  foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){$relative=ltrim(trim((string)($row['logo_path']??'')),'/');$safe=$relative!==''&&str_starts_with($relative,'media/software/')&&strpos($relative,'..')===false;$products[]=['slug'=>(string)$row['slug'],'name'=>(string)$row['name'],'logo_path'=>$safe?'/'.$relative:null,'logo_last_verified_at'=>$row['logo_last_verified_at']??null];}
+  echo json_encode(['products'=>$products],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;
+}
+
 $path=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
 
 $logoMeta=null;$priMeta=null;$productRow=null;
