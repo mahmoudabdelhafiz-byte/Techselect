@@ -68,7 +68,7 @@ final class CommunitySourceCollectors
     public static function analyzePending(PDO $pdo,int $productId,int $limit=25):array
     {
         $limit=max(1,min(25,$limit));$st=$pdo->prepare("SELECT i.id,i.source_id,i.analysis_text FROM public_review_collected_items i JOIN public_review_sources s ON s.id=i.source_id WHERE i.product_id=? AND i.processing_status='pending_analysis' AND i.analysis_text IS NOT NULL AND s.access_policy='permitted' ORDER BY i.retrieved_at ASC LIMIT {$limit}");$st->execute([$productId]);$items=$st->fetchAll(PDO::FETCH_ASSOC);if(!$items)return ['processed'=>0,'message'=>'no_pending_items'];
-        $snapshots=[];foreach($items as $i)$snapshots[]=['source_id'=>(int)$i['source_id'],'content'=>(string)$i['analysis_text'];
+        $snapshots=[];foreach($items as $i)$snapshots[]=['source_id'=>(int)$i['source_id'],'content'=>(string)$i['analysis_text']];
         $result=PublicReviewAdminService::analyzeProduct($pdo,$productId,$snapshots);$ids=array_map(fn($x)=>(int)$x['id'],$items);$ph=implode(',',array_fill(0,count($ids),'?'));$pdo->prepare("UPDATE public_review_collected_items SET processing_status='analyzed',analyzed_at=NOW(),analysis_text=NULL WHERE id IN({$ph})")->execute($ids);$result['processed']=count($ids);return $result;
     }
 
