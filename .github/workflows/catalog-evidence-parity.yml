@@ -1,0 +1,31 @@
+name: Catalog evidence parity
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/CatalogEvidenceParity.php'
+      - 'scripts/catalog_evidence_parity_report.php'
+      - 'scripts/catalog_evidence_parity_check.php'
+      - '.github/workflows/catalog-evidence-parity.yml'
+      - 'db/mysql/**'
+  push:
+    branches: [main]
+    paths:
+      - 'app/lib/CatalogEvidenceParity.php'
+      - 'scripts/catalog_evidence_parity_report.php'
+      - 'scripts/catalog_evidence_parity_check.php'
+      - '.github/workflows/catalog-evidence-parity.yml'
+      - 'db/mysql/**'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l app/lib/CatalogEvidenceParity.php
+          php -l scripts/catalog_evidence_parity_report.php
+          php -l scripts/catalog_evidence_parity_check.php
+      - name: Evidence parity contract
+        run: php scripts/catalog_evidence_parity_check.php
