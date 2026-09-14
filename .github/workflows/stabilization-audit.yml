@@ -25,6 +25,7 @@ on:
       - 'scripts/catalog_072_cross_category_check.php'
       - 'scripts/catalog_074_cross_category_check.php'
       - 'scripts/catalog_076_cross_category_check.php'
+      - 'scripts/catalog_077_cross_category_check.php'
       - 'scripts/recommendation_neutrality_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
@@ -61,6 +62,7 @@ on:
       - 'scripts/catalog_072_cross_category_check.php'
       - 'scripts/catalog_074_cross_category_check.php'
       - 'scripts/catalog_076_cross_category_check.php'
+      - 'scripts/catalog_077_cross_category_check.php'
       - 'scripts/recommendation_neutrality_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
@@ -106,6 +108,7 @@ jobs:
           php -l scripts/catalog_072_cross_category_check.php
           php -l scripts/catalog_074_cross_category_check.php
           php -l scripts/catalog_076_cross_category_check.php
+          php -l scripts/catalog_077_cross_category_check.php
           php -l scripts/recommendation_neutrality_check.php
           php -l scripts/external_auth_check.php
           php -l scripts/admin_shell_check.php
@@ -136,6 +139,8 @@ jobs:
         run: php scripts/catalog_074_cross_category_check.php
       - name: Cross-category catalog batch 3 contract
         run: php scripts/catalog_076_cross_category_check.php
+      - name: Cross-category catalog batch 4 contract
+        run: php scripts/catalog_077_cross_category_check.php
       - name: Recommendation neutrality contract
         run: php scripts/recommendation_neutrality_check.php
       - name: External authentication contract
