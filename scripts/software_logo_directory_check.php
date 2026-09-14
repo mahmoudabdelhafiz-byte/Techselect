@@ -30,7 +30,8 @@ $checks=[
     'directory reads existing logo surface'=>str_contains($js,'/software_logo_page.php?logo_map=1'),
     'frontend loads logo enhancer'=>str_contains($main,"import'./softwareLogos.js'"),
     'backfill defaults to dry run'=>str_contains($backfill,"in_array('--apply',\$argv,true)"),
-    'backfill requires high-confidence candidate'=>str_contains($backfill,">=100"),
+    'backfill requires acceptable first-party confidence'=>str_contains($backfill,">=75"),
+    'backfill retries multiple first-party candidates'=>str_contains($backfill,'foreach($candidates as $candidate)'),
     'backfill uses official-site manager'=>str_contains($backfill,'SoftwareLogoManager::discover'),
 ];
 foreach($checks as $label=>$ok){echo ($ok?'PASS ':'FAIL ').$label."\n";if(!$ok)$failed++;}
