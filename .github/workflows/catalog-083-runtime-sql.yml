@@ -1,0 +1,24 @@
+name: Catalog 083 runtime SQL audit
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/083_add_customer_service_collaboration_categories.sql'
+      - 'scripts/catalog_083_runtime_sql_check.php'
+      - '.github/workflows/catalog-083-runtime-sql.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/083_add_customer_service_collaboration_categories.sql'
+      - 'scripts/catalog_083_runtime_sql_check.php'
+      - '.github/workflows/catalog-083-runtime-sql.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/catalog_083_runtime_sql_check.php
+      - name: Catalog 083 runtime SQL contract
+        run: php scripts/catalog_083_runtime_sql_check.php
