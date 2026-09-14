@@ -1,0 +1,34 @@
+name: Mobile access audit
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/086_mobile_access_evaluation.sql'
+      - 'app/lib/SoftwareManagement.php'
+      - 'api/software_management.php'
+      - 'software_management.php'
+      - 'scripts/mobile_access_evaluation_check.php'
+      - '.github/workflows/mobile-access-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/086_mobile_access_evaluation.sql'
+      - 'app/lib/SoftwareManagement.php'
+      - 'api/software_management.php'
+      - 'software_management.php'
+      - 'scripts/mobile_access_evaluation_check.php'
+      - '.github/workflows/mobile-access-audit.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l app/lib/SoftwareManagement.php
+          php -l api/software_management.php
+          php -l software_management.php
+          php -l scripts/mobile_access_evaluation_check.php
+      - name: Mobile access evaluation contract
+        run: php scripts/mobile_access_evaluation_check.php
