@@ -10,7 +10,6 @@ on:
       - '.env.shared.example'
       - 'frontend/src/main.jsx'
       - 'frontend/src/softwareLogos.js'
-      - 'software_logo_map.php'
       - 'scripts/software_logo_backfill.php'
       - 'scripts/software_logo_directory_check.php'
       - 'scripts/security_control_audit.php'
@@ -47,7 +46,6 @@ on:
       - '.env.shared.example'
       - 'frontend/src/main.jsx'
       - 'frontend/src/softwareLogos.js'
-      - 'software_logo_map.php'
       - 'scripts/software_logo_backfill.php'
       - 'scripts/software_logo_directory_check.php'
       - 'scripts/security_control_audit.php'
@@ -92,7 +90,6 @@ jobs:
           php -l account.php
           php -l api/community_intelligence_admin.php
           php -l software_logo_page.php
-          php -l software_logo_map.php
           php -l community_intelligence_admin.php
           php -l crawlable_public_page.php
           php -l sitemap.php
