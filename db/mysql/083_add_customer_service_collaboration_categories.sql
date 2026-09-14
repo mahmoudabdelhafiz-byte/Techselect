@@ -74,7 +74,7 @@ ON DUPLICATE KEY UPDATE vendor_id=VALUES(vendor_id),category_id=VALUES(category_
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT p.id,'vendor_documentation',x.url,x.title,x.publisher,1,'verified','high',NOW()
 FROM products p JOIN (
- SELECT 'salesforce-service-cloud' product_slug,'https://www.salesforce.com/service/cloud/' url,'Salesforce Service Cloud','Salesforce' publisher UNION ALL
+ SELECT 'salesforce-service-cloud' product_slug,'https://www.salesforce.com/service/cloud/' url,'Salesforce Service Cloud' title,'Salesforce' publisher UNION ALL
  SELECT 'salesforce-service-cloud','https://help.salesforce.com/s/articleView?id=service_cloud.htm&language=en_US&type=0','Agentforce Service Documentation','Salesforce' UNION ALL
  SELECT 'freshdesk','https://www.freshworks.com/freshdesk/new-features/','Freshdesk Product Updates and Omnichannel Features','Freshworks' UNION ALL
  SELECT 'genesys-cloud-cx','https://www.genesys.com/capabilities/genesys-cloud-associate','Genesys Cloud Associate Capabilities','Genesys' UNION ALL
@@ -97,35 +97,29 @@ WHERE NOT EXISTS(SELECT 1 FROM evidence_sources e WHERE e.product_id=p.id AND e.
 DROP TEMPORARY TABLE IF EXISTS cat83_facts;
 CREATE TEMPORARY TABLE cat83_facts(product_slug VARCHAR(190),capability_slug VARCHAR(190),support_status VARCHAR(40),confidence DECIMAL(4,3),limitations TEXT,source_url TEXT);
 INSERT INTO cat83_facts VALUES
--- Salesforce Service Cloud
 ('salesforce-service-cloud','cs-case-ticket-management','supported',0.99,'Service Cloud explicitly provides case management.','https://www.salesforce.com/service/cloud/'),
 ('salesforce-service-cloud','cs-omnichannel-routing','supported',0.99,'Omni-Channel routes service work across channels.','https://help.salesforce.com/s/articleView?id=service_cloud.htm&language=en_US&type=0'),
 ('salesforce-service-cloud','cs-knowledge-management','supported',0.99,'Knowledge base capabilities are part of the service platform.','https://help.salesforce.com/s/articleView?id=service_cloud.htm&language=en_US&type=0'),
 ('salesforce-service-cloud','cs-ai-service-automation','supported',0.98,'Agentforce and service automation provide AI-assisted workflows.','https://www.salesforce.com/service/cloud/'),
 ('salesforce-service-cloud','cs-service-analytics','supported',0.98,'Service metrics, reporting and visualizations are documented.','https://help.salesforce.com/s/articleView?id=service_cloud.htm&language=en_US&type=0'),
--- Freshdesk
 ('freshdesk','cs-case-ticket-management','supported',0.99,'Freshdesk is built around customer support ticket management.','https://www.freshworks.com/freshdesk/new-features/'),
 ('freshdesk','cs-omnichannel-routing','supported',0.97,'Freshdesk Omnichannel combines ticket, chat and phone service operations.','https://www.freshworks.com/freshdesk/new-features/'),
 ('freshdesk','cs-knowledge-management','supported',0.98,'Knowledge base and knowledge analytics are documented Freshdesk capabilities.','https://www.freshworks.com/freshdesk/new-features/'),
 ('freshdesk','cs-service-analytics','supported',0.98,'Omnichannel dashboards and knowledge analytics are documented.','https://www.freshworks.com/freshdesk/new-features/'),
--- Genesys Cloud CX
 ('genesys-cloud-cx','cs-omnichannel-routing','supported',0.99,'Genesys documents omnichannel engagement and orchestration.','https://www.genesys.com/capabilities/genesys-cloud-associate'),
 ('genesys-cloud-cx','cs-voice-contact-center','supported',0.99,'Genesys Cloud is an enterprise contact-center platform spanning customer interaction channels.','https://www.genesys.com/capabilities/genesys-cloud-associate'),
 ('genesys-cloud-cx','cs-workforce-optimization','supported',0.99,'Workforce engagement management includes performance, quality and workforce capabilities.','https://www.genesys.com/capabilities/wem-workforce-engagement-management'),
 ('genesys-cloud-cx','cs-service-analytics','supported',0.99,'Genesys documents analytics workspaces and real-time contact-center metrics.','https://www.genesys.com/capabilities/wem-workforce-engagement-management'),
 ('genesys-cloud-cx','cs-ai-service-automation','supported',0.98,'AI-powered experience orchestration and automation are explicit platform capabilities.','https://www.genesys.com/capabilities/genesys-cloud-associate'),
--- NiCE CXone Mpower
 ('nice-cxone-mpower','cs-omnichannel-routing','supported',0.99,'CXone unifies omnichannel routing on one cloud platform.','https://www.nice.com/solutions/enterprise'),
 ('nice-cxone-mpower','cs-workforce-optimization','supported',0.99,'Workforce optimization is an explicit CXone capability.','https://www.nice.com/solutions/enterprise'),
 ('nice-cxone-mpower','cs-service-analytics','supported',0.99,'CXone includes analytics for enterprise contact-center operations.','https://www.nice.com/solutions/enterprise'),
 ('nice-cxone-mpower','cs-ai-service-automation','supported',0.99,'CXone includes integrated AI and automation.','https://www.nice.com/solutions/enterprise'),
--- Dynamics 365 Customer Service
 ('dynamics-365-customer-service','cs-case-ticket-management','supported',0.99,'Dynamics 365 Customer Service tracks customer issues through cases.','https://learn.microsoft.com/en-us/dynamics365/customer-service/implement/overview'),
 ('dynamics-365-customer-service','cs-knowledge-management','supported',0.99,'Knowledge-base sharing is a documented core capability.','https://learn.microsoft.com/en-us/dynamics365/customer-service/implement/overview'),
 ('dynamics-365-customer-service','cs-omnichannel-routing','supported',0.99,'Unified routing directs work across customer-service channels.','https://learn.microsoft.com/en-us/dynamics365/customer-service/administer/overview-unified-routing'),
 ('dynamics-365-customer-service','cs-service-analytics','supported',0.99,'Historical and real-time service analytics dashboards are documented.','https://learn.microsoft.com/en-us/dynamics365/customer-service/administer/analytics_overview'),
 ('dynamics-365-customer-service','cs-ai-service-automation','supported',0.97,'AI-driven embedded insights and service assistance are documented.','https://learn.microsoft.com/en-us/dynamics365/customer-service/implement/overview'),
--- Microsoft Teams
 ('microsoft-teams','collab-team-messaging','supported',0.99,'Teams provides persistent chat and group messaging.','https://www.microsoft.com/en-us/microsoft-teams/group-chat-software'),
 ('microsoft-teams','collab-channels-spaces','supported',0.99,'Standard, private and shared channels are documented.','https://learn.microsoft.com/en-us/office365/servicedescriptions/teams-service-description'),
 ('microsoft-teams','collab-file-content','supported',0.99,'Teams brings conversations and shared content into the same workspace.','https://www.microsoft.com/en-us/microsoft-teams/group-chat-software'),
@@ -133,20 +127,16 @@ INSERT INTO cat83_facts VALUES
 ('microsoft-teams','collab-enterprise-calling','supported',0.99,'Teams supports enterprise calling and Teams Phone.','https://www.microsoft.com/en-us/microsoft-teams/group-chat-software'),
 ('microsoft-teams','collab-webinars-events','supported',0.98,'Teams supports professional events and webinars at scale.','https://www.microsoft.com/en-us/microsoft-teams/group-chat-software'),
 ('microsoft-teams','collab-app-integrations','supported',0.99,'Teams supports first- and third-party apps.','https://www.microsoft.com/en-us/microsoft-teams/group-chat-software'),
--- Slack
 ('slack','collab-team-messaging','supported',0.99,'Slack is built around enterprise team messaging.','https://slack.com/features/enterprise-search'),
 ('slack','collab-enterprise-search','supported',0.99,'Enterprise Search searches Slack and connected application content.','https://slack.com/features/enterprise-search'),
 ('slack','collab-app-integrations','supported',0.99,'Slack enterprise search and connected-app functionality document third-party application integration.','https://slack.com/help/articles/39044407124755-Set-up-and-manage-Slack-enterprise-search'),
--- Zoom Workplace
 ('zoom-workplace','collab-team-messaging','supported',0.98,'Zoom Workplace includes Zoom Team Chat.','https://news.zoom.com/zoom-workplace-simplicity-ui-updates/'),
 ('zoom-workplace','collab-video-meetings','supported',0.99,'Zoom Workplace includes Zoom Meetings as a core product.','https://news.zoom.com/zoom-workplace-simplicity-ui-updates/'),
 ('zoom-workplace','collab-file-content','partially_supported',0.90,'Zoom Workplace includes collaborative products such as Whiteboard and Docs; exact content-management depth varies by component.','https://news.zoom.com/zoom-workplace-simplicity-ui-updates/'),
--- Google Workspace
 ('google-workspace','collab-team-messaging','supported',0.99,'Google Chat is included in Workspace.','https://workspace.google.com/'),
 ('google-workspace','collab-file-content','supported',0.99,'Drive plus collaborative Docs, Sheets and related tools are core Workspace capabilities.','https://workspace.google.com/'),
 ('google-workspace','collab-video-meetings','supported',0.99,'Google Meet is included for video meetings.','https://workspace.google.com/'),
 ('google-workspace','collab-app-integrations','supported',0.95,'Workspace combines Gmail, Drive, Meet, Chat, Calendar and Docs in an integrated productivity suite.','https://workspace.google.com/resources/what-is-workspace/'),
--- Webex Suite
 ('webex-suite','collab-team-messaging','supported',0.99,'Webex Messaging provides persistent team messaging and workspaces.','https://www.webex.com/suite/messaging.html'),
 ('webex-suite','collab-file-content','supported',0.98,'Webex Messaging supports file sharing, document co-editing and meeting artifacts.','https://www.webex.com/suite/messaging.html'),
 ('webex-suite','collab-video-meetings','supported',0.99,'Webex Suite messaging page links meetings as part of the collaboration portfolio.','https://www.webex.com/suite/messaging.html'),
