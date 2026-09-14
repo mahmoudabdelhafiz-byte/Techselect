@@ -1,0 +1,30 @@
+name: Mobile selection audit
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/087_mobile_access_selection_criteria.sql'
+      - 'scripts/mobile_access_selection_check.php'
+      - '.github/workflows/mobile-selection-audit.yml'
+      - 'app/lib/Scoring.php'
+      - 'app/lib/AiExtraction.php'
+      - 'api/index.php'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/087_mobile_access_selection_criteria.sql'
+      - 'scripts/mobile_access_selection_check.php'
+      - '.github/workflows/mobile-selection-audit.yml'
+      - 'app/lib/Scoring.php'
+      - 'app/lib/AiExtraction.php'
+      - 'api/index.php'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/mobile_access_selection_check.php
+      - name: Mobile selection criteria contract
+        run: php scripts/mobile_access_selection_check.php
