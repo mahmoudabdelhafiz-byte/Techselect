@@ -1,0 +1,22 @@
+name: Software logo coverage
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/SoftwareLogoManager.php'
+      - 'scripts/software_logo_backfill.php'
+      - 'scripts/software_logo_backfill_coverage_check.php'
+      - '.github/workflows/software-logo-coverage.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: php -l app/lib/SoftwareLogoManager.php
+      - run: php -l scripts/software_logo_backfill.php
+      - run: php -l scripts/software_logo_backfill_coverage_check.php
+      - run: php scripts/software_logo_backfill_coverage_check.php
