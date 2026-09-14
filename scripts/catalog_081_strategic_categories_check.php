@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 $migration = $root . '/db/mysql/081_add_strategic_categories_batch1.sql';
+$completion = $root . '/db/mysql/082_complete_strategic_category_evidence.sql';
 if (!is_file($migration)) {
     fwrite(STDERR, "Missing migration: {$migration}\n");
     exit(1);
 }
+if (!is_file($completion)) {
+    fwrite(STDERR, "Missing evidence completion migration: {$completion}\n");
+    exit(1);
+}
 $sql = file_get_contents($migration) ?: '';
+$completionSql = file_get_contents($completion) ?: '';
+$combinedSql = $sql . "\n" . $completionSql;
 $failures = [];
 $require = static function (bool $ok, string $message) use (&$failures): void {
     if (!$ok) $failures[] = $message;
@@ -67,14 +74,14 @@ $require(strpos($sql, 'last_reviewed_at') !== false, 'Products must update last_
 $require(strpos($sql, "'not_yet_verified'") !== false, 'Unreviewed facts must remain not_yet_verified.');
 $require(strpos($sql, 'product_capability_evidence') !== false, 'Known facts must link to evidence.');
 $require(strpos($sql, "1,'verified','high'") !== false, 'Evidence must be vendor-owned, verified and high confidence.');
-$require(stripos($sql, 'g2.com') === false, 'G2 data must not be ingested.');
-$require(stripos($sql, 'capterra') === false, 'Capterra data must not be ingested.');
-$require(stripos($sql, 'preferred_vendor') === false, 'Catalog migration must not add preferred-vendor logic.');
-$require(stripos($sql, 'fit_score') === false, 'Catalog migration must not alter Fit Score.');
+$require(stripos($combinedSql, 'g2.com') === false, 'G2 data must not be ingested.');
+$require(stripos($combinedSql, 'capterra') === false, 'Capterra data must not be ingested.');
+$require(stripos($combinedSql, 'preferred_vendor') === false, 'Catalog migration must not add preferred-vendor logic.');
+$require(stripos($combinedSql, 'fit_score') === false, 'Catalog migration must not alter Fit Score.');
 
 preg_match_all("/\\('(?:[^']|'')+','(?:[^']|'')+','(?:supported|partially_supported)',[0-9.]+,(?:NULL|'(?:[^']|'')*'),'([^']+)'\\)/", $sql, $matches);
 foreach ($matches[1] ?? [] as $url) {
-    $require(substr_count($sql, "'{$url}'") >= 2, "Known fact source is not represented in evidence: {$url}");
+    $require(substr_count($combinedSql, "'{$url}'") >= 2, "Known fact source is not represented in evidence: {$url}");
 }
 
 $officialHosts = [
@@ -83,21 +90,22 @@ $officialHosts = [
     'snaplogic.com','docs.snaplogic.com','uipath.com','docs.uipath.com','automationanywhere.com','docs.automationanywhere.com',
     'microsoft.com','learn.microsoft.com'
 ];
-preg_match_all("/'https:\\/\\/([^\\/']+)[^']*'/", $sql, $urls);
+preg_match_all("/'https:\\/\\/([^\\/']+)[^']*'/", $combinedSql, $urls);
 foreach ($urls[1] ?? [] as $host) {
     $host = strtolower($host);
     $ok = false;
     foreach ($officialHosts as $allowed) {
         if ($host === $allowed || str_ends_with($host, '.' . $allowed)) { $ok = true; break; }
     }
-    $require($ok, "Unexpected non-first-party host in migration: {$host}");
+    $require($ok, "Unexpected non-first-party host in migrations: {$host}");
 }
 
 $migrationFiles = glob($root . '/db/mysql/*.sql') ?: [];
+$ownedFiles = [$migration, $completion];
 foreach (array_keys($products) as $slug) {
     $hits = 0;
     foreach ($migrationFiles as $file) {
-        if ($file === $migration) continue;
+        if (in_array($file, $ownedFiles, true)) continue;
         $text = file_get_contents($file) ?: '';
         if (strpos($text, "'{$slug}'") !== false) $hits++;
     }
@@ -108,10 +116,13 @@ $require(strpos($sql, "SELECT p.id,i.id,'not_yet_verified',0") !== false, 'Integ
 $require(substr_count($sql, "INSERT INTO categories") === 1, '081 should create/update categories in one controlled block.');
 $require(substr_count($sql, "INSERT INTO modules") === 1, '081 should create/update modules in one controlled block.');
 $require(substr_count($sql, "INSERT INTO capabilities") === 1, '081 should create/update capabilities in one controlled block.');
+$require(strpos($completionSql, 'https://docs.workato.com/en/api-mgmt/api-endpoints') !== false, '082 must persist the Workato workflow evidence source.');
+$require(strpos($completionSql, 'https://www.snaplogic.com/resources/data-sheets/snaplogic-api-management') !== false, '082 must persist the SnapLogic monitoring evidence source.');
+$require(strpos($completionSql, 'product_capability_evidence') !== false, '082 must backfill capability evidence links.');
 
 if ($failures !== []) {
     foreach ($failures as $failure) fwrite(STDERR, "FAIL: {$failure}\n");
     exit(1);
 }
 
-echo "Catalog 081 strategic-category contract passed.\n";
+echo "Catalog 081/082 strategic-category contract passed.\n";
