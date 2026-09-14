@@ -1,0 +1,24 @@
+name: Consultation single-confirm audit
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/src/App.jsx'
+      - 'scripts/consultation_single_confirm_check.php'
+      - '.github/workflows/consultation-single-confirm-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/src/App.jsx'
+      - 'scripts/consultation_single_confirm_check.php'
+      - '.github/workflows/consultation-single-confirm-audit.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/consultation_single_confirm_check.php
+      - name: Single-confirm consultation contract
+        run: php scripts/consultation_single_confirm_check.php
