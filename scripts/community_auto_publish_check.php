@@ -25,6 +25,6 @@ if(!str_contains($ingestion,'PublicReviewSourcePolicy::isBlocked'))$errors[]='in
 foreach(['community_intelligence_auto_publish_settings(id,enabled)','VALUES(1,1)','access_policy=\'blocked\'','status=\'inactive\'','Re-analysis required after G2/Capterra source exclusion'] as $needle){
   if(!str_contains($migration,$needle))$errors[]="084 review automation migration is missing: {$needle}";
 }
-foreach(['g2.com','capterra.com'] as $domain)if(!str_contains($migration,$domain))$errors[]="084 does not quarantine {$domain}";
+foreach(['g2\\.com','capterra\\.com'] as $domainPattern)if(!str_contains($migration,$domainPattern))$errors[]="084 does not quarantine {$domainPattern}";
 
 if($errors){fwrite(STDERR,"Community auto-publication contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}echo "Community auto-publication contract passed with hard G2/Capterra exclusion.\n";
