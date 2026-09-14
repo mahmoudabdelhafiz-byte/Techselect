@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - 'db/mysql/088_automatic_public_review_publication.sql'
+      - 'db/mysql/089_trusted_public_review_source_bootstrap.sql'
+      - 'app/lib/PublicReviewConnectorBootstrap.php'
+      - 'app/lib/CommunitySourceCollectors.php'
+      - 'app/lib/AppleAppStoreReviewCollector.php'
+      - 'app/lib/HackerNewsReviewCollector.php'
+      - 'app/lib/PublicReviewSourcePolicy.php'
       - 'scripts/community_review_automation.php'
       - 'scripts/community_review_zero_touch_check.php'
       - '.github/workflows/community-review-zero-touch.yml'
@@ -11,6 +17,12 @@ on:
     branches: [main]
     paths:
       - 'db/mysql/088_automatic_public_review_publication.sql'
+      - 'db/mysql/089_trusted_public_review_source_bootstrap.sql'
+      - 'app/lib/PublicReviewConnectorBootstrap.php'
+      - 'app/lib/CommunitySourceCollectors.php'
+      - 'app/lib/AppleAppStoreReviewCollector.php'
+      - 'app/lib/HackerNewsReviewCollector.php'
+      - 'app/lib/PublicReviewSourcePolicy.php'
       - 'scripts/community_review_automation.php'
       - 'scripts/community_review_zero_touch_check.php'
       - '.github/workflows/community-review-zero-touch.yml'
@@ -22,6 +34,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: PHP syntax
         run: |
+          php -l app/lib/PublicReviewConnectorBootstrap.php
+          php -l app/lib/CommunitySourceCollectors.php
+          php -l app/lib/AppleAppStoreReviewCollector.php
+          php -l app/lib/HackerNewsReviewCollector.php
+          php -l app/lib/PublicReviewSourcePolicy.php
           php -l scripts/community_review_automation.php
           php -l scripts/community_review_zero_touch_check.php
       - name: Zero-touch review contract
