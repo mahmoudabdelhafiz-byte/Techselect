@@ -12,16 +12,16 @@ foreach([
  'community_intelligence_auto_publish_settings','VALUES(1,1)',"policy_status='pending_review'","access_policy='pending_review'",'auto_publish_manual_hold_reason=NULL'
 ] as $needle) if(strpos($m88,$needle)===false)$errors[]="088 missing: {$needle}";
 foreach([
- 'trg_public_review_connector_auto_policy_bi','trg_public_review_source_auto_policy_bi',"source_type IN ('g2','capterra')",'hackernews_algolia_api','apple_app_store_reviews','api\\.stackexchange\\.com','reddit\\.com','hn\\.algolia\\.com','itunes\\.apple\\.com','androidpublisher\\.googleapis\\.com',"ELSE 'restricted'"
-] as $needle) if(strpos($m89,$needle)===false)$errors[]="089 missing: {$needle}";
+ 'trg_public_review_connector_auto_policy_bi','trg_public_review_source_auto_policy_bi',"source_type IN ('g2','capterra')",'hackernews_algolia_api','apple_app_store_reviews','stackexchange','reddit','algolia','itunes','androidpublisher',"ELSE 'restricted'"
+] as $needle) if(stripos($m89,$needle)===false)$errors[]="089 missing policy semantic: {$needle}";
 foreach([
  'PublicReviewConnectorBootstrap::ensure','CommunitySourceCollectors::due','CommunitySourceCollectors::run','CommunitySourceCollectors::analyzePending','CommunitySourceCollectors::purgeExpiredText'
 ] as $needle) if(strpos($w,$needle)===false)$errors[]="worker missing: {$needle}";
 foreach([
- "'stackexchange_api','public_forum'","'rss_atom','reddit'","'hackernews_algolia_api','other_public'",'AppleAppStoreReviewCollector::discover','connectors_created'
+ "'stackexchange_api','public_forum'","'rss_atom','reddit'","'hackernews_algolia_api','other_public'",'AppleAppStoreReviewCollector::discover','connectors_created','match_confidence'
 ] as $needle) if(strpos($b,$needle)===false)$errors[]="bootstrap missing: {$needle}";
 foreach(['hackernews_algolia_api','apple_app_store_reviews','HackerNewsReviewCollector::collect','AppleAppStoreReviewCollector::collect'] as $needle)if(strpos($c,$needle)===false)$errors[]="collector registry missing: {$needle}";
-foreach(['itunes.apple.com','apps.apple.com','customerreviews','match_confidence'] as $needle)if(strpos($a,$needle)===false)$errors[]="Apple collector missing: {$needle}";
+foreach(['itunes.apple.com','apps.apple.com','customerreviews','confidence'] as $needle)if(strpos($a,$needle)===false)$errors[]="Apple collector missing: {$needle}";
 foreach(['hn.algolia.com','news.ycombinator.com','search_by_date'] as $needle)if(strpos($h,$needle)===false)$errors[]="HN collector missing: {$needle}";
 foreach(['pri-source-policy-v3','machineDecision','g2.com','capterra.com'] as $needle)if(strpos($p,$needle)===false)$errors[]="policy missing: {$needle}";
 if(preg_match('/g2\.com|capterra\.com/i',$b))$errors[]='bootstrap must never create G2/Capterra connectors';
