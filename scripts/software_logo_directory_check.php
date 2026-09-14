@@ -24,7 +24,7 @@ $checks=[
     'schema stores local logo path'=>str_contains($migration,'logo_path'),
     'schema stores official source'=>str_contains($migration,'logo_source_url'),
     'existing surface exposes active logo map'=>str_contains($surface,"status='active'")&&str_contains($surface,"logo_map"),
-    'logo map restricts paths to media/software'=>str_contains($surface,"str_starts_with($relative,'media/software/')"),
+    'logo map restricts paths to media/software'=>str_contains($surface,"str_starts_with(\$relative,'media/software/')"),
     'directory uses approved local logo path'=>str_contains($js,'product?.logo_path'),
     'directory has fallback initials'=>str_contains($js,'software-card-logo__fallback'),
     'directory reads existing logo surface'=>str_contains($js,'/software_logo_page.php?logo_map=1'),
