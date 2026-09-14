@@ -29,6 +29,7 @@ on:
       - 'scripts/catalog_078_cross_category_check.php'
       - 'scripts/catalog_079_thin_category_check.php'
       - 'scripts/catalog_080_thin_category_check.php'
+      - 'scripts/catalog_081_strategic_categories_check.php'
       - 'scripts/recommendation_neutrality_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
@@ -69,6 +70,7 @@ on:
       - 'scripts/catalog_078_cross_category_check.php'
       - 'scripts/catalog_079_thin_category_check.php'
       - 'scripts/catalog_080_thin_category_check.php'
+      - 'scripts/catalog_081_strategic_categories_check.php'
       - 'scripts/recommendation_neutrality_check.php'
       - 'scripts/external_auth_check.php'
       - 'scripts/admin_shell_check.php'
@@ -118,6 +120,7 @@ jobs:
           php -l scripts/catalog_078_cross_category_check.php
           php -l scripts/catalog_079_thin_category_check.php
           php -l scripts/catalog_080_thin_category_check.php
+          php -l scripts/catalog_081_strategic_categories_check.php
           php -l scripts/recommendation_neutrality_check.php
           php -l scripts/external_auth_check.php
           php -l scripts/admin_shell_check.php
@@ -156,6 +159,8 @@ jobs:
         run: php scripts/catalog_079_thin_category_check.php
       - name: Thin-category catalog batch 2 contract
         run: php scripts/catalog_080_thin_category_check.php
+      - name: Strategic categories batch 1 contract
+        run: php scripts/catalog_081_strategic_categories_check.php
       - name: Recommendation neutrality contract
         run: php scripts/recommendation_neutrality_check.php
       - name: External authentication contract
