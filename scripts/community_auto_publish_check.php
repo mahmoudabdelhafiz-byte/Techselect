@@ -22,9 +22,10 @@ foreach(["'g2' => self::row('G2','blocked'","'capterra' => self::row('Capterra',
   if(!str_contains($sourcePolicy,$needle))$errors[]="source policy is missing hard exclusion: {$needle}";
 }
 if(!str_contains($ingestion,'PublicReviewSourcePolicy::isBlocked'))$errors[]='ingestion does not enforce the centralized blocked-source policy';
-foreach(['community_intelligence_auto_publish_settings(id,enabled)','VALUES(1,1)','access_policy=\'blocked\'','status=\'inactive\'','Re-analysis required after G2/Capterra source exclusion'] as $needle){
+foreach(['community_intelligence_auto_publish_settings(id,enabled)','VALUES(1,1)','access_policy=\'blocked\'','status=\'inactive\'','Re-analysis required after G2/Capterra source exclusion',"source_type IN ('g2','capterra')",'LOWER(source_url) REGEXP','LOWER(base_url) REGEXP'] as $needle){
   if(!str_contains($migration,$needle))$errors[]="084 review automation migration is missing: {$needle}";
 }
-foreach(['g2\\.com','capterra\\.com'] as $domainPattern)if(!str_contains($migration,$domainPattern))$errors[]="084 does not quarantine {$domainPattern}";
+if(substr_count(strtolower($migration),'g2')<4)$errors[]='084 does not apply G2 exclusion across sources/connectors/affected aggregates';
+if(substr_count(strtolower($migration),'capterra')<4)$errors[]='084 does not apply Capterra exclusion across sources/connectors/affected aggregates';
 
 if($errors){fwrite(STDERR,"Community auto-publication contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}echo "Community auto-publication contract passed with hard G2/Capterra exclusion.\n";
