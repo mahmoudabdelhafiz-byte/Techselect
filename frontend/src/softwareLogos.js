@@ -22,7 +22,7 @@ function initials(name){
 async function getMap(){
   if(logoMap)return logoMap;
   if(loading)return loading;
-  loading=fetch('/software_logo_map.php',{headers:{Accept:'application/json'}})
+  loading=fetch('/software_logo_page.php?logo_map=1',{headers:{Accept:'application/json'}})
     .then(r=>r.ok?r.json():Promise.reject(new Error('logo_map_failed')))
     .then(data=>{
       logoMap=new Map((data.products||[]).map(p=>[p.slug,p]));
