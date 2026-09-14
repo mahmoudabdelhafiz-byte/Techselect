@@ -25,8 +25,9 @@ foreach($must as $needle)if(strpos($class,$needle)===false)$errors[]="Parity eng
 foreach(['cardiq','card iq','barmageyat','ham smart','house product','preferred vendor','score bonus','ranking bonus','boost'] as $needle){
     if(stripos($class,$needle)!==false)$errors[]="Parity engine contains identity/commercial bias token: {$needle}";
 }
-foreach(['Scoring::','fit_score','recommendation_rank','recommendation_score'] as $needle){
-    if(stripos($class,$needle)!==false)$errors[]="Parity audit must not mutate recommendation scoring: {$needle}";
+foreach(['Scoring::','recommendation_rank','recommendation_score','consultation_recommendations'] as $needle){
+    if(stripos($class,$needle)!==false)$errors[]="Parity audit must not couple to recommendation scoring/ranking: {$needle}";
 }
+if(preg_match('/\bUPDATE\s+consultation_recommendations\b/i',$class)||preg_match('/\bINSERT\s+INTO\s+consultation_recommendations\b/i',$class))$errors[]='Parity audit must never write recommendation results.';
 foreach(['CatalogEvidenceParity::report','--fail-on-critical','CLI only'] as $needle)if(strpos($report,$needle)===false)$errors[]="Parity report missing: {$needle}";
 if($errors){fwrite(STDERR,implode("\n",$errors)."\n");exit(1);}echo "Catalog evidence parity contract passed: identity-blind, category-relative, and independent from Fit Score.\n";
