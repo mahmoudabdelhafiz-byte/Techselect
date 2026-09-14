@@ -1,4 +1,10 @@
 <?php
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    fwrite(STDERR, "CLI only\n");
+    exit(2);
+}
+
 require_once __DIR__.'/../app/lib/Db.php';
 require_once __DIR__.'/../app/lib/CommunitySourceCollectors.php';
 
@@ -12,6 +18,7 @@ foreach (CommunitySourceCollectors::due($pdo,50) as $connectorId) {
         $summary['connectors_run']++;
     } catch (Throwable $e) {
         $summary['connector_errors']++;
+        fwrite(STDERR, 'Connector '.$connectorId.' failed: '.$e->getMessage().PHP_EOL);
     }
 }
 
@@ -32,9 +39,10 @@ foreach ($products as $productId) {
         if($productProcessed>0)$summary['products_analyzed']++;
     } catch (Throwable $e) {
         $summary['analysis_errors']++;
+        fwrite(STDERR, 'Product '.$productId.' analysis failed: '.$e->getMessage().PHP_EOL);
     }
 }
 
-$summary['purged']=CommunitySourceCollectors::purgeExpiredText();
+$summary['purged']=CommunitySourceCollectors::purgeExpiredText($pdo);
 $summary['completed_at']=gmdate('c');
 echo json_encode($summary,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE).PHP_EOL;
