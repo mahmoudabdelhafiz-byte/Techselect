@@ -1,38 +1,58 @@
 <?php
 final class SoftwareLogoManager {
-    private const MAX_HTML_BYTES=786432;
-    private const MAX_LOGO_BYTES=1572864;
+    private const MAX_HTML_BYTES=1572864;
+    private const MAX_LOGO_BYTES=3145728;
     private const MAX_REDIRECTS=3;
 
     public static function discover(array $product): array {
         $official=(string)($product['website_url']??'');
         self::assertOfficialWebsite($official);
-        $page=self::fetch($official,self::MAX_HTML_BYTES,['text/html','application/xhtml+xml']);
-        $html=$page['body'];$base=$page['url'];$found=[];
+        $found=[];
 
-        if(class_exists('DOMDocument')){
-            $doc=new DOMDocument();$prev=libxml_use_internal_errors(true);$doc->loadHTML($html,LIBXML_NONET|LIBXML_NOWARNING|LIBXML_NOERROR);libxml_clear_errors();libxml_use_internal_errors($prev);
-            foreach($doc->getElementsByTagName('img') as $img){
-                $src=trim((string)$img->getAttribute('src'));if($src==='')continue;
-                $hint=strtolower($img->getAttribute('alt').' '.$img->getAttribute('class').' '.$img->getAttribute('id'));
-                $score=(str_contains($hint,'logo')||str_contains($hint,'brand'))?100:20;
-                self::addCandidate($found,$official,$base,$src,'Page image',$score);
+        // Always seed a few conventional first-party icon locations. This gives us a
+        // safe fallback when an official site blocks automated HTML fetching.
+        foreach(self::commonOfficialIconCandidates($official) as $candidate){
+            self::addCandidate($found,$official,$official,$candidate['url'],$candidate['label'],$candidate['score']);
+        }
+
+        try{
+            $page=self::fetch($official,self::MAX_HTML_BYTES,['text/html','application/xhtml+xml']);
+            $html=$page['body'];$base=$page['url'];
+
+            if(class_exists('DOMDocument')){
+                $doc=new DOMDocument();$prev=libxml_use_internal_errors(true);$doc->loadHTML($html,LIBXML_NONET|LIBXML_NOWARNING|LIBXML_NOERROR);libxml_clear_errors();libxml_use_internal_errors($prev);
+                foreach($doc->getElementsByTagName('img') as $img){
+                    $src=trim((string)$img->getAttribute('src'));if($src==='')continue;
+                    $hint=strtolower($img->getAttribute('alt').' '.$img->getAttribute('class').' '.$img->getAttribute('id').' '.$img->getAttribute('title').' '.$img->getAttribute('aria-label').' '.$src);
+                    $score=(str_contains($hint,'logo')||str_contains($hint,'brand'))?100:20;
+                    self::addCandidate($found,$official,$base,$src,'Page image',$score);
+                }
+                foreach($doc->getElementsByTagName('link') as $link){
+                    $rel=strtolower((string)$link->getAttribute('rel'));$href=trim((string)$link->getAttribute('href'));
+                    if($href!==''&&(str_contains($rel,'icon')||str_contains($rel,'apple-touch-icon'))){
+                        $score=str_contains(strtolower($href),'logo')?100:80;
+                        self::addCandidate($found,$official,$base,$href,'Official site icon',$score);
+                    }
+                }
+                foreach($doc->getElementsByTagName('meta') as $meta){
+                    $key=strtolower((string)($meta->getAttribute('property')?:$meta->getAttribute('name')));$value=trim((string)$meta->getAttribute('content'));
+                    if($value!==''&&in_array($key,['og:image','twitter:image','twitter:image:src'],true)){
+                        $valueHint=strtolower($value);$score=(str_contains($valueHint,'logo')||str_contains($valueHint,'brand'))?90:45;
+                        self::addCandidate($found,$official,$base,$value,'Official social/brand image',$score);
+                    }
+                }
+            }else{
+                if(preg_match_all('#<(?:img|link)[^>]+(?:src|href)=["\']([^"\']+)["\'][^>]*>#i',$html,$m))foreach($m[1] as $u)self::addCandidate($found,$official,$base,$u,'Official site image',20);
             }
-            foreach($doc->getElementsByTagName('link') as $link){
-                $rel=strtolower((string)$link->getAttribute('rel'));$href=trim((string)$link->getAttribute('href'));
-                if($href!==''&&(str_contains($rel,'icon')||str_contains($rel,'apple-touch-icon')))self::addCandidate($found,$official,$base,$href,'Official site icon',55);
-            }
-            foreach($doc->getElementsByTagName('meta') as $meta){
-                $key=strtolower((string)($meta->getAttribute('property')?:$meta->getAttribute('name')));$value=trim((string)$meta->getAttribute('content'));
-                if($value!==''&&in_array($key,['og:image','twitter:image','twitter:image:src'],true))self::addCandidate($found,$official,$base,$value,'Official social/brand image',45);
-            }
-        }else{
-            if(preg_match_all('#<(?:img|link)[^>]+(?:src|href)=["\']([^"\']+)["\'][^>]*>#i',$html,$m))foreach($m[1] as $u)self::addCandidate($found,$official,$base,$u,'Official site image',20);
+        }catch(Throwable $e){
+            // Keep the first-party fallback candidates instead of failing discovery
+            // completely when a vendor blocks bots or serves an oversized homepage.
+            if(!$found)throw $e;
         }
 
         usort($found,fn($a,$b)=>$b['score']<=>$a['score']);
         $unique=[];$seen=[];foreach($found as $c){if(isset($seen[$c['url']]))continue;$seen[$c['url']]=1;$unique[]=$c;if(count($unique)>=12)break;}
-        return ['official_website'=>$official,'resolved_page'=>$base,'candidates'=>$unique];
+        return ['official_website'=>$official,'resolved_page'=>$official,'candidates'=>$unique];
     }
 
     public static function cache(array $product,string $sourceUrl): array {
@@ -53,6 +73,15 @@ final class SoftwareLogoManager {
         if(file_put_contents($path,$body,LOCK_EX)===false)throw new RuntimeException('logo_write_failed');
         @chmod($path,0644);
         return ['logo_path'=>'media/software/'.$name,'source_url'=>$res['url'],'mime'=>$mime,'bytes'=>strlen($body),'dimensions'=>$dimensions];
+    }
+
+    private static function commonOfficialIconCandidates(string $official):array{
+        $p=parse_url($official);$origin=(string)($p['scheme']??'https').'://'.(string)($p['host']??'').(isset($p['port'])?':'.$p['port']:'');
+        return [
+            ['url'=>$origin.'/favicon.ico','label'=>'Official favicon fallback','score'=>76],
+            ['url'=>$origin.'/apple-touch-icon.png','label'=>'Official touch icon fallback','score'=>78],
+            ['url'=>$origin.'/favicon.png','label'=>'Official PNG favicon fallback','score'=>76],
+        ];
     }
 
     private static function addCandidate(array &$found,string $official,string $base,string $raw,string $label,int $score):void{
@@ -84,9 +113,9 @@ final class SoftwareLogoManager {
         if($redirects>self::MAX_REDIRECTS)throw new RuntimeException('too_many_redirects');
         $p=parse_url($url);if(!$p||empty($p['host']))throw new RuntimeException('invalid_fetch_url');self::assertPublicHost((string)$p['host']);
         if(!function_exists('curl_init'))throw new RuntimeException('curl_required');
-        $body='';$headers=[];$ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_RETURNTRANSFER=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_USERAGENT=>'TechSelectAI-LogoResearch/1.0 (+https://techselectai.com)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_HEADERFUNCTION=>function($ch,$line)use(&$headers){$len=strlen($line);$pos=strpos($line,':');if($pos!==false)$headers[strtolower(trim(substr($line,0,$pos)))]=trim(substr($line,$pos+1));return $len;},CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$maxBytes){if(strlen($body)+strlen($chunk)>$maxBytes)return 0;$body.=$chunk;return strlen($chunk);}]);
+        $body='';$headers=[];$overflow=false;$ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_RETURNTRANSFER=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; TechSelectAI-LogoResearch/1.1; +https://techselectai.com)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_HEADERFUNCTION=>function($ch,$line)use(&$headers){$len=strlen($line);$pos=strpos($line,':');if($pos!==false)$headers[strtolower(trim(substr($line,0,$pos)))]=trim(substr($line,$pos+1));return $len;},CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$maxBytes,&$overflow){if(strlen($body)+strlen($chunk)>$maxBytes){$overflow=true;return 0;}$body.=$chunk;return strlen($chunk);}]);
         $ok=curl_exec($ch);$err=curl_error($ch);$status=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$type=strtolower(trim(explode(';',(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE))[0]));curl_close($ch);
-        if($ok===false){if(strlen($body)>=$maxBytes)throw new RuntimeException('response_too_large');throw new RuntimeException('fetch_failed'.($err?': '.$err:''));}
+        if($ok===false){if($overflow)throw new RuntimeException('response_too_large');throw new RuntimeException('fetch_failed'.($err?': '.$err:''));}
         if($status>=300&&$status<400&&!empty($headers['location'])){$next=self::absoluteUrl($url,$headers['location']);return self::fetch($next,$maxBytes,$allowedTypes,$redirects+1);}
         if($status<200||$status>=300)throw new RuntimeException('fetch_http_'.$status);
         if($type!==''&&!in_array($type,$allowedTypes,true))throw new RuntimeException('unexpected_content_type');
