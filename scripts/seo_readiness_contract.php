@@ -7,7 +7,7 @@ $root=dirname(__DIR__);
 $fail=[];$ok=[];
 function seo_read(string $path): string { global $root,$fail; $full=$root.'/'.$path; if(!is_file($full)){ $fail[]="missing:$path"; return ''; } return (string)file_get_contents($full); }
 function seo_require(string $file,string $needle,string $label): void { global $fail,$ok; $src=seo_read($file); if($src!=='' && strpos($src,$needle)!==false)$ok[]=$label; else $fail[]="$label ($file missing $needle)"; }
-$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php','alternatives_page.php'];
+$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php','alternatives_page.php','best_category_page.php'];
 foreach($pages as $file){
   seo_require($file,'<title>',$file.':title');
   seo_require($file,'meta name="description"',$file.':description');
@@ -25,6 +25,14 @@ seo_require('app/lib/AlternativeSeo.php','count($alts)<3','alternatives:min-thre
 seo_require('app/lib/AlternativeSeo.php','DATE_SUB(NOW(),INTERVAL','alternatives:fresh-evidence-gate');
 seo_require('app/lib/AlternativeSeo.php','support_status NOT IN','alternatives:known-capability-gate');
 seo_require('app/lib/AlternativeSeo.php','if($overlap<3)','alternatives:overlap-gate');
+seo_require('best_category_page.php','This is not a ranking','best-category:no-ranking-copy');
+seo_require('best_category_page.php','twitter:card','best-category:twitter-card');
+seo_require('best_category_page.php','googlebot','best-category:googlebot');
+seo_require('best_category_page.php',"'@type'=>'ItemList'",'best-category:itemlist-schema');
+seo_require('app/lib/BestCategorySeo.php','MIN_PRODUCTS=4','best-category:min-four-products');
+seo_require('app/lib/BestCategorySeo.php','known_capability_count','best-category:capability-depth-gate');
+seo_require('app/lib/BestCategorySeo.php','fresh_verified_evidence_count','best-category:fresh-evidence-gate');
+seo_require('customer_outcome_links_page.php','BestCategorySeo::page','best-category:category-internal-link');
 seo_require('crawlable_public_page.php','rel="canonical"','crawl-wrapper:canonical');
 seo_require('crawlable_public_page.php','index,follow,max-snippet:-1','crawl-wrapper:index-follow');
 seo_require('crawlable_public_page.php','googlebot','crawl-wrapper:googlebot');
@@ -49,10 +57,12 @@ seo_require('sitemap.php','EXISTS(SELECT 1 FROM evidence_sources','sitemap:evide
 seo_require('sitemap.php',"quality_decision='indexable'",'sitemap:generated-quality-gate');
 seo_require('sitemap.php','ComparisonSeoPriority::indexablePairs','sitemap:comparison-quality-gate');
 seo_require('sitemap.php','AlternativeSeo::indexable','sitemap:alternatives-quality-gate');
+seo_require('sitemap.php','BestCategorySeo::indexable','sitemap:best-category-quality-gate');
 $ht=seo_read('.htaccess');
 foreach(['software/','categories/','capabilities/','integrations/','compare/','alternatives/'] as $route){
   if(strpos($ht,$route)!==false && strpos($ht,'crawlable_public_page.php')!==false)$ok[]="route:$route"; else $fail[]="route:$route not wired through crawlable_public_page.php";
 }
+if(strpos($ht,'best/[a-z0-9-]+-software')!==false && strpos($ht,'best_category_page.php')!==false)$ok[]='route:best-category';else $fail[]='route:best-category not wired';
 seo_require('brand_page.php','/llms.txt','ai-discovery:llms');
 seo_require('brand_page.php','PublicKnowledgeSummary','ai-discovery:knowledge-summary');
 seo_require('knowledge_page.php','AiFactualSummary','ai-discovery:factual-summary');
