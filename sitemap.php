@@ -3,6 +3,7 @@ require_once __DIR__.'/app/lib/Db.php';
 require_once __DIR__.'/app/lib/ComparisonSeoPriority.php';
 require_once __DIR__.'/app/lib/AlternativeSeo.php';
 require_once __DIR__.'/app/lib/BestCategorySeo.php';
+require_once __DIR__.'/app/lib/RegionalCategorySeo.php';
 $config=require __DIR__.'/app/config.php';
 $pdo=Db::pdo();
 function x($v){return htmlspecialchars((string)$v,ENT_XML1|ENT_QUOTES,'UTF-8');}
@@ -67,6 +68,14 @@ try{
   foreach(BestCategorySeo::indexable($pdo) as $best){
     $latest=null;foreach($best['products'] as $p){if(!empty($p['last_reviewed_at'])&&($latest===null||$p['last_reviewed_at']>$latest))$latest=$p['last_reviewed_at'];}
     add_url($urls,$best['path'],'weekly','0.82',$latest);
+  }
+}catch(Throwable $e){}
+
+// Country/category pages are exposed only when at least three products have fresh, source-linked
+// positive regional availability evidence plus normal product evidence depth. No country claim is inferred.
+try{
+  foreach(RegionalCategorySeo::indexable($pdo) as $regional){
+    add_url($urls,$regional['path'],'weekly','0.79',$regional['latest_regional_verification']??null);
   }
 }catch(Throwable $e){}
 
