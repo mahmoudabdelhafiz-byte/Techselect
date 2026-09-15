@@ -102,11 +102,15 @@ JOIN product_capabilities pc ON pc.product_id=p.id AND pc.capability_id=c.id AND
 JOIN evidence_sources e ON e.product_id=p.id AND e.source_url=f.source_url;
 
 -- Products added/promoted after the mobile-access foundation receive explicit unknown rows rather than inferred availability.
-INSERT INTO product_mobile_access(product_id,platform,support_status,scope,evidence_url,last_verified_at)
-SELECT p.id,plat.platform,'not_yet_verified','Mobile access has not yet been verified from product-specific first-party evidence.',NULL,NULL
+INSERT INTO product_mobile_access(product_id,platform,support_status,scope_status,evidence_type,confidence_score)
+SELECT p.id,plat.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p
-JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') plat
+CROSS JOIN (SELECT 'android' AS platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') plat
 WHERE p.slug IN('sap-transportation-management','oracle-transportation-management','blue-yonder-transportation-management','descartes-transportation-manager','manhattan-active-transportation-management')
-ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope=VALUES(scope);
+ON DUPLICATE KEY UPDATE
+  support_status=VALUES(support_status),
+  scope_status=VALUES(scope_status),
+  evidence_type=VALUES(evidence_type),
+  confidence_score=VALUES(confidence_score);
 
 COMMIT;
