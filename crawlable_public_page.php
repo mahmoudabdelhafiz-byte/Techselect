@@ -10,6 +10,7 @@ elseif(preg_match('#^/categories/[a-z0-9-]+/?$#',$path)){ $target='customer_outc
 elseif(preg_match('#^/capabilities/[a-z0-9-]+/?$#',$path)){ $target='brand_page.php';$pageType='capability'; }
 elseif(preg_match('#^/integrations/[a-z0-9-]+/?$#',$path)){ $target='brand_page.php';$pageType='integration'; }
 elseif(preg_match('#^/compare/[a-z0-9-]+-vs-[a-z0-9-]+/?$#',$path)){ $target='contextual_comparison_page.php';$pageType='comparison'; }
+elseif(preg_match('#^/alternatives/[a-z0-9-]+/?$#',$path)){ $target='alternatives_page.php';$pageType='alternatives'; }
 if(!$target){http_response_code(404);exit('Not found');}
 
 ob_start();require __DIR__.'/'.$target;$html=ob_get_clean();
