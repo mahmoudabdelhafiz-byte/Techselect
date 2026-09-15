@@ -54,31 +54,26 @@ CREATE TEMPORARY TABLE cat96_facts(
   product_slug VARCHAR(190),capability_slug VARCHAR(190),support_status VARCHAR(40),confidence DECIMAL(4,3),limitations TEXT,source_url TEXT
 );
 INSERT INTO cat96_facts VALUES
--- Docusign eSignature
 ('docusign-esignature','esign-send-request','supported',0.990,'Docusign documents sending agreements for electronic signature as a core eSignature workflow.','https://www.docusign.com/products/electronic-signature'),
 ('docusign-esignature','esign-routing','supported',0.980,'Docusign supports recipient routing and configurable agreement workflows.','https://www.docusign.com/products/electronic-signature'),
 ('docusign-esignature','esign-templates','supported',0.990,'Docusign documents reusable templates and workflows.','https://www.docusign.com/integrations/esignature-for-google-workspace'),
 ('docusign-esignature','esign-audit-tracking','supported',0.990,'Docusign documents comprehensive automated audit trails with timestamps and activity details.','https://www.docusign.com/integrations/esignature-for-google-workspace'),
 ('docusign-esignature','esign-integrations','supported',0.990,'Docusign documents business application integrations including Google Workspace.','https://www.docusign.com/integrations/esignature-for-google-workspace'),
--- Adobe Acrobat Sign
 ('adobe-acrobat-sign','esign-send-request','supported',0.990,'Adobe Acrobat Sign documents sending documents for electronic signature.','https://www.adobe.com/acrobat/business/sign.html'),
 ('adobe-acrobat-sign','esign-routing','supported',0.970,'Adobe documents routing and agreement workflow capabilities in Acrobat Sign.','https://www.adobe.com/acrobat/business/sign.html'),
 ('adobe-acrobat-sign','esign-templates','supported',0.960,'Adobe documents reusable agreement and form workflows for Acrobat Sign.','https://www.adobe.com/acrobat/business/sign.html'),
 ('adobe-acrobat-sign','esign-audit-tracking','supported',0.990,'Adobe documents audit reports for agreement activity.','https://helpx.adobe.com/sign/using/audit-reports.html'),
 ('adobe-acrobat-sign','esign-integrations','supported',0.960,'Adobe documents business workflow and application integrations for Acrobat Sign.','https://www.adobe.com/acrobat/business/sign.html'),
--- Dropbox Sign
 ('dropbox-sign','esign-send-request','supported',0.990,'Dropbox Sign documents signature request workflows in its API and product features.','https://sign.dropbox.com/features/api'),
 ('dropbox-sign','esign-routing','supported',0.960,'Dropbox Sign supports multi-party signature request workflows.','https://sign.dropbox.com/features/api'),
 ('dropbox-sign','esign-templates','supported',0.990,'Dropbox documents reusable Sign templates and template-based requests.','https://help.dropbox.com/create-upload/how-to-create-a-dropbox-sign-template'),
 ('dropbox-sign','esign-audit-tracking','supported',0.990,'Dropbox documents tamper-evident, timestamped audit trails for signature transactions.','https://help.dropbox.com/security/dropbox-sign-audit-trail-overview'),
 ('dropbox-sign','esign-integrations','supported',0.990,'Dropbox Sign documents API, SDK, OAuth and embedded signing capabilities.','https://sign.dropbox.com/features/api'),
--- Zoho Sign
 ('zoho-sign','esign-send-request','supported',0.990,'Zoho Sign documents sending documents and collecting electronic signatures.','https://www.zoho.com/sign/features.html'),
 ('zoho-sign','esign-routing','supported',0.970,'Zoho Sign documents multi-recipient signing and workflow controls.','https://www.zoho.com/sign/features.html'),
 ('zoho-sign','esign-templates','supported',0.980,'Zoho Sign documents reusable templates.','https://www.zoho.com/sign/features.html'),
 ('zoho-sign','esign-audit-tracking','supported',0.980,'Zoho Sign documents audit trails and document tracking.','https://www.zoho.com/sign/features.html'),
 ('zoho-sign','esign-integrations','supported',0.990,'Zoho Sign publishes APIs and integration capabilities.','https://www.zoho.com/sign/api/'),
--- OneSpan Sign
 ('onespan-sign','esign-send-request','supported',0.990,'OneSpan Sign is positioned as an enterprise electronic signature platform for document signing workflows.','https://www.onespan.com/products/electronic-signature'),
 ('onespan-sign','esign-routing','supported',0.970,'OneSpan Sign supports multi-signer and ordered signing workflows.','https://www.onespan.com/products/electronic-signature'),
 ('onespan-sign','esign-templates','supported',0.950,'OneSpan Sign documents reusable package and template-driven signing workflows.','https://www.onespan.com/products/electronic-signature'),
@@ -102,11 +97,15 @@ FROM cat96_facts f JOIN products p ON p.slug=f.product_slug JOIN capabilities c 
 JOIN product_capabilities pc ON pc.product_id=p.id AND pc.capability_id=c.id AND pc.edition_id IS NULL
 JOIN evidence_sources e ON e.product_id=p.id AND e.source_url=f.source_url;
 
-INSERT INTO product_mobile_access(product_id,platform,support_status,scope,evidence_url,last_verified_at)
-SELECT p.id,plat.platform,'not_yet_verified','Mobile access has not yet been verified from product-specific first-party evidence.',NULL,NULL
+INSERT INTO product_mobile_access(product_id,platform,support_status,scope_status,evidence_type,confidence_score)
+SELECT p.id,plat.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p
 JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') plat
 WHERE p.slug IN('docusign-esignature','adobe-acrobat-sign','dropbox-sign','zoho-sign','onespan-sign')
-ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope=VALUES(scope);
+ON DUPLICATE KEY UPDATE
+  support_status=VALUES(support_status),
+  scope_status=VALUES(scope_status),
+  evidence_type=VALUES(evidence_type),
+  confidence_score=VALUES(confidence_score);
 
 COMMIT;
