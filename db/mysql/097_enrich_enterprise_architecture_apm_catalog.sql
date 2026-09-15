@@ -20,10 +20,6 @@ ON DUPLICATE KEY UPDATE vendor_id=VALUES(vendor_id),category_id=VALUES(category_
 DROP TEMPORARY TABLE IF EXISTS cat97_sources;
 CREATE TEMPORARY TABLE cat97_sources(product_slug VARCHAR(190),url TEXT,title VARCHAR(255),publisher VARCHAR(190));
 INSERT INTO cat97_sources VALUES
-('sap-leanix','https://www.leanix.net/en/products/application-portfolio-management','SAP LeanIX Application Portfolio Management','SAP LeanIX'),
-('ardoq','https://www.ardoq.com/solutions/application-portfolio-management','Ardoq Application Portfolio Management','Ardoq'),
-('bizzdesign-horizzon','https://bizzdesign.com/application-portfolio-management-apm-software','Bizzdesign Application Portfolio Management','Bizzdesign'),
-('orbusinfinity','https://www.orbussoftware.com/solutions/use-case/application-portfolio-management','OrbusInfinity Application Portfolio Management','Orbus Software'),
 ('servicenow-application-portfolio-management','https://www.servicenow.com/products/application-portfolio-management.html','ServiceNow Application Portfolio Management','ServiceNow'),
 ('servicenow-application-portfolio-management','https://www.servicenow.com/products/strategic-portfolio-management/what-is-application-portfolio-management.html','ServiceNow APM overview','ServiceNow');
 
