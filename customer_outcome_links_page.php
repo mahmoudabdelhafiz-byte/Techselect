@@ -76,4 +76,19 @@ try{
   }
 }catch(Throwable $e){}
 
+// Country-specific discovery links are emitted only when at least three products carry fresh,
+// source-linked regional availability evidence. This does not infer local compliance or fit.
+try{
+  if(preg_match('#^/categories/([a-z0-9-]+)/?$#',$path,$m)){
+    require_once __DIR__.'/app/lib/RegionalCategorySeo.php';
+    $regional=RegionalCategorySeo::linksForCategory(Db::pdo(),$m[1]);
+    if($regional){
+      $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');$items='';
+      foreach($regional as $r)$items.='<li style="margin:8px 0"><a href="'.$esc($r['path']).'">Verified availability in '.$esc($r['country']['name']).'</a> <span style="color:#64748b">— '.count($r['products']).' evidence-qualified products</span></li>';
+      $regionalSection='<section data-regional-category-evidence style="margin-top:34px;padding:22px;border:1px solid #d8e5ec;border-radius:16px;background:#fff"><div class="eyebrow">Regional evidence</div><h2 style="margin:5px 0 8px">Country availability research</h2><p style="color:#64748b;line-height:1.6">These pages appear only when TechSelectAI has fresh, source-linked country availability evidence for multiple products. Availability is not the same as compliance, data residency or buyer fit.</p><ul style="margin:0;padding-left:20px">'.$items.'</ul></section>';
+      $html=preg_replace('#<section class="cta">#',$regionalSection.'<section class="cta">',$html,1)??$html;
+    }
+  }
+}catch(Throwable $e){}
+
 echo $html;
