@@ -22,7 +22,7 @@ seo_require('category_page.php',"'@type'=>'ItemList'",'category:schema-itemlist'
 seo_require('capability_page.php',"'@type'=>'ItemList'",'capability:schema-itemlist');
 seo_require('alternatives_page.php',"'@type'=>'ItemList'",'alternatives:schema-itemlist');
 seo_require('app/lib/AlternativeSeo.php','count($alts)<3','alternatives:min-three-peers');
-seo_require('app/lib/AlternativeSeo.php','fresh_verified_evidence_count','alternatives:fresh-evidence-label');
+seo_require('app/lib/AlternativeSeo.php','DATE_SUB(NOW(),INTERVAL','alternatives:fresh-evidence-gate');
 seo_require('app/lib/AlternativeSeo.php','support_status NOT IN','alternatives:known-capability-gate');
 seo_require('app/lib/AlternativeSeo.php','if($overlap<3)','alternatives:overlap-gate');
 seo_require('crawlable_public_page.php','rel="canonical"','crawl-wrapper:canonical');
