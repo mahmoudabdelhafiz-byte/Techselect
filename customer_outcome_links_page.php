@@ -61,4 +61,19 @@ try{
   // Customer-outcome migration may not be deployed yet; public knowledge pages must remain available.
 }
 
+// High-intent "best category software" discovery link. The target exists only when the
+// category has a sufficiently broad, fresh, evidence-qualified research set.
+try{
+  if(preg_match('#^/categories/([a-z0-9-]+)/?$#',$path,$m)){
+    require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/BestCategorySeo.php';
+    $best=BestCategorySeo::page(Db::pdo(),$m[1]);
+    if($best){
+      $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+      $bestSection='<section data-best-category-research style="margin-top:34px;padding:22px;border:1px solid #d8e5ec;border-radius:16px;background:#f8fbfd"><div class="eyebrow">Buyer-intent research</div><h2 style="margin:5px 0 8px">Best '.$esc($best['category']['name']).' software research set</h2><p style="color:#64748b;line-height:1.6">Explore an evidence-qualified set of '.count($best['products']).' researched products. “Best” describes the search intent, not a universal ranking.</p><a href="'.$esc($best['path']).'" style="font-weight:750">View the evidence-qualified options →</a></section>';
+      $html=preg_replace('#<section class="cta">#',$bestSection.'<section class="cta">',$html,1)??$html;
+    }
+  }
+}catch(Throwable $e){}
+
 echo $html;
