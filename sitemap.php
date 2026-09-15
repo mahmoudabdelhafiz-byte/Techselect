@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__.'/app/lib/Db.php';
 require_once __DIR__.'/app/lib/ComparisonSeoPriority.php';
+require_once __DIR__.'/app/lib/AlternativeSeo.php';
 $config=require __DIR__.'/app/config.php';
 $pdo=Db::pdo();
 function x($v){return htmlspecialchars((string)$v,ENT_XML1|ENT_QUOTES,'UTF-8');}
@@ -50,6 +51,15 @@ if(count($indexableProducts)>=2){
     foreach($pdo->query($compareSql) as $r){$pair=[$r['slug1'],$r['slug2']];sort($pair,SORT_STRING);$comparePath='/compare/'.implode('-vs-',$pair);if(isset($priorityComparePaths[$comparePath]))continue;add_url($urls,$comparePath,'weekly','0.65',$r['last_updated']);}
   }catch(Throwable $e){}
 }
+
+// Product-alternatives pages are indexable only when the focal product and at least three
+// same-category alternatives pass fresh evidence and mutually-known capability overlap gates.
+try{
+  foreach(AlternativeSeo::indexable($pdo) as $alt){
+    add_url($urls,$alt['path'],'weekly','0.78',$alt['product']['last_reviewed_at']??null);
+  }
+}catch(Throwable $e){}
+
 try{$generatedSql="SELECT canonical_path,updated_at FROM seo_generated_pages WHERE status='published' AND quality_decision='indexable' ORDER BY canonical_path";foreach($pdo->query($generatedSql) as $r)add_url($urls,$r['canonical_path'],'weekly','0.7',$r['updated_at']);}catch(Throwable $e){}
 try{$caseSql="SELECT slug,updated_at FROM customer_outcomes WHERE verification_status='verified' AND publication_status='published' AND approved_by IS NOT NULL AND approved_at IS NOT NULL AND published_at IS NOT NULL ORDER BY slug";foreach($pdo->query($caseSql) as $r)add_url($urls,'/case-studies/'.$r['slug'],'monthly','0.7',$r['updated_at']);}catch(Throwable $e){}
 echo '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';foreach($urls as $u){echo '<url><loc>'.x($config['site_url'].$u[0]).'</loc><changefreq>'.$u[1].'</changefreq><priority>'.$u[2].'</priority>';if(!empty($u[3]))echo '<lastmod>'.date('c',strtotime($u[3])).'</lastmod>';echo '</url>';}echo '</urlset>';

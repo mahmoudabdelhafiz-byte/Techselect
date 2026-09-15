@@ -7,7 +7,7 @@ $root=dirname(__DIR__);
 $fail=[];$ok=[];
 function seo_read(string $path): string { global $root,$fail; $full=$root.'/'.$path; if(!is_file($full)){ $fail[]="missing:$path"; return ''; } return (string)file_get_contents($full); }
 function seo_require(string $file,string $needle,string $label): void { global $fail,$ok; $src=seo_read($file); if($src!=='' && strpos($src,$needle)!==false)$ok[]=$label; else $fail[]="$label ($file missing $needle)"; }
-$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php'];
+$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php','alternatives_page.php'];
 foreach($pages as $file){
   seo_require($file,'<title>',$file.':title');
   seo_require($file,'meta name="description"',$file.':description');
@@ -20,6 +20,11 @@ seo_require('software_page.php',"'@type'=>'SoftwareApplication'",'software:schem
 seo_require('software_page.php',"'@type'=>'BreadcrumbList'",'software:schema-breadcrumb');
 seo_require('category_page.php',"'@type'=>'ItemList'",'category:schema-itemlist');
 seo_require('capability_page.php',"'@type'=>'ItemList'",'capability:schema-itemlist');
+seo_require('alternatives_page.php',"'@type'=>'ItemList'",'alternatives:schema-itemlist');
+seo_require('app/lib/AlternativeSeo.php','count($alts)<3','alternatives:min-three-peers');
+seo_require('app/lib/AlternativeSeo.php','DATE_SUB(NOW(),INTERVAL','alternatives:fresh-evidence-gate');
+seo_require('app/lib/AlternativeSeo.php','support_status NOT IN','alternatives:known-capability-gate');
+seo_require('app/lib/AlternativeSeo.php','if($overlap<3)','alternatives:overlap-gate');
 seo_require('crawlable_public_page.php','rel="canonical"','crawl-wrapper:canonical');
 seo_require('crawlable_public_page.php','index,follow,max-snippet:-1','crawl-wrapper:index-follow');
 seo_require('crawlable_public_page.php','googlebot','crawl-wrapper:googlebot');
@@ -32,7 +37,9 @@ seo_require('crawlable_public_page.php',"'@type'=>'WebSite'",'crawl-wrapper:webs
 seo_require('crawlable_public_page.php',"'@type'=>'WebPage'",'crawl-wrapper:webpage-schema');
 seo_require('crawlable_public_page.php','LongTailSeoLinks','crawl-wrapper:related-guides');
 seo_require('crawlable_public_page.php','ComparisonSeoPriority','crawl-wrapper:evidence-ready-comparisons');
+seo_require('crawlable_public_page.php',"pageType='alternatives'",'crawl-wrapper:alternatives-route');
 seo_require('app/lib/PublicSeoMetadata.php','Review: Features, Pricing & Alternatives','snippet:product-intent');
+seo_require('app/lib/PublicSeoMetadata.php','Alternatives: Compare Evidence-Backed Options','snippet:alternatives-intent');
 seo_require('app/lib/PublicSeoMetadata.php','Compare Product Support','snippet:capability-intent');
 seo_require('app/lib/PublicSeoMetadata.php','Compare Compatible Products','snippet:integration-intent');
 seo_require('app/lib/PublicSeoMetadata.php','Features, Evidence & Differences','snippet:comparison-intent');
@@ -41,8 +48,9 @@ seo_require('sitemap.php',"COUNT(*) FROM product_capabilities",'sitemap:product-
 seo_require('sitemap.php','EXISTS(SELECT 1 FROM evidence_sources','sitemap:evidence-gate');
 seo_require('sitemap.php',"quality_decision='indexable'",'sitemap:generated-quality-gate');
 seo_require('sitemap.php','ComparisonSeoPriority::indexablePairs','sitemap:comparison-quality-gate');
+seo_require('sitemap.php','AlternativeSeo::indexable','sitemap:alternatives-quality-gate');
 $ht=seo_read('.htaccess');
-foreach(['software/','categories/','capabilities/','integrations/','compare/'] as $route){
+foreach(['software/','categories/','capabilities/','integrations/','compare/','alternatives/'] as $route){
   if(strpos($ht,$route)!==false && strpos($ht,'crawlable_public_page.php')!==false)$ok[]="route:$route"; else $fail[]="route:$route not wired through crawlable_public_page.php";
 }
 seo_require('brand_page.php','/llms.txt','ai-discovery:llms');

@@ -12,6 +12,13 @@ final class PublicSeoMetadata {
                 $title=$r['name'].' Review: Features, Pricing & Alternatives | TechSelectAI';
                 $description=self::limit(($r['short_description']?:('Compare verified '.$r['name'].' capabilities, pricing, deployment, integrations and alternatives.')).' Evidence-backed profile with source transparency and last-reviewed product data.');
             }
+        }elseif(preg_match('#^/alternatives/([a-z0-9-]+)$#',$canonicalPath,$m)){
+            $st=$pdo->prepare("SELECT p.name,c.name category FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.slug=? AND p.status='active' LIMIT 1");
+            $st->execute([$m[1]]);$r=$st->fetch();
+            if($r){
+                $title=$r['name'].' Alternatives: Compare Evidence-Backed Options | TechSelectAI';
+                $description=self::limit('Compare evidence-qualified alternatives to '.$r['name'].' in '.$r['category'].'. TechSelectAI only includes same-category options with fresh verified evidence and meaningful capability overlap.');
+            }
         }elseif(preg_match('#^/categories/([a-z0-9-]+)$#',$canonicalPath,$m)){
             $st=$pdo->prepare("SELECT name,description FROM categories WHERE slug=? AND is_active=1 LIMIT 1");$st->execute([$m[1]]);$r=$st->fetch();
             if($r){
