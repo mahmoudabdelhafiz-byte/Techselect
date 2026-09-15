@@ -27,9 +27,33 @@ $meta='<link rel="canonical" href="'.htmlspecialchars($canonical,ENT_QUOTES,'UTF
      .'<meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">'
      .'<meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">';
 
-// Optional AdSense Auto Ads loader. Configuration is display-only and never participates in scoring or recommendations.
+// Centralized buyer-intent snippet metadata and site/entity schema. This uses canonical catalog facts only;
+// it does not invent rankings, pricing or unsupported product claims.
 try{
     require_once __DIR__.'/app/lib/Db.php';
+    require_once __DIR__.'/app/lib/PublicSeoMetadata.php';
+    $seo=PublicSeoMetadata::forPath(Db::pdo(),$canonicalPath);
+    $seoTitle=(string)($seo['title']??'TechSelectAI');
+    $seoDesc=(string)($seo['description']??'Evidence-backed software research and comparison for business technology decisions.');
+    $html=preg_replace('#<title>.*?</title>#is','<title>'.htmlspecialchars($seoTitle,ENT_QUOTES,'UTF-8').'</title>',$html,1)??$html;
+    $html=preg_replace('#<meta\s+name=["\']description["\'][^>]*>#i','<meta name="description" content="'.htmlspecialchars($seoDesc,ENT_QUOTES,'UTF-8').'">',$html,1)??$html;
+    $html=preg_replace('#<meta\s+property=["\']og:title["\'][^>]*>#i','<meta property="og:title" content="'.htmlspecialchars($seoTitle,ENT_QUOTES,'UTF-8').'">',$html,1)??$html;
+    $html=preg_replace('#<meta\s+property=["\']og:description["\'][^>]*>#i','<meta property="og:description" content="'.htmlspecialchars($seoDesc,ENT_QUOTES,'UTF-8').'">',$html,1)??$html;
+    $html=preg_replace('#<meta\s+property=["\']og:url["\'][^>]*>#i','<meta property="og:url" content="'.htmlspecialchars($canonical,ENT_QUOTES,'UTF-8').'">',$html,1)??$html;
+    $meta.='<meta property="og:site_name" content="TechSelectAI">'
+          .'<meta name="twitter:card" content="summary">'
+          .'<meta name="twitter:title" content="'.htmlspecialchars($seoTitle,ENT_QUOTES,'UTF-8').'">'
+          .'<meta name="twitter:description" content="'.htmlspecialchars($seoDesc,ENT_QUOTES,'UTF-8').'">';
+    $entityGraph=['@context'=>'https://schema.org','@graph'=>[
+        ['@type'=>'Organization','@id'=>$base.'/#organization','name'=>'TechSelectAI','url'=>$base.'/'],
+        ['@type'=>'WebSite','@id'=>$base.'/#website','url'=>$base.'/','name'=>'TechSelectAI','publisher'=>['@id'=>$base.'/#organization']],
+        ['@type'=>'WebPage','@id'=>$canonical.'#webpage','url'=>$canonical,'name'=>$seoTitle,'description'=>$seoDesc,'isPartOf'=>['@id'=>$base.'/#website'],'about'=>['@id'=>$base.'/#organization']]
+    ]];
+    $meta.='<script type="application/ld+json">'.json_encode($entityGraph,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE).'</script>';
+}catch(Throwable $e){}
+
+// Optional AdSense Auto Ads loader. Configuration is display-only and never participates in scoring or recommendations.
+try{
     require_once __DIR__.'/app/lib/AdvertisingSettings.php';
     $meta.=AdvertisingSettings::headScript(Db::pdo(),(string)$pageType);
 }catch(Throwable $e){}
