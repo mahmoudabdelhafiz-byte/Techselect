@@ -22,6 +22,7 @@ $user=Security::user();
 
 if($method==='GET'){
     if(!$user) pf_out(['authenticated'=>false,'followed'=>false,'product'=>['slug'=>$product['slug'],'name'=>$product['name']]]);
+    Security::csrf();
     $state=ProductFollows::state($pdo,(int)$user['id'],(int)$product['id']);
     pf_out(['authenticated'=>true,'followed'=>$state['followed'],'product'=>['slug'=>$product['slug'],'name'=>$product['name']]]);
 }
