@@ -14,9 +14,9 @@ if(strpos($m,'community_notifications TINYINT(1) NOT NULL DEFAULT 0')===false)$e
 if(strpos($m,'UNIQUE KEY uq_product_community_notification(post_id,follow_id)')===false)$errors[]='delivery dedupe key missing';
 $api=$text['api/product_community.php']??'';
 foreach(['pf.community_notifications=1','pf.user_id<>?','INSERT IGNORE INTO product_community_notification_deliveries'] as $needle)if(strpos($api,$needle)===false)$errors[]='community enqueue guard missing: '.$needle;
-if(strpos($api,"$action==='helpful'")===false)$errors[]='helpful action missing';
+if(strpos($api,"\$action==='helpful'")===false)$errors[]='helpful action missing';
 $follow=$text['api/product_follows.php']??'';
-if(strpos($follow,"$method==='PATCH'")===false||strpos($follow,'setCommunityNotifications')===false)$errors[]='separate preference API missing';
+if(strpos($follow,"\$method==='PATCH'")===false||strpos($follow,'setCommunityNotifications')===false)$errors[]='separate preference API missing';
 $js=$text['product_follow.js']??'';
 foreach(['Email me about new community questions and replies',"method:'PATCH'"] as $needle)if(strpos($js,$needle)===false)$errors[]='follow UI preference missing: '.$needle;
 $worker=$text['scripts/product_community_notifications.php']??'';
