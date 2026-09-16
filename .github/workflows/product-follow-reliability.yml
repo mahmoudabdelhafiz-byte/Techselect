@@ -1,0 +1,36 @@
+name: Product Follow reliability
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/ProductFollows.php'
+      - 'scripts/product_follow_updates.php'
+      - 'product_follow_unsubscribe.php'
+      - 'db/mysql/103_product_follow_reliability.sql'
+      - 'scripts/product_follow_reliability_check.php'
+      - '.github/workflows/product-follow-reliability.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/lib/ProductFollows.php'
+      - 'scripts/product_follow_updates.php'
+      - 'product_follow_unsubscribe.php'
+      - 'db/mysql/103_product_follow_reliability.sql'
+      - 'scripts/product_follow_reliability_check.php'
+      - '.github/workflows/product-follow-reliability.yml'
+  workflow_dispatch:
+
+jobs:
+  follow-reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l app/lib/ProductFollows.php
+          php -l scripts/product_follow_updates.php
+          php -l product_follow_unsubscribe.php
+          php -l scripts/product_follow_reliability_check.php
+      - name: Product Follow reliability contract
+        run: php scripts/product_follow_reliability_check.php
