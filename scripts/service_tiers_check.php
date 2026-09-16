@@ -22,5 +22,5 @@ if(preg_match("/'[^']+'=>self::PRO/",$ent))$failed[]='No current product feature
 if(strpos($ent,"'full_business_case'=>self::PUBLIC")!==false||strpos($ent,"'rfp_generator'=>self::PUBLIC")!==false)$failed[]='Advanced decision features must still require registration';
 if(strpos($ent,"'public_product_profiles'=>self::PUBLIC")===false)$failed[]='Public product profiles must remain public';
 $plans=@file_get_contents($root.'/plans.php')?:'';
-foreach(['Pro unlocks','Free registered\' : \'Pro','Registered and Pro'] as $legacy)if(strpos($plans,$legacy)!==false)$failed[]="plans.php still markets legacy Pro access: $legacy";
+foreach(['Pro unlocks',"Free registered':'Pro",'Registered and Pro'] as $legacy)if(strpos($plans,$legacy)!==false)$failed[]="plans.php still markets legacy Pro access: $legacy";
 if($failed){fwrite(STDERR,"Service tier checks failed:\n- ".implode("\n- ",$failed)."\n");exit(1);}echo "Service tier checks passed: all current authenticated capabilities are registered-user access.\n";
