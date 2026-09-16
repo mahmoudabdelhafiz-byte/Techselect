@@ -1,0 +1,22 @@
+name: SEO topic cluster
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/SeoTopicCluster.php'
+      - 'alternatives_page.php'
+      - 'best_category_page.php'
+      - 'regional_category_page.php'
+      - 'scripts/seo_topic_cluster_check.php'
+      - '.github/workflows/seo-topic-cluster.yml'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: php scripts/seo_topic_cluster_check.php
