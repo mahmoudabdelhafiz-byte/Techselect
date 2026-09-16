@@ -8,10 +8,14 @@ final class ProductFollows {
     }
 
     public static function state(PDO $pdo, int $userId, int $productId): array {
-        $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
+        $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at,community_notifications FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
         $st->execute([$userId,$productId]);
         $row=$st->fetch()?:null;
-        return ['followed'=>$row!==null && ($row['status']??'')==='active','follow'=>$row];
+        return [
+            'followed'=>$row!==null && ($row['status']??'')==='active',
+            'community_notifications'=>$row!==null && (int)($row['community_notifications']??0)===1,
+            'follow'=>$row,
+        ];
     }
 
     public static function follow(PDO $pdo, int $userId, int $productId): array {
@@ -22,8 +26,16 @@ final class ProductFollows {
     }
 
     public static function unfollow(PDO $pdo, int $userId, int $productId): array {
-        $pdo->prepare("UPDATE product_follows SET status='unsubscribed',updated_at=NOW() WHERE user_id=? AND product_id=?")
+        $pdo->prepare("UPDATE product_follows SET status='unsubscribed',community_notifications=0,updated_at=NOW() WHERE user_id=? AND product_id=?")
             ->execute([$userId,$productId]);
+        return self::state($pdo,$userId,$productId);
+    }
+
+    public static function setCommunityNotifications(PDO $pdo,int $userId,int $productId,bool $enabled):array {
+        $state=self::state($pdo,$userId,$productId);
+        if(!$state['followed'])throw new LogicException('follow_required');
+        $pdo->prepare("UPDATE product_follows SET community_notifications=?,updated_at=NOW() WHERE user_id=? AND product_id=? AND status='active'")
+            ->execute([$enabled?1:0,$userId,$productId]);
         return self::state($pdo,$userId,$productId);
     }
 
@@ -33,7 +45,7 @@ final class ProductFollows {
         $st->execute([$token]);
         $row=$st->fetch()?:null;
         if(!$row) return null;
-        $pdo->prepare("UPDATE product_follows SET status='unsubscribed',updated_at=NOW() WHERE id=?")->execute([(int)$row['id']]);
+        $pdo->prepare("UPDATE product_follows SET status='unsubscribed',community_notifications=0,updated_at=NOW() WHERE id=?")->execute([(int)$row['id']]);
         return $row;
     }
 
