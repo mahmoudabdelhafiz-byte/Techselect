@@ -1,0 +1,31 @@
+name: Product community notifications
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/102_product_community_notifications.sql'
+      - 'api/product_follows.php'
+      - 'api/product_community.php'
+      - 'app/lib/ProductFollows.php'
+      - 'product_follow.js'
+      - 'scripts/product_community_notifications.php'
+      - 'scripts/product_community_notifications_check.php'
+      - '.github/workflows/product-community-notifications.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: PHP syntax
+        run: |
+          php -l api/product_follows.php
+          php -l api/product_community.php
+          php -l app/lib/ProductFollows.php
+          php -l scripts/product_community_notifications.php
+          php -l scripts/product_community_notifications_check.php
+      - name: Notification safety contract
+        run: php scripts/product_community_notifications_check.php
