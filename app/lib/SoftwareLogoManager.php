@@ -3,16 +3,19 @@ final class SoftwareLogoManager {
     private const MAX_HTML_BYTES=1572864;
     private const MAX_LOGO_BYTES=3145728;
     private const MAX_REDIRECTS=3;
+    private const MIN_ACCEPTABLE_SCORE=75;
+    private const NEGATIVE_CONTEXT=['customer','customers','client','clients','partner','partners','testimonial','testimonials','case-study','case study','trusted-by','trusted by','logo-wall','logo wall','logo-grid','logo grid','carousel','brands-we-work','our clients'];
+    private const GENERIC_IDENTITY_WORDS=['cloud','platform','software','enterprise','suite','app','application','service','services','system','systems','solution','solutions','management','manager','pro','business','online'];
 
     public static function discover(array $product): array {
         $official=(string)($product['website_url']??'');
         self::assertOfficialWebsite($official);
         $found=[];
 
-        // Always seed a few conventional first-party icon locations. This gives us a
-        // safe fallback when an official site blocks automated HTML fetching.
+        // First-party site icons are safer fallbacks because they represent the site itself,
+        // unlike arbitrary images on a page that may be customer/partner logos.
         foreach(self::commonOfficialIconCandidates($official) as $candidate){
-            self::addCandidate($found,$official,$official,$candidate['url'],$candidate['label'],$candidate['score']);
+            self::addCandidate($found,$product,$official,$official,$candidate['url'],$candidate['label'],$candidate['score'],'site-icon');
         }
 
         try{
@@ -23,36 +26,64 @@ final class SoftwareLogoManager {
                 $doc=new DOMDocument();$prev=libxml_use_internal_errors(true);$doc->loadHTML($html,LIBXML_NONET|LIBXML_NOWARNING|LIBXML_NOERROR);libxml_clear_errors();libxml_use_internal_errors($prev);
                 foreach($doc->getElementsByTagName('img') as $img){
                     $src=trim((string)$img->getAttribute('src'));if($src==='')continue;
-                    $hint=strtolower($img->getAttribute('alt').' '.$img->getAttribute('class').' '.$img->getAttribute('id').' '.$img->getAttribute('title').' '.$img->getAttribute('aria-label').' '.$src);
-                    $score=(str_contains($hint,'logo')||str_contains($hint,'brand'))?100:20;
-                    self::addCandidate($found,$official,$base,$src,'Page image',$score);
+                    $hint=self::nodeHint($img).' '.$src;
+                    $context=self::ancestorHint($img,3);
+                    $score=self::scorePageImage($product,$hint,$context);
+                    self::addCandidate($found,$product,$official,$base,$src,'Official page brand image',$score,'page-image',$hint,$context);
                 }
                 foreach($doc->getElementsByTagName('link') as $link){
                     $rel=strtolower((string)$link->getAttribute('rel'));$href=trim((string)$link->getAttribute('href'));
                     if($href!==''&&(str_contains($rel,'icon')||str_contains($rel,'apple-touch-icon'))){
-                        $score=str_contains(strtolower($href),'logo')?100:80;
-                        self::addCandidate($found,$official,$base,$href,'Official site icon',$score);
+                        $hint=$rel.' '.$href;
+                        $score=str_contains(strtolower($href),'logo')?88:82;
+                        self::addCandidate($found,$product,$official,$base,$href,'Official site icon',$score,'site-icon',$hint,'');
                     }
                 }
                 foreach($doc->getElementsByTagName('meta') as $meta){
                     $key=strtolower((string)($meta->getAttribute('property')?:$meta->getAttribute('name')));$value=trim((string)$meta->getAttribute('content'));
                     if($value!==''&&in_array($key,['og:image','twitter:image','twitter:image:src'],true)){
-                        $valueHint=strtolower($value);$score=(str_contains($valueHint,'logo')||str_contains($valueHint,'brand'))?90:45;
-                        self::addCandidate($found,$official,$base,$value,'Official social/brand image',$score);
+                        $hint=$key.' '.$value;
+                        $score=45+(self::identityMatches($product,$hint)?45:0);
+                        self::addCandidate($found,$product,$official,$base,$value,'Official social/brand image',$score,'social-image',$hint,'');
                     }
                 }
             }else{
-                if(preg_match_all('#<(?:img|link)[^>]+(?:src|href)=["\']([^"\']+)["\'][^>]*>#i',$html,$m))foreach($m[1] as $u)self::addCandidate($found,$official,$base,$u,'Official site image',20);
+                if(preg_match_all('#<(?:img|link)[^>]+(?:src|href)=["\']([^"\']+)["\'][^>]*>#i',$html,$m)){
+                    foreach($m[1] as $u)self::addCandidate($found,$product,$official,$base,$u,'Official site image',self::identityMatches($product,$u)?80:35,'fallback-image',$u,'');
+                }
             }
         }catch(Throwable $e){
-            // Keep the first-party fallback candidates instead of failing discovery
-            // completely when a vendor blocks bots or serves an oversized homepage.
             if(!$found)throw $e;
         }
 
         usort($found,fn($a,$b)=>$b['score']<=>$a['score']);
         $unique=[];$seen=[];foreach($found as $c){if(isset($seen[$c['url']]))continue;$seen[$c['url']]=1;$unique[]=$c;if(count($unique)>=12)break;}
         return ['official_website'=>$official,'resolved_page'=>$official,'candidates'=>$unique];
+    }
+
+    public static function acceptableCandidates(array $product): array {
+        $d=self::discover($product);
+        return array_values(array_filter($d['candidates']??[],fn($c)=>(int)($c['score']??0)>=self::MIN_ACCEPTABLE_SCORE));
+    }
+
+    public static function assessStoredLogo(array $product): array {
+        $issues=[];$path=trim((string)($product['logo_path']??''));$source=trim((string)($product['logo_source_url']??''));
+        if($path==='')return ['status'=>'missing','issues'=>['missing_logo'],'acceptable_candidates'=>[]];
+        $relative=ltrim($path,'/');
+        if(!str_starts_with($relative,'media/software/')||str_contains($relative,'..'))$issues[]='unsafe_logo_path';
+        $absolute=dirname(__DIR__,2).'/'.$relative;if(!is_file($absolute))$issues[]='cached_file_missing';
+        if($source==='')$issues[]='missing_source_url';
+        else{
+            try{self::assertAllowedSource((string)($product['website_url']??''),$source);}catch(Throwable $e){$issues[]='source_not_on_official_site';}
+            $sourceText=strtolower($source);
+            if(self::hasNegativeContext($sourceText)&&!self::identityMatches($product,$sourceText))$issues[]='source_looks_like_customer_or_partner_asset';
+        }
+        $acceptable=[];
+        try{
+            $acceptable=self::acceptableCandidates($product);
+            if($source!==''&&!self::sameCandidateUrl($source,$acceptable))$issues[]='stored_source_not_current_high_confidence_candidate';
+        }catch(Throwable $e){$issues[]='live_revalidation_unavailable';}
+        return ['status'=>$issues?'review':'ok','issues'=>array_values(array_unique($issues)),'acceptable_candidates'=>$acceptable];
     }
 
     public static function cache(array $product,string $sourceUrl): array {
@@ -72,7 +103,52 @@ final class SoftwareLogoManager {
         $name=$slug.'-'.substr(hash('sha256',$body),0,12).'.'.$ext;$path=$dir.'/'.$name;
         if(file_put_contents($path,$body,LOCK_EX)===false)throw new RuntimeException('logo_write_failed');
         @chmod($path,0644);
-        return ['logo_path'=>'media/software/'.$name,'source_url'=>$res['url'],'mime'=>$mime,'bytes'=>strlen($body),'dimensions'=>$dimensions];
+        return ['logo_path'=>'media/software/'.$name,'source_url'=>$res['url'],'mime'=>$mime,'bytes'=>strlen($body),'dimensions'=>$dimensions,'sha256'=>hash('sha256',$body)];
+    }
+
+    private static function scorePageImage(array $product,string $hint,string $context):int{
+        $all=strtolower($hint.' '.$context);$score=20;
+        if(str_contains($all,'logo')||str_contains($all,'brand'))$score+=35;
+        if(self::identityMatches($product,$all))$score+=50;
+        if(preg_match('/\b(header|navbar|nav|site-logo|site logo|brand-logo|brand logo|masthead)\b/i',$context))$score+=25;
+        if(self::hasNegativeContext($all)&&!self::identityMatches($product,$all))$score-=90;
+        return max(0,min(120,$score));
+    }
+
+    private static function identityMatches(array $product,string $text):bool{
+        $text=self::normalizeIdentity($text);if($text==='')return false;
+        foreach(self::identityTokens($product) as $token){if(strlen($token)>=3&&preg_match('/(^| )'.preg_quote($token,'/').'( |$)/',$text))return true;}
+        return false;
+    }
+
+    private static function identityTokens(array $product):array{
+        $values=[(string)($product['name']??''),(string)($product['vendor_name']??''),(string)($product['vendor']??'')];$tokens=[];
+        foreach($values as $value){
+            $norm=self::normalizeIdentity($value);if($norm==='')continue;$words=array_values(array_filter(explode(' ',$norm),fn($w)=>strlen($w)>=3&&!in_array($w,self::GENERIC_IDENTITY_WORDS,true)));
+            foreach($words as $w)$tokens[$w]=true;
+            if(count($words)>1)$tokens[implode(' ',$words)]=true;
+        }
+        return array_keys($tokens);
+    }
+
+    private static function normalizeIdentity(string $value):string{
+        $value=strtolower(html_entity_decode($value,ENT_QUOTES|ENT_HTML5,'UTF-8'));$value=preg_replace('/[^a-z0-9]+/',' ',$value)??$value;return trim(preg_replace('/\s+/',' ',$value)??$value);
+    }
+
+    private static function hasNegativeContext(string $text):bool{
+        $text=strtolower($text);foreach(self::NEGATIVE_CONTEXT as $needle)if(str_contains($text,$needle))return true;return false;
+    }
+
+    private static function nodeHint(DOMElement $node):string{
+        return strtolower(trim($node->getAttribute('alt').' '.$node->getAttribute('class').' '.$node->getAttribute('id').' '.$node->getAttribute('title').' '.$node->getAttribute('aria-label')));
+    }
+
+    private static function ancestorHint(DOMElement $node,int $depth):string{
+        $parts=[];$cur=$node->parentNode;$i=0;while($cur instanceof DOMElement&&$i<$depth){$parts[]=strtolower($cur->tagName.' '.$cur->getAttribute('class').' '.$cur->getAttribute('id').' '.$cur->getAttribute('aria-label'));$cur=$cur->parentNode;$i++;}return implode(' ',$parts);
+    }
+
+    private static function sameCandidateUrl(string $source,array $candidates):bool{
+        $normalize=static fn($u)=>rtrim(strtolower(trim((string)$u)),'/');$source=$normalize($source);foreach($candidates as $c)if($normalize($c['url']??'')===$source)return true;return false;
     }
 
     private static function commonOfficialIconCandidates(string $official):array{
@@ -84,8 +160,9 @@ final class SoftwareLogoManager {
         ];
     }
 
-    private static function addCandidate(array &$found,string $official,string $base,string $raw,string $label,int $score):void{
-        try{$url=self::absoluteUrl($base,$raw);self::assertAllowedSource($official,$url);$found[]=['url'=>$url,'label'=>$label,'score'=>$score];}catch(Throwable $e){}
+    private static function addCandidate(array &$found,array $product,string $official,string $base,string $raw,string $label,int $score,string $kind,string $hint='',string $context=''):void{
+        if($score<1)return;
+        try{$url=self::absoluteUrl($base,$raw);self::assertAllowedSource($official,$url);$found[]=['url'=>$url,'label'=>$label,'score'=>$score,'kind'=>$kind,'identity_match'=>self::identityMatches($product,$hint.' '.$url),'negative_context'=>self::hasNegativeContext($context.' '.$hint)];}catch(Throwable $e){}
     }
 
     private static function assertOfficialWebsite(string $url):void{
@@ -113,7 +190,7 @@ final class SoftwareLogoManager {
         if($redirects>self::MAX_REDIRECTS)throw new RuntimeException('too_many_redirects');
         $p=parse_url($url);if(!$p||empty($p['host']))throw new RuntimeException('invalid_fetch_url');self::assertPublicHost((string)$p['host']);
         if(!function_exists('curl_init'))throw new RuntimeException('curl_required');
-        $body='';$headers=[];$overflow=false;$ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_RETURNTRANSFER=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; TechSelectAI-LogoResearch/1.1; +https://techselectai.com)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_HEADERFUNCTION=>function($ch,$line)use(&$headers){$len=strlen($line);$pos=strpos($line,':');if($pos!==false)$headers[strtolower(trim(substr($line,0,$pos)))]=trim(substr($line,$pos+1));return $len;},CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$maxBytes,&$overflow){if(strlen($body)+strlen($chunk)>$maxBytes){$overflow=true;return 0;}$body.=$chunk;return strlen($chunk);}]);
+        $body='';$headers=[];$overflow=false;$ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_RETURNTRANSFER=>false,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>12,CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; TechSelectAI-LogoResearch/1.2; +https://techselectai.com)',CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_HEADERFUNCTION=>function($ch,$line)use(&$headers){$len=strlen($line);$pos=strpos($line,':');if($pos!==false)$headers[strtolower(trim(substr($line,0,$pos)))]=trim(substr($line,$pos+1));return $len;},CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$maxBytes,&$overflow){if(strlen($body)+strlen($chunk)>$maxBytes){$overflow=true;return 0;}$body.=$chunk;return strlen($chunk);}]);
         $ok=curl_exec($ch);$err=curl_error($ch);$status=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$type=strtolower(trim(explode(';',(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE))[0]));curl_close($ch);
         if($ok===false){if($overflow)throw new RuntimeException('response_too_large');throw new RuntimeException('fetch_failed'.($err?': '.$err:''));}
         if($status>=300&&$status<400&&!empty($headers['location'])){$next=self::absoluteUrl($url,$headers['location']);return self::fetch($next,$maxBytes,$allowedTypes,$redirects+1);}
