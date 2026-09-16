@@ -1,0 +1,37 @@
+name: Service tier access
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/Entitlements.php'
+      - 'plans.php'
+      - 'docs/service_tiers.md'
+      - 'scripts/service_tiers_check.php'
+      - 'api/auth.php'
+      - 'db/mysql/033_service_tiers.sql'
+      - '.github/workflows/service-tier-access.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/lib/Entitlements.php'
+      - 'plans.php'
+      - 'docs/service_tiers.md'
+      - 'scripts/service_tiers_check.php'
+      - 'api/auth.php'
+      - 'db/mysql/033_service_tiers.sql'
+      - '.github/workflows/service-tier-access.yml'
+  workflow_dispatch:
+
+jobs:
+  registered-access-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l app/lib/Entitlements.php
+          php -l plans.php
+          php -l scripts/service_tiers_check.php
+      - name: Registered full-access contract
+        run: php scripts/service_tiers_check.php

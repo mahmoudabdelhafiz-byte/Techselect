@@ -2,6 +2,7 @@
 final class Entitlements {
   public const PUBLIC='public';
   public const REGISTERED='free_registered';
+  // Reserved for future monetization. No current product feature requires Pro.
   public const PRO='pro';
 
   private const TIER_ORDER=[self::PUBLIC=>0,self::REGISTERED=>1,self::PRO=>2];
@@ -26,15 +27,15 @@ final class Entitlements {
     'limited_exports'=>self::REGISTERED,
     'project_tracking'=>self::REGISTERED,
 
-    'advanced_requirements_builder'=>self::PRO,
-    'contextual_fit_scoring'=>self::PRO,
-    'weighted_decision_matrix'=>self::PRO,
-    'advanced_shortlist'=>self::PRO,
-    'full_business_case'=>self::PRO,
-    'roi_tco_model'=>self::PRO,
-    'rfp_generator'=>self::PRO,
-    'decision_pack'=>self::PRO,
-    'rich_exports'=>self::PRO,
+    'advanced_requirements_builder'=>self::REGISTERED,
+    'contextual_fit_scoring'=>self::REGISTERED,
+    'weighted_decision_matrix'=>self::REGISTERED,
+    'advanced_shortlist'=>self::REGISTERED,
+    'full_business_case'=>self::REGISTERED,
+    'roi_tco_model'=>self::REGISTERED,
+    'rfp_generator'=>self::REGISTERED,
+    'decision_pack'=>self::REGISTERED,
+    'rich_exports'=>self::REGISTERED,
   ];
 
   public static function matrix():array{return self::FEATURES;}
