@@ -6,6 +6,7 @@ $files=[
     'frontend/src/softwareLogos.js',
     'frontend/src/main.jsx',
     'scripts/software_logo_backfill.php',
+    'app/lib/SoftwareLogoManager.php',
 ];
 $failed=0;
 foreach($files as $file){
@@ -19,6 +20,7 @@ $surface=file_get_contents($root.'/software_logo_page.php');
 $js=file_get_contents($root.'/frontend/src/softwareLogos.js');
 $main=file_get_contents($root.'/frontend/src/main.jsx');
 $backfill=file_get_contents($root.'/scripts/software_logo_backfill.php');
+$manager=file_get_contents($root.'/app/lib/SoftwareLogoManager.php');
 
 $checks=[
     'schema stores local logo path'=>str_contains($migration,'logo_path'),
@@ -30,13 +32,15 @@ $checks=[
     'directory reads existing logo surface'=>str_contains($js,'/software_logo_page.php?logo_map=1'),
     'frontend loads logo enhancer'=>str_contains($main,"import'./softwareLogos.js'"),
     'backfill defaults to dry run'=>str_contains($backfill,"in_array('--apply',\$argv,true)"),
-    'backfill requires acceptable first-party confidence'=>str_contains($backfill,">=75"),
+    'backfill uses centralized acceptable-candidate gate'=>str_contains($backfill,'SoftwareLogoManager::acceptableCandidates'),
+    'manager keeps minimum first-party confidence'=>str_contains($manager,'MIN_ACCEPTABLE_SCORE=75'),
+    'manager applies identity-aware scoring'=>str_contains($manager,'identityMatches')&&str_contains($manager,'NEGATIVE_CONTEXT'),
     'backfill retries multiple first-party candidates'=>str_contains($backfill,'foreach($candidates as $candidate)'),
-    'backfill uses official-site manager'=>str_contains($backfill,'SoftwareLogoManager::discover'),
+    'backfill uses official-site manager'=>str_contains($backfill,'SoftwareLogoManager::cache'),
 ];
 foreach($checks as $label=>$ok){echo ($ok?'PASS ':'FAIL ').$label."\n";if(!$ok)$failed++;}
 
-if(preg_match('/clearbit|logo\.dev|brandfetch|g2\.com|capterra/i',$surface.$js.$backfill)){
+if(preg_match('/clearbit|logo\.dev|brandfetch|g2\.com|capterra/i',$surface.$js.$backfill.$manager)){
     echo "FAIL third-party logo service/reference detected\n";$failed++;
 }else echo "PASS no third-party logo source dependency\n";
 
