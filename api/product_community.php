@@ -28,6 +28,15 @@ try{
         Security::rateLimit($pdo,'product-community-post-'.$userId,8,3600);
         $parent=isset($b['parent_id'])&&$b['parent_id']!==null?(int)$b['parent_id']:null;
         $id=ProductCommunity::createPost($pdo,$productId,$userId,(string)($b['type']??'discussion'),(string)($b['body']??''),$parent);
+        // Queue email only for active followers who explicitly opted into community mail.
+        // Never notify the author about their own post; Helpful reactions never enqueue email.
+        try{
+            $q=$pdo->prepare("INSERT IGNORE INTO product_community_notification_deliveries(post_id,follow_id,status)
+                SELECT ?,pf.id,'pending' FROM product_follows pf JOIN users u ON u.id=pf.user_id
+                WHERE pf.product_id=? AND pf.status='active' AND pf.community_notifications=1
+                  AND pf.user_id<>? AND u.status='active' AND u.email_verified_at IS NOT NULL");
+            $q->execute([$id,$productId,$userId]);
+        }catch(Throwable $e){}
         Security::audit($pdo,$userId,'PRODUCT_COMMUNITY_POST','product_community_post',(string)$id,null,['product_id'=>$productId,'parent_id'=>$parent]);
         pc_out(['created'=>true,'post_id'=>$id],201);
     }
