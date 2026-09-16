@@ -1,0 +1,26 @@
+name: Product community
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/101_product_community.sql'
+      - 'app/lib/ProductCommunity.php'
+      - 'api/product_community.php'
+      - 'product_community.js'
+      - 'partner_links_page.php'
+      - 'scripts/product_community_check.php'
+      - '.github/workflows/product-community.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: php -l app/lib/ProductCommunity.php
+      - run: php -l api/product_community.php
+      - run: php -l partner_links_page.php
+      - run: php -l scripts/product_community_check.php
+      - run: php scripts/product_community_check.php
