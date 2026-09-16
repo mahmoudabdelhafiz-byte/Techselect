@@ -5,6 +5,7 @@ on:
     paths:
       - 'app/lib/SoftwareLogoManager.php'
       - 'scripts/software_logo_backfill.php'
+      - 'scripts/software_logo_integrity_audit.php'
       - 'scripts/software_logo_backfill_coverage_check.php'
       - '.github/workflows/software-logo-coverage.yml'
 
@@ -18,5 +19,6 @@ jobs:
           php-version: '8.2'
       - run: php -l app/lib/SoftwareLogoManager.php
       - run: php -l scripts/software_logo_backfill.php
+      - run: php -l scripts/software_logo_integrity_audit.php
       - run: php -l scripts/software_logo_backfill_coverage_check.php
       - run: php scripts/software_logo_backfill_coverage_check.php
