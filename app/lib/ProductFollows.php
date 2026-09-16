@@ -39,13 +39,18 @@ final class ProductFollows {
         return self::state($pdo,$userId,$productId);
     }
 
-    public static function unsubscribeByToken(PDO $pdo, string $token): ?array {
+    public static function unsubscribeTarget(PDO $pdo, string $token): ?array {
         if(!preg_match('/^[a-f0-9]{64}$/',$token)) return null;
-        $st=$pdo->prepare("SELECT pf.id,pf.product_id,p.name product_name,p.slug product_slug FROM product_follows pf JOIN products p ON p.id=pf.product_id WHERE pf.unsubscribe_token=? LIMIT 1");
+        $st=$pdo->prepare("SELECT pf.id,pf.product_id,pf.status,p.name product_name,p.slug product_slug FROM product_follows pf JOIN products p ON p.id=pf.product_id WHERE pf.unsubscribe_token=? LIMIT 1");
         $st->execute([$token]);
-        $row=$st->fetch()?:null;
+        return $st->fetch()?:null;
+    }
+
+    public static function unsubscribeByToken(PDO $pdo, string $token): ?array {
+        $row=self::unsubscribeTarget($pdo,$token);
         if(!$row) return null;
         $pdo->prepare("UPDATE product_follows SET status='unsubscribed',community_notifications=0,updated_at=NOW() WHERE id=?")->execute([(int)$row['id']]);
+        $row['status']='unsubscribed';
         return $row;
     }
 
@@ -55,12 +60,15 @@ final class ProductFollows {
         $base=$st->fetch()?:[];
         $parts=['product'=>$base];
 
+        // Use schema-tolerant row snapshots for evolving relation tables. Selecting the
+        // current row shape avoids silently dropping an entire relation when a column is
+        // renamed (for example scope -> scope_status) while preserving deterministic order.
         $queries=[
             'capabilities'=>"SELECT c.slug,pc.support_status,pc.implementation_type,pc.limitations,pc.confidence_score FROM product_capabilities pc JOIN capabilities c ON c.id=pc.capability_id WHERE pc.product_id=? AND pc.edition_id IS NULL ORDER BY c.slug",
-            'pricing'=>"SELECT pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url FROM product_pricing WHERE product_id=? ORDER BY id",
-            'integrations'=>"SELECT i.slug,pi.support_status,pi.notes,pi.confidence_score FROM product_integrations pi JOIN integrations i ON i.id=pi.integration_id WHERE pi.product_id=? ORDER BY i.slug",
-            'deployment'=>"SELECT dm.slug,pd.support_status,pd.notes,pd.confidence_score FROM product_deployments pd JOIN deployment_models dm ON dm.id=pd.deployment_model_id WHERE pd.product_id=? ORDER BY dm.slug",
-            'mobile'=>"SELECT platform,support_status,scope,evidence_url FROM product_mobile_access WHERE product_id=? ORDER BY platform",
+            'pricing'=>"SELECT pricing_model,billing_period,currency,amount_min,amount_max,unit_label,notes,source_url,last_verified_at FROM product_pricing WHERE product_id=? ORDER BY id",
+            'integrations'=>"SELECT i.slug AS integration_slug,pi.* FROM product_integrations pi JOIN integrations i ON i.id=pi.integration_id WHERE pi.product_id=? ORDER BY i.slug",
+            'deployment'=>"SELECT dm.slug AS deployment_slug,pd.* FROM product_deployments pd JOIN deployment_models dm ON dm.id=pd.deployment_model_id WHERE pd.product_id=? ORDER BY dm.slug",
+            'mobile'=>"SELECT * FROM product_mobile_access WHERE product_id=? ORDER BY platform",
             'editions'=>"SELECT name,slug,status,sort_order FROM product_editions WHERE product_id=? ORDER BY sort_order,slug",
         ];
         foreach($queries as $key=>$sql){
