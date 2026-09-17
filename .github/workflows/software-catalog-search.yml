@@ -1,0 +1,26 @@
+name: Software catalog search
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/src/softwareCatalogSearch.js'
+      - 'frontend/src/main.jsx'
+      - 'scripts/software_catalog_search_check.php'
+      - '.github/workflows/software-catalog-search.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/src/softwareCatalogSearch.js'
+      - 'frontend/src/main.jsx'
+      - 'scripts/software_catalog_search_check.php'
+      - '.github/workflows/software-catalog-search.yml'
+
+jobs:
+  search-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/software_catalog_search_check.php
+      - name: Software catalog search contract
+        run: php scripts/software_catalog_search_check.php
