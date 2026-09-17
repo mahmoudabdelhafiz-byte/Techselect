@@ -59,12 +59,18 @@ foreach(['consultation_recommendations','recommendation_rank','Scoring::','overa
 // Keep package/product boundaries explicit.
 if(strpos($sql,"'conga-clm','clm-analytics-ai','supported',0.950")===false)$errors[]='Conga analytics/AI edition limitation must remain explicit.';
 if(strpos($sql,'deeper AI/Contract Intelligence capabilities may depend on edition or companion products')===false)$errors[]='Conga Contract Intelligence boundary must remain explicit.';
-if(strpos($sql,"WHERE p.slug IN('docusign-clm','conga-clm')")===false)$errors[]='Only deployment-explicit products should be promoted to public SaaS in 106.';
+
+$deploymentStart=strpos($sql,'-- Deployment is only promoted where the official product/service description is explicit.');
+$mobileStart=strpos($sql,'-- Mobile administrative scope is not inferred from general mobile availability.');
+$deploymentBlock=($deploymentStart!==false && $mobileStart!==false && $mobileStart>$deploymentStart)
+    ? substr($sql,$deploymentStart,$mobileStart-$deploymentStart)
+    : '';
+if($deploymentBlock==='')$errors[]='Unable to isolate deployment block.';
+if(strpos($deploymentBlock,"WHERE p.slug IN('docusign-clm','conga-clm')")===false)$errors[]='Only deployment-explicit products should be promoted to public SaaS in 106.';
 foreach(['ironclad-clm','icertis-contract-management','sirion-agentic-clm','agiloft-clm'] as $slug){
-    if(preg_match("/WHERE p\.slug IN\([^;]*'".preg_quote($slug,'/')."'[^;]*\)\s*ON DUPLICATE KEY UPDATE support_status/s",$sql)) {
-        $errors[]="Deployment must remain unverified in 106 for {$slug}";
-    }
+    if(strpos($deploymentBlock,"'{$slug}'")!==false)$errors[]="Deployment must remain unverified in 106 for {$slug}";
 }
+
 if(strpos($sql,'Mobile administrative scope is not inferred from general mobile availability.')===false)$errors[]='Mobile administration inference guard must remain documented.';
 
 if($errors){
