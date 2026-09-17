@@ -21,7 +21,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'itam-discovery-inventory' module_slug,'Automated asset discovery & inventory' name,'itam-discovery-inventory' slug,'Automatically discover and maintain inventory of hardware, software, cloud or other IT assets.',0 sec UNION ALL
+ SELECT 'itam-discovery-inventory' module_slug,'Automated asset discovery & inventory' name,'itam-discovery-inventory' slug,'Automatically discover and maintain inventory of hardware, software, cloud or other IT assets.' description,0 sec UNION ALL
  SELECT 'itam-lifecycle-governance','Hardware / asset lifecycle management','itam-asset-lifecycle','Track IT assets through ownership, deployment, use, movement, retirement or disposal lifecycle stages.',0 UNION ALL
  SELECT 'itam-lifecycle-governance','Software license / entitlement management','itam-software-license-management','Track software licenses, entitlements, usage, compliance or optimization opportunities.',0 UNION ALL
  SELECT 'itam-lifecycle-governance','Contracts / purchase / financial context','itam-contract-purchase-management','Manage or connect purchase orders, contracts, costs, warranties, renewals or financial data associated with IT assets.',0 UNION ALL
