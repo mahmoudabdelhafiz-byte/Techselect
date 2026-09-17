@@ -1,0 +1,24 @@
+name: Data catalog governance
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/108_data_catalog_governance_catalog.sql'
+      - 'scripts/data_catalog_governance_check.php'
+      - '.github/workflows/data-catalog-governance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/108_data_catalog_governance_catalog.sql'
+      - 'scripts/data_catalog_governance_check.php'
+      - '.github/workflows/data-catalog-governance.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/data_catalog_governance_check.php
+      - name: Evidence-first data catalog governance contract
+        run: php scripts/data_catalog_governance_check.php
