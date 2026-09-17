@@ -10,6 +10,9 @@ on:
       - 'app/lib/AppleAppStoreReviewCollector.php'
       - 'app/lib/HackerNewsReviewCollector.php'
       - 'app/lib/PublicReviewSourcePolicy.php'
+      - 'api/community_intelligence_admin.php'
+      - 'community_intelligence_admin.php'
+      - 'community_intelligence_admin.js'
       - 'scripts/community_review_automation.php'
       - 'scripts/community_review_zero_touch_check.php'
       - '.github/workflows/community-review-zero-touch.yml'
@@ -23,6 +26,9 @@ on:
       - 'app/lib/AppleAppStoreReviewCollector.php'
       - 'app/lib/HackerNewsReviewCollector.php'
       - 'app/lib/PublicReviewSourcePolicy.php'
+      - 'api/community_intelligence_admin.php'
+      - 'community_intelligence_admin.php'
+      - 'community_intelligence_admin.js'
       - 'scripts/community_review_automation.php'
       - 'scripts/community_review_zero_touch_check.php'
       - '.github/workflows/community-review-zero-touch.yml'
@@ -39,6 +45,8 @@ jobs:
           php -l app/lib/AppleAppStoreReviewCollector.php
           php -l app/lib/HackerNewsReviewCollector.php
           php -l app/lib/PublicReviewSourcePolicy.php
+          php -l api/community_intelligence_admin.php
+          php -l community_intelligence_admin.php
           php -l scripts/community_review_automation.php
           php -l scripts/community_review_zero_touch_check.php
       - name: Zero-touch review contract
