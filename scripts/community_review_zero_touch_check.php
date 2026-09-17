@@ -8,6 +8,8 @@ $a=file_get_contents(__DIR__.'/../app/lib/AppleAppStoreReviewCollector.php');
 $h=file_get_contents(__DIR__.'/../app/lib/HackerNewsReviewCollector.php');
 $p=file_get_contents(__DIR__.'/../app/lib/PublicReviewSourcePolicy.php');
 $ap=file_get_contents(__DIR__.'/../app/lib/CommunityIntelligenceAutoPublisher.php');
+$adminApi=file_get_contents(__DIR__.'/../api/community_intelligence_admin.php');
+$adminJs=file_get_contents(__DIR__.'/../community_intelligence_admin.js');
 $errors=[];
 foreach([
  'community_intelligence_auto_publish_settings','VALUES(1,1)',"policy_status='pending_review'","access_policy='pending_review'",'auto_publish_manual_hold_reason=NULL'
@@ -27,6 +29,8 @@ foreach(['hn.algolia.com','news.ycombinator.com','search_by_date'] as $needle)if
 foreach(['pri-source-policy-v3','machineDecision','g2.com','capterra.com'] as $needle)if(strpos($p,$needle)===false)$errors[]="policy missing: {$needle}";
 if(strpos($ap,"if(\$policy==='pending_review')\$unresolved++;")===false)$errors[]='auto-publisher must treat only pending_review source policy as unresolved';
 if(strpos($ap,"['pending_review','restricted']")!==false)$errors[]='restricted source policy is a resolved exclusion and must not block publication';
+foreach(['ci_pipeline_health','OPENAI_API_KEY','TECHSELECT_PRI_MODEL','active_permitted_connectors','pending_analysis_items','expired_unanalyzed_items','scripts/community_review_automation.php'] as $needle)if(strpos($adminApi,$needle)===false)$errors[]="pipeline health API missing: {$needle}";
+foreach(['renderPipelineHealth','pipeline_health','Last connector run','Pending analysis','Published products'] as $needle)if(strpos($adminJs,$needle)===false)$errors[]="pipeline health UI missing: {$needle}";
 if(preg_match('/g2\.com|capterra\.com/i',$b))$errors[]='bootstrap must never create G2/Capterra connectors';
 if(stripos($w,'requireRole')!==false||stripos($w,'admin_required')!==false)$errors[]='worker must not require admin/reviewer approval';
 if($errors){fwrite(STDERR,implode("\n",$errors)."\n");exit(1);}echo "Zero-touch public review automation contract passed.\n";
