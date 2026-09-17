@@ -18,7 +18,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'dcg-catalog-context' module_slug,'Metadata harvesting & asset inventory' name,'dcg-metadata-inventory' slug,'Automatically collect, organize and maintain metadata and inventory for enterprise data and AI assets.',0 sec UNION ALL
+ SELECT 'dcg-catalog-context' module_slug,'Metadata harvesting & asset inventory' name,'dcg-metadata-inventory' slug,'Automatically collect, organize and maintain metadata and inventory for enterprise data and AI assets.' description,0 sec UNION ALL
  SELECT 'dcg-catalog-context','Search & data discovery','dcg-search-discovery','Help users find and understand relevant data assets through search, discovery, context and trust signals.',0 UNION ALL
  SELECT 'dcg-catalog-context','Business glossary / semantic context','dcg-business-glossary','Manage business terms, definitions, ownership or semantic context that connects technical data to business meaning.',0 UNION ALL
  SELECT 'dcg-governance-lineage','Data lineage & impact analysis','dcg-lineage-impact','Trace data origins, movement, transformations, dependencies and downstream impact.',0 UNION ALL
