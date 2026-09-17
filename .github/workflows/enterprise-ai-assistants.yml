@@ -1,0 +1,24 @@
+name: Enterprise AI assistants catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/111_enterprise_ai_assistants_catalog.sql'
+      - 'scripts/enterprise_ai_assistants_check.php'
+      - '.github/workflows/enterprise-ai-assistants.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/111_enterprise_ai_assistants_catalog.sql'
+      - 'scripts/enterprise_ai_assistants_check.php'
+      - '.github/workflows/enterprise-ai-assistants.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/enterprise_ai_assistants_check.php
+      - name: Evidence-first enterprise AI assistants contract
+        run: php scripts/enterprise_ai_assistants_check.php
