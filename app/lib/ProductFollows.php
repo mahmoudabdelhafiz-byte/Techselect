@@ -7,6 +7,13 @@ final class ProductFollows {
         return $st->fetch()?:null;
     }
 
+    public static function listForUser(PDO $pdo,int $userId,int $limit=100):array {
+        $limit=max(1,min(200,$limit));
+        $st=$pdo->prepare("SELECT pf.id,pf.product_id,pf.followed_at,pf.last_notified_at,pf.community_notifications,p.name,p.slug,p.last_reviewed_at,p.updated_at,v.name vendor_name,c.name category_name FROM product_follows pf JOIN products p ON p.id=pf.product_id LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE pf.user_id=? AND pf.status='active' AND p.status='active' ORDER BY COALESCE(pf.last_notified_at,pf.followed_at) DESC,p.name ASC LIMIT {$limit}");
+        $st->execute([$userId]);
+        return $st->fetchAll()?:[];
+    }
+
     public static function state(PDO $pdo, int $userId, int $productId): array {
         $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at,community_notifications FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
         $st->execute([$userId,$productId]);
