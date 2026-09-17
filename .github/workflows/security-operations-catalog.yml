@@ -1,0 +1,24 @@
+name: Security operations catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/104_security_operations_catalog.sql'
+      - 'scripts/security_operations_catalog_check.php'
+      - '.github/workflows/security-operations-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/104_security_operations_catalog.sql'
+      - 'scripts/security_operations_catalog_check.php'
+      - '.github/workflows/security-operations-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/security_operations_catalog_check.php
+      - name: Evidence-first security operations contract
+        run: php scripts/security_operations_catalog_check.php
