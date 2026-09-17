@@ -61,12 +61,11 @@ INSERT INTO cat110_sources VALUES
 ('amazon-sagemaker-ai','https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model-next-steps.html','SageMaker deployment and MLOps','AWS'),
 ('google-vertex-ai','https://cloud.google.com/products/gemini-enterprise-agent-platform','Google AI platform MLOps','Google Cloud'),
 ('google-vertex-ai','https://cloud.google.com/blog/products/ai-machine-learning/get-to-know-vertex-ai-model-monitoring','Vertex AI Model Monitoring','Google Cloud'),
-('microsoft-azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/concept-model-management-and-deployment','Azure ML model lifecycle','Microsoft'),
+('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-share-models-pipelines-across-workspaces-with-registries','Azure ML registries and cross-workspace MLOps','Microsoft'),
 ('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/concept-what-is-managed-feature-store','Azure ML managed feature store','Microsoft'),
+('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-managed-online-endpoints','Azure ML managed online endpoints','Microsoft'),
 ('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-monitor-model-performance','Azure ML model monitoring','Microsoft'),
 ('dataiku-mlops','https://doc.dataiku.com/dss/latest/mlops/index.html','Dataiku MLOps','Dataiku');
-
-DELETE FROM cat110_sources WHERE product_slug='microsoft-azure-machine-learning';
 
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT p.id,'vendor_documentation',s.url,s.title,s.publisher,1,'verified','high',NOW()
