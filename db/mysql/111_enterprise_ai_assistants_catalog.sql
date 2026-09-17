@@ -18,7 +18,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'eai-assistant-work' module_slug,'Enterprise AI chat & reasoning' name,'eai-chat-reasoning' slug,'Provide enterprise users with conversational AI for analysis, writing, reasoning and knowledge work.',0 sec UNION ALL
+ SELECT 'eai-assistant-work' module_slug,'Enterprise AI chat & reasoning' name,'eai-chat-reasoning' slug,'Provide enterprise users with conversational AI for analysis, writing, reasoning and knowledge work.' description,0 sec UNION ALL
  SELECT 'eai-assistant-work','Web research / cited research' name,'eai-web-research','Research current web information and return source-grounded or cited answers/reports.',0 UNION ALL
  SELECT 'eai-assistant-work','Business data connectors / grounding' name,'eai-business-connectors','Connect approved enterprise applications, files or data sources so answers and work can be grounded in organizational context.',1 UNION ALL
  SELECT 'eai-assistant-work','Custom agents / workflows' name,'eai-agents-workflows','Create, configure or run organization-specific agents, automations or multi-step workflows.',0 UNION ALL

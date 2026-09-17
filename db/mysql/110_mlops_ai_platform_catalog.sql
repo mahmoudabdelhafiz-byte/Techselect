@@ -18,7 +18,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,0,1
 FROM modules m JOIN (
- SELECT 'mlops-development-lifecycle' module_slug,'Experiment tracking & evaluation' name,'mlops-experiment-tracking' slug,'Track runs, parameters, metrics, artifacts and model evaluation results.' UNION ALL
+ SELECT 'mlops-development-lifecycle' module_slug,'Experiment tracking & evaluation' name,'mlops-experiment-tracking' slug,'Track runs, parameters, metrics, artifacts and model evaluation results.' description UNION ALL
  SELECT 'mlops-development-lifecycle','ML pipelines / workflow orchestration','mlops-pipelines','Build repeatable training, validation or deployment workflows as managed ML pipelines.' UNION ALL
  SELECT 'mlops-development-lifecycle','Model registry & lifecycle governance','mlops-model-registry','Register, version, govern, approve and trace machine learning models across lifecycle stages.' UNION ALL
  SELECT 'mlops-development-lifecycle','Feature store / reusable feature management','mlops-feature-store','Create, register, reuse, govern and serve machine learning features consistently for training and inference.' UNION ALL

@@ -18,7 +18,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'clm-creation-negotiation' module_slug,'Contract authoring & templates' name,'clm-authoring-templates' slug,'Create contracts from approved templates, clauses or document-generation rules.',0 sec UNION ALL
+ SELECT 'clm-creation-negotiation' module_slug,'Contract authoring & templates' name,'clm-authoring-templates' slug,'Create contracts from approved templates, clauses or document-generation rules.' description,0 sec UNION ALL
  SELECT 'clm-creation-negotiation','Workflow & approvals','clm-workflow-approvals','Route contract requests, reviews and approvals through configurable business workflows.',0 UNION ALL
  SELECT 'clm-creation-negotiation','Negotiation & redlining','clm-negotiation-redlining','Support contract review, redlining, comparison, collaboration or negotiation workflows.',0 UNION ALL
  SELECT 'clm-repository-intelligence','Central contract repository & search','clm-repository-search','Store, organize and search contracts and associated structured contract data in a central system of record.',0 UNION ALL

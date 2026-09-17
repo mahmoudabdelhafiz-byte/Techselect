@@ -19,7 +19,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'es-search-connectivity' module_slug,'Enterprise connectors & unified indexing' name,'es-connectors-indexing' slug,'Connect and index content from multiple enterprise applications, repositories and data sources into a searchable knowledge layer.',0 sec UNION ALL
+ SELECT 'es-search-connectivity' module_slug,'Enterprise connectors & unified indexing' name,'es-connectors-indexing' slug,'Connect and index content from multiple enterprise applications, repositories and data sources into a searchable knowledge layer.' description,0 sec UNION ALL
  SELECT 'es-search-connectivity','Semantic / hybrid relevance & search' name,'es-relevance-search','Search enterprise knowledge using keyword, semantic, neural, hybrid or other relevance-ranking methods.',0 UNION ALL
  SELECT 'es-search-connectivity','Permissions-aware retrieval' name,'es-permissions-aware','Honor source-system permissions or equivalent access controls when returning search results or AI-grounding content.',1 UNION ALL
  SELECT 'es-ai-knowledge','Grounded AI answers / assistants' name,'es-ai-answers','Generate conversational or direct answers grounded in indexed enterprise content with source-aware retrieval.',0 UNION ALL
