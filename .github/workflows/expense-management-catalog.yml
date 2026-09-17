@@ -1,0 +1,24 @@
+name: Expense management catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/107_expense_management_catalog.sql'
+      - 'scripts/expense_management_catalog_check.php'
+      - '.github/workflows/expense-management-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/107_expense_management_catalog.sql'
+      - 'scripts/expense_management_catalog_check.php'
+      - '.github/workflows/expense-management-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/expense_management_catalog_check.php
+      - name: Evidence-first expense management contract
+        run: php scripts/expense_management_catalog_check.php
