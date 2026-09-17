@@ -7,6 +7,7 @@ $c=file_get_contents(__DIR__.'/../app/lib/CommunitySourceCollectors.php');
 $a=file_get_contents(__DIR__.'/../app/lib/AppleAppStoreReviewCollector.php');
 $h=file_get_contents(__DIR__.'/../app/lib/HackerNewsReviewCollector.php');
 $p=file_get_contents(__DIR__.'/../app/lib/PublicReviewSourcePolicy.php');
+$ap=file_get_contents(__DIR__.'/../app/lib/CommunityIntelligenceAutoPublisher.php');
 $errors=[];
 foreach([
  'community_intelligence_auto_publish_settings','VALUES(1,1)',"policy_status='pending_review'","access_policy='pending_review'",'auto_publish_manual_hold_reason=NULL'
@@ -24,6 +25,8 @@ foreach(['hackernews_algolia_api','apple_app_store_reviews','HackerNewsReviewCol
 foreach(['itunes.apple.com','apps.apple.com','customerreviews','confidence'] as $needle)if(strpos($a,$needle)===false)$errors[]="Apple collector missing: {$needle}";
 foreach(['hn.algolia.com','news.ycombinator.com','search_by_date'] as $needle)if(strpos($h,$needle)===false)$errors[]="HN collector missing: {$needle}";
 foreach(['pri-source-policy-v3','machineDecision','g2.com','capterra.com'] as $needle)if(strpos($p,$needle)===false)$errors[]="policy missing: {$needle}";
+if(strpos($ap,"if(\$policy==='pending_review')\$unresolved++;")===false)$errors[]='auto-publisher must treat only pending_review source policy as unresolved';
+if(strpos($ap,"['pending_review','restricted']")!==false)$errors[]='restricted source policy is a resolved exclusion and must not block publication';
 if(preg_match('/g2\.com|capterra\.com/i',$b))$errors[]='bootstrap must never create G2/Capterra connectors';
 if(stripos($w,'requireRole')!==false||stripos($w,'admin_required')!==false)$errors[]='worker must not require admin/reviewer approval';
 if($errors){fwrite(STDERR,implode("\n",$errors)."\n");exit(1);}echo "Zero-touch public review automation contract passed.\n";
