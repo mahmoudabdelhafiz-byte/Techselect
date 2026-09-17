@@ -1,0 +1,24 @@
+name: Enterprise search catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/109_enterprise_search_knowledge_catalog.sql'
+      - 'scripts/enterprise_search_catalog_check.php'
+      - '.github/workflows/enterprise-search-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/109_enterprise_search_knowledge_catalog.sql'
+      - 'scripts/enterprise_search_catalog_check.php'
+      - '.github/workflows/enterprise-search-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/enterprise_search_catalog_check.php
+      - name: Evidence-first enterprise search contract
+        run: php scripts/enterprise_search_catalog_check.php
