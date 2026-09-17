@@ -31,7 +31,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO vendors(name,slug,website_url,description,status) VALUES
 ('Databricks','databricks','https://www.databricks.com/','Data, analytics, AI and machine learning platform vendor.','active'),
 ('Amazon Web Services','amazon-web-services','https://aws.amazon.com/','Cloud infrastructure, data and AI services vendor.','active'),
-('Google Cloud','google-cloud','https://cloud.google.com/','Cloud infrastructure, data and AI platform vendor.','active'),
+('Domino Data Lab','domino-data-lab','https://domino.ai/','Enterprise AI and MLOps platform vendor.','active'),
 ('Microsoft','microsoft','https://www.microsoft.com/','Enterprise software, cloud, data and AI platform vendor.','active'),
 ('Dataiku','dataiku','https://www.dataiku.com/','Enterprise AI, analytics and machine learning platform vendor.','active')
 ON DUPLICATE KEY UPDATE website_url=VALUES(website_url),description=VALUES(description),status='active';
@@ -41,7 +41,7 @@ CREATE TEMPORARY TABLE cat110_products(vendor_slug VARCHAR(190),category_slug VA
 INSERT INTO cat110_products VALUES
 ('databricks','mlops-machine-learning-platforms','Databricks Machine Learning','databricks-machine-learning','Machine learning platform built around MLflow and Unity Catalog for experiment tracking, feature engineering, governed model registry, deployment and model monitoring.','https://docs.databricks.com/aws/en/machine-learning/'),
 ('amazon-web-services','mlops-machine-learning-platforms','Amazon SageMaker AI','amazon-sagemaker-ai','Managed machine learning platform for ML pipelines, feature engineering, model registry, deployment automation, inference and production monitoring.','https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html'),
-('google-cloud','mlops-machine-learning-platforms','Google Vertex AI','google-vertex-ai','Managed AI and machine learning platform with pipelines, model registry, feature management, model serving and production monitoring capabilities.','https://cloud.google.com/vertex-ai'),
+('domino-data-lab','mlops-machine-learning-platforms','Domino Enterprise MLOps','domino-enterprise-mlops','Enterprise MLOps platform for governed experimentation, pipelines, model registry, deployment and production monitoring across cloud, hybrid and on-premises environments.','https://domino.ai/platform/mlops'),
 ('microsoft','mlops-machine-learning-platforms','Azure Machine Learning','azure-machine-learning','Cloud machine learning service for experiment tracking, reusable pipelines, registries, feature store, model deployment and production monitoring.','https://azure.microsoft.com/en-us/products/machine-learning'),
 ('dataiku','mlops-machine-learning-platforms','Dataiku','dataiku-mlops','Enterprise AI and machine learning platform with experiment tracking, model lifecycle, MLOps, feature store, deployment and monitoring capabilities.','https://www.dataiku.com/product/');
 
@@ -59,8 +59,8 @@ INSERT INTO cat110_sources VALUES
 ('amazon-sagemaker-ai','https://docs.aws.amazon.com/sagemaker/latest/dg/model-registry.html','SageMaker Model Registry','AWS'),
 ('amazon-sagemaker-ai','https://docs.aws.amazon.com/sagemaker/latest/dg/feature-store-feature-processing.html','SageMaker Feature Store','AWS'),
 ('amazon-sagemaker-ai','https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model-next-steps.html','SageMaker deployment and MLOps','AWS'),
-('google-vertex-ai','https://cloud.google.com/products/gemini-enterprise-agent-platform','Google AI platform MLOps','Google Cloud'),
-('google-vertex-ai','https://cloud.google.com/blog/products/ai-machine-learning/get-to-know-vertex-ai-model-monitoring','Vertex AI Model Monitoring','Google Cloud'),
+('domino-enterprise-mlops','https://domino.ai/platform/mlops','Domino MLOps Platform','Domino Data Lab'),
+('domino-enterprise-mlops','https://domino.ai/platform/ai-workbench','Domino AI Workbench','Domino Data Lab'),
 ('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-share-models-pipelines-across-workspaces-with-registries','Azure ML registries and cross-workspace MLOps','Microsoft'),
 ('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/concept-what-is-managed-feature-store','Azure ML managed feature store','Microsoft'),
 ('azure-machine-learning','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-managed-online-endpoints','Azure ML managed online endpoints','Microsoft'),
@@ -86,11 +86,11 @@ INSERT INTO cat110_facts VALUES
 ('amazon-sagemaker-ai','mlops-feature-store','supported',0.990,'SageMaker Feature Store supports managed feature processing, online/offline stores and pipeline-based feature engineering.','https://docs.aws.amazon.com/sagemaker/latest/dg/feature-store-feature-processing.html'),
 ('amazon-sagemaker-ai','mlops-model-serving','supported',0.990,'SageMaker AI supports managed production inference and deployment guardrails for model endpoints.','https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model-next-steps.html'),
 
-('google-vertex-ai','mlops-pipelines','supported',0.990,'Google documents managed pipelines as part of its current MLOps platform capabilities.','https://cloud.google.com/products/gemini-enterprise-agent-platform'),
-('google-vertex-ai','mlops-model-registry','supported',0.990,'Google documents Model Registry for managing models across the ML lifecycle.','https://cloud.google.com/products/gemini-enterprise-agent-platform'),
-('google-vertex-ai','mlops-feature-store','supported',0.990,'Google documents Feature Store for serving, sharing and reusing ML features.','https://cloud.google.com/products/gemini-enterprise-agent-platform'),
-('google-vertex-ai','mlops-model-serving','supported',0.990,'Google documents model deployment and serving as part of the current platform MLOps toolset.','https://cloud.google.com/products/gemini-enterprise-agent-platform'),
-('google-vertex-ai','mlops-model-monitoring','supported',0.990,'Google documents scheduled and on-demand model monitoring for drift and production model behavior.','https://cloud.google.com/blog/products/ai-machine-learning/get-to-know-vertex-ai-model-monitoring'),
+('domino-enterprise-mlops','mlops-experiment-tracking','supported',0.990,'Domino documents organized experiment tracking, comparison and reproducibility across AI and ML development work.','https://domino.ai/platform/ai-workbench'),
+('domino-enterprise-mlops','mlops-pipelines','supported',0.990,'Domino documents visual automation and monitoring of data and model pipelines with Domino Flows.','https://domino.ai/platform/ai-workbench'),
+('domino-enterprise-mlops','mlops-model-registry','supported',0.990,'Domino documents a governed model registry with lineage, model cards, stakeholder review and approval workflows.','https://domino.ai/platform/mlops'),
+('domino-enterprise-mlops','mlops-model-serving','supported',0.990,'Domino documents batch and real-time model deployment across Domino, CI/CD, cloud and hybrid targets.','https://domino.ai/platform/mlops'),
+('domino-enterprise-mlops','mlops-model-monitoring','supported',0.990,'Domino documents monitoring for accuracy, drift, endpoint health and model quality with alerts and remediation workflows.','https://domino.ai/platform/mlops'),
 
 ('azure-machine-learning','mlops-model-registry','supported',0.990,'Azure Machine Learning registries share models, components and environments across workspaces with lineage preserved.','https://learn.microsoft.com/en-us/azure/machine-learning/how-to-share-models-pipelines-across-workspaces-with-registries'),
 ('azure-machine-learning','mlops-feature-store','supported',0.990,'Azure Machine Learning managed feature store supports feature discovery, versioning, materialization, retrieval, serving and monitoring.','https://learn.microsoft.com/en-us/azure/machine-learning/concept-what-is-managed-feature-store'),
@@ -127,7 +127,7 @@ JOIN evidence_sources e ON e.product_id=p.id AND e.source_url=f.source_url;
 INSERT INTO product_mobile_access(product_id,platform,support_status,scope_status,evidence_type,confidence_score)
 SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p CROSS JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') x
-WHERE p.slug IN('databricks-machine-learning','amazon-sagemaker-ai','google-vertex-ai','azure-machine-learning','dataiku-mlops')
+WHERE p.slug IN('databricks-machine-learning','amazon-sagemaker-ai','domino-enterprise-mlops','azure-machine-learning','dataiku-mlops')
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score);
 
 COMMIT;
