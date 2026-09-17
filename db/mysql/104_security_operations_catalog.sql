@@ -14,7 +14,7 @@ INSERT INTO vendors(name,slug,website_url,description,status) VALUES
 ('Fortinet','fortinet','https://www.fortinet.com/','Network and cybersecurity platform vendor.','active'),
 ('Sumo Logic','sumo-logic','https://www.sumologic.com/','Cloud log analytics, observability and security software vendor.','active'),
 ('Rapid7','rapid7','https://www.rapid7.com/','Cybersecurity analytics, detection and response software vendor.','active'),
-('WALLIX','wallix','https://www.wallix.com/','Privileged access and identity-security software vendor.','active'),
+('Netwrix','netwrix','https://www.netwrix.com/','Identity, data-security and privileged-access software vendor.','active'),
 ('Keeper Security','keeper-security','https://www.keepersecurity.com/','Password, secrets and privileged-access security software vendor.','active'),
 ('ARCON','arcon','https://arconnet.com/','Identity security, privileged-access and risk-management software vendor.','active')
 ON DUPLICATE KEY UPDATE website_url=VALUES(website_url),description=VALUES(description),status='active';
@@ -28,7 +28,7 @@ INSERT INTO sec104_products VALUES
 ('fortinet','siem-security-operations','FortiSIEM','fortinet-fortisiem','Security information and event management platform for IT/OT event collection, detection analytics, threat investigation, incident management and built-in response automation.','https://www.fortinet.com/products/siem/fortisiem'),
 ('sumo-logic','siem-security-operations','Sumo Logic Cloud SIEM','sumo-logic-cloud-siem','Cloud SIEM for collecting and normalizing security telemetry, correlating signals and supporting analyst investigation across cloud and on-premises sources.','https://www.sumologic.com/help/docs/cse/'),
 ('rapid7','siem-security-operations','Rapid7 SIEM (InsightIDR)','rapid7-siem-insightidr','Cloud-native SIEM and XDR platform for security-data collection, detection, investigation, behavioral analytics and automated response.','https://help.rapid7.com/insightidr/index.html'),
-('wallix','privileged-access-management','WALLIX Bastion','wallix-bastion','Privileged access management platform combining privileged credential/password management, session control and recording, discovery and just-in-time access controls.','https://www.wallix.com/products/privileged-access-management/'),
+('netwrix','privileged-access-management','Netwrix Privilege Secure','netwrix-privilege-secure','Privileged access management for discovering privileged accounts, removing standing privilege, granting just-in-time access and monitoring or recording privileged administrative sessions.','https://www.netwrix.com/en/products/privilege-secure/'),
 ('keeper-security','privileged-access-management','KeeperPAM','keeperpam','Cloud-native privileged access management platform combining enterprise password and secrets management, discovery, remote privileged sessions, just-in-time access and automated credential rotation.','https://www.keepersecurity.com/privileged-access-management/'),
 ('arcon','privileged-access-management','ARCON Privileged Access Management','arcon-pam','Privileged access management platform for privileged-account discovery, credential protection, granular access control, just-in-time access and monitored or recorded privileged sessions.','https://arconnet.com/privileged-access-management/');
 
@@ -50,7 +50,9 @@ INSERT INTO sec104_sources VALUES
 ('sumo-logic-cloud-siem','https://www.sumologic.com/solutions/security','Sumo Logic Security','Sumo Logic'),
 ('rapid7-siem-insightidr','https://help.rapid7.com/insightidr/index.html','SIEM (InsightIDR) Overview','Rapid7'),
 ('rapid7-siem-insightidr','https://docs.rapid7.com/insightidr/advanced-quick-start-guide/','SIEM (InsightIDR) Advanced Quick Start Guide','Rapid7'),
-('wallix-bastion','https://www.wallix.com/products/privileged-access-management/','WALLIX Privileged Access Management','WALLIX'),
+('netwrix-privilege-secure','https://www.netwrix.com/en/products/privilege-secure/','Netwrix Privilege Secure','Netwrix'),
+('netwrix-privilege-secure','https://www.netwrix.com/en/products/privilege-secure/discovery/','Netwrix Privilege Secure Discovery','Netwrix'),
+('netwrix-privilege-secure','https://docs.netwrix.com/docs/privilegesecure/26_03','Netwrix Privilege Secure Documentation','Netwrix'),
 ('keeperpam','https://www.keepersecurity.com/privileged-access-management/','Keeper Privileged Access Management','Keeper Security'),
 ('arcon-pam','https://arconnet.com/privileged-access-management/','ARCON Privileged Access Management','ARCON');
 
@@ -88,12 +90,11 @@ INSERT INTO sec104_facts VALUES
 ('rapid7-siem-insightidr','siem-soar','supported',0.960,'Rapid7 documents automated response capabilities and automation workflows; exact workflow depth depends on the purchased SIEM package and connected tools.','https://docs.rapid7.com/insightidr/advanced-quick-start-guide/'),
 ('rapid7-siem-insightidr','siem-behavior-risk','supported',0.980,'Rapid7 documents user behavior analytics and correlation of users, accounts, authentications, alerts and privileges.','https://help.rapid7.com/insightidr/index.html'),
 
--- WALLIX Bastion / WALLIX PAM
-('wallix-bastion','pam-discovery','supported',0.980,'WALLIX documents discovery and management of privileged credential activity and automatic asset discovery within its PAM solution.','https://www.wallix.com/products/privileged-access-management/'),
-('wallix-bastion','pam-vault','supported',0.990,'WALLIX Password Manager manages privileged passwords and credential security as part of Bastion/PAM.','https://www.wallix.com/products/privileged-access-management/'),
-('wallix-bastion','pam-rotation','supported',0.990,'WALLIX documents password-complexity management and rotation.','https://www.wallix.com/products/privileged-access-management/'),
-('wallix-bastion','pam-session-monitoring','supported',0.990,'WALLIX documents privileged-session access control and audit trails including video, transcript and metadata.','https://www.wallix.com/products/privileged-access-management/'),
-('wallix-bastion','pam-jit-access','supported',0.950,'WALLIX documents least-privilege and just-in-time privilege approaches; exact components and licensing should be confirmed.','https://www.wallix.com/products/privileged-access-management/'),
+-- Netwrix Privilege Secure
+('netwrix-privilege-secure','pam-discovery','supported',0.990,'Netwrix documents agentless discovery of privileged accounts and privilege exposure across endpoints.','https://www.netwrix.com/en/products/privilege-secure/discovery/'),
+('netwrix-privilege-secure','pam-vault','supported',0.950,'Netwrix documentation describes credential access policies and access to credentials and files in the vault; exact vault bundle should be confirmed for the selected edition.','https://docs.netwrix.com/docs/privilegesecure/26_03'),
+('netwrix-privilege-secure','pam-session-monitoring','supported',0.990,'Netwrix documents privileged-session monitoring, recording and detailed audit logs.','https://www.netwrix.com/en/products/privilege-secure/'),
+('netwrix-privilege-secure','pam-jit-access','supported',0.990,'Netwrix documents zero-standing privilege with just-in-time, just-enough administrative access.','https://www.netwrix.com/en/products/privilege-secure/'),
 
 -- KeeperPAM
 ('keeperpam','pam-discovery','supported',0.990,'Keeper Discovery provides centralized visibility into privileged accounts and IT assets across local, AWS and Azure environments.','https://www.keepersecurity.com/privileged-access-management/'),
@@ -138,14 +139,14 @@ ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),confidence_score=V
 
 INSERT INTO product_deployments(product_id,deployment_model_id,support_status,confidence_score)
 SELECT p.id,d.id,'supported',0.98 FROM products p JOIN deployment_models d ON d.slug='on-premise'
-WHERE p.slug IN('fortinet-fortisiem','wallix-bastion','arcon-pam')
+WHERE p.slug IN('fortinet-fortisiem','netwrix-privilege-secure','arcon-pam')
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),confidence_score=VALUES(confidence_score);
 
 -- Mobile access is explicit unknown until product-specific mobile administrative scope is verified.
 INSERT INTO product_mobile_access(product_id,platform,support_status,scope_status,evidence_type,confidence_score)
 SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p CROSS JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') x
-WHERE p.slug IN('google-security-operations','fortinet-fortisiem','sumo-logic-cloud-siem','rapid7-siem-insightidr','wallix-bastion','keeperpam','arcon-pam')
+WHERE p.slug IN('google-security-operations','fortinet-fortisiem','sumo-logic-cloud-siem','rapid7-siem-insightidr','netwrix-privilege-secure','keeperpam','arcon-pam')
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score);
 
 COMMIT;
