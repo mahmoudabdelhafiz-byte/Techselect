@@ -8,7 +8,6 @@ $sql=@file_get_contents($migration);
 $errors=[];
 if($sql===false){fwrite(STDERR,"Missing migration: db/mysql/104_security_operations_catalog.sql\n");exit(1);}
 
-// This batch must deepen existing canonical taxonomy, not fork semantically duplicate categories/modules/capabilities.
 foreach(['INSERT INTO categories','INSERT INTO modules','INSERT INTO capabilities'] as $needle){
     if(stripos($sql,$needle)!==false)$errors[]="104 must reuse canonical taxonomy; found {$needle}";
 }
@@ -19,13 +18,12 @@ if(strpos($sql,"'siem-security-analytics'")!==false)$errors[]='Do not create the
 
 $products=[
  'google-security-operations','fortinet-fortisiem','sumo-logic-cloud-siem','rapid7-siem-insightidr',
- 'wallix-bastion','keeperpam','arcon-pam',
+ 'netwrix-privilege-secure','keeperpam','arcon-pam',
 ];
 foreach($products as $slug){
     if(substr_count($sql,"'{$slug}'")<3)$errors[]="Product {$slug} is not carried through product/evidence/mobile or deployment rows";
 }
 
-// No product in this expansion may already have a shell in an older migration.
 $migrations=glob($root.'/db/mysql/*.sql')?:[];
 foreach($products as $slug){
     $hits=[];
@@ -50,7 +48,7 @@ $allowedHosts=[
  'fortinet.com','www.fortinet.com',
  'sumologic.com','www.sumologic.com',
  'rapid7.com','www.rapid7.com','help.rapid7.com','docs.rapid7.com',
- 'wallix.com','www.wallix.com',
+ 'netwrix.com','www.netwrix.com','docs.netwrix.com',
  'keepersecurity.com','www.keepersecurity.com',
  'arconnet.com','www.arconnet.com',
 ];
@@ -65,15 +63,14 @@ foreach(['consultation_recommendations','recommendation_rank','Scoring::','overa
     if(stripos($sql,$needle)!==false)$errors[]="Catalog migration must not affect ranking/scoring: {$needle}";
 }
 
-// Important evidence boundaries: avoid silently promoting package/product-specific functionality.
 if(strpos($sql,"'google-security-operations','siem-behavior-risk','partially_supported'")===false)$errors[]='Google UEBA/risk must preserve package limitation.';
 if(strpos($sql,"'sumo-logic-cloud-siem','siem-soar'")!==false)$errors[]='Sumo Logic SOAR must remain unknown for the Cloud SIEM product until bundled entitlement is verified.';
+if(strpos($sql,"'netwrix-privilege-secure','pam-rotation'")!==false)$errors[]='Netwrix password rotation must remain unknown until product-specific rotation support is verified.';
 if(strpos($sql,"'arcon-pam','pam-rotation'")!==false)$errors[]='ARCON password rotation must remain unknown until PAM-product-specific automation is verified.';
 
-// Guard against accidentally reintroducing the peers already cataloged by 059/079.
 foreach([
- 'microsoft-sentinel','splunk-enterprise-security','ibm-qradar-siem','elastic-security','cortex-xsiam',
- 'cyberark-privilege-cloud','beyondtrust-password-safe','delinea-secret-server','manageengine-pam360','one-identity-safeguard-privileged-passwords'
+ 'microsoft-sentinel','splunk-enterprise-security','ibm-qradar-siem','elastic-security','cortex-xsiam','exabeam-new-scale-siem',
+ 'cyberark-privilege-cloud','beyondtrust-password-safe','delinea-secret-server','manageengine-pam360','one-identity-safeguard-privileged-passwords','wallix-bastion'
 ] as $existing){
     if(strpos($sql,"'{$existing}'")!==false)$errors[]="104 must not re-add existing catalog peer {$existing}";
 }
