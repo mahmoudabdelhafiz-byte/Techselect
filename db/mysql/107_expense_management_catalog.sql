@@ -18,7 +18,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'expense-capture-submission' module_slug,'Receipt capture & extraction' name,'expense-receipt-capture' slug,'Capture paper or digital receipts and extract or match expense details.',0 sec UNION ALL
+ SELECT 'expense-capture-submission' module_slug,'Receipt capture & extraction' name,'expense-receipt-capture' slug,'Capture paper or digital receipts and extract or match expense details.' description,0 sec UNION ALL
  SELECT 'expense-capture-submission','Expense / report submission' name,'expense-report-submission','Create, categorize and submit individual expenses or expense reports.',0 UNION ALL
  SELECT 'expense-approval-finance','Policy enforcement & approvals' name,'expense-policy-approvals','Apply expense policies and route expenses through configurable review or approval workflows.',0 UNION ALL
  SELECT 'expense-approval-finance','Employee reimbursements' name,'expense-reimbursements','Process or coordinate repayment of approved out-of-pocket employee expenses.',0 UNION ALL
