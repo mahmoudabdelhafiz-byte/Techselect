@@ -1,0 +1,24 @@
+name: CLM catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/106_contract_lifecycle_management_catalog.sql'
+      - 'scripts/clm_catalog_check.php'
+      - '.github/workflows/clm-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/106_contract_lifecycle_management_catalog.sql'
+      - 'scripts/clm_catalog_check.php'
+      - '.github/workflows/clm-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/clm_catalog_check.php
+      - name: Evidence-first CLM contract
+        run: php scripts/clm_catalog_check.php
