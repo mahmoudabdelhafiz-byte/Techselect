@@ -1,0 +1,24 @@
+name: ITAM UEM catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/105_itam_uem_catalog.sql'
+      - 'scripts/itam_uem_catalog_check.php'
+      - '.github/workflows/itam-uem-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/105_itam_uem_catalog.sql'
+      - 'scripts/itam_uem_catalog_check.php'
+      - '.github/workflows/itam-uem-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/itam_uem_catalog_check.php
+      - name: Evidence-first ITAM UEM contract
+        run: php scripts/itam_uem_catalog_check.php
