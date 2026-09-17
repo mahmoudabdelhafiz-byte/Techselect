@@ -16,6 +16,7 @@ elseif($path==='/admin' || $path==='/admin/' || $path==='/admin.php') $target='a
 elseif(preg_match('#^/review/[a-z0-9-]+/?$#',$path) || $path==='/review.php') $target='review.php';
 elseif(in_array($path,['/my-reviews','/my-reviews/','/my_reviews.php'],true)) $target='my_reviews.php';
 elseif(in_array($path,['/my-consultations','/my-consultations/','/my_consultations.php'],true)) $target='my_consultations.php';
+elseif(in_array($path,['/my-followed-products','/my-followed-products/','/my_followed_products.php'],true)) $target='my_followed_products.php';
 elseif(in_array($path,['/buyer-analytics','/buyer-analytics/','/buyer_analytics.php'],true)) $target='buyer_analytics.php';
 elseif(in_array($path,['/review-moderation','/review-moderation/','/review_moderation.php'],true)) $target='review_moderation.php';
 elseif(in_array($path,['/review-rewards','/review-rewards/','/review_rewards.php'],true)) $target='review_rewards.php';
