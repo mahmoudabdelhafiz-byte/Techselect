@@ -1,0 +1,24 @@
+name: MLOps catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/110_mlops_ai_platform_catalog.sql'
+      - 'scripts/mlops_catalog_check.php'
+      - '.github/workflows/mlops-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/110_mlops_ai_platform_catalog.sql'
+      - 'scripts/mlops_catalog_check.php'
+      - '.github/workflows/mlops-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/mlops_catalog_check.php
+      - name: Evidence-first MLOps contract
+        run: php scripts/mlops_catalog_check.php
