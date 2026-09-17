@@ -9,7 +9,7 @@ $errors=[];
 if($sql===false){fwrite(STDERR,"Missing migration: db/mysql/110_mlops_ai_platform_catalog.sql\n");exit(1);}
 
 $category='mlops-machine-learning-platforms';
-$products=['databricks-machine-learning','amazon-sagemaker-ai','google-vertex-ai','azure-machine-learning','dataiku-mlops'];
+$products=['databricks-machine-learning','amazon-sagemaker-ai','domino-enterprise-mlops','azure-machine-learning','dataiku-mlops'];
 
 if(strpos($sql,"'{$category}'")===false)$errors[]="Missing category {$category}";
 foreach($products as $slug){
@@ -38,7 +38,7 @@ foreach([
 $allowedHosts=[
  'databricks.com','www.databricks.com','docs.databricks.com',
  'aws.amazon.com','docs.aws.amazon.com',
- 'cloud.google.com',
+ 'domino.ai','www.domino.ai','docs.dominodatalab.com',
  'microsoft.com','www.microsoft.com','azure.microsoft.com','learn.microsoft.com',
  'dataiku.com','www.dataiku.com','doc.dataiku.com',
 ];
@@ -56,7 +56,7 @@ foreach(['consultation_recommendations','recommendation_rank','Scoring::','overa
 foreach([
  "'amazon-sagemaker-ai','mlops-experiment-tracking','supported'",
  "'amazon-sagemaker-ai','mlops-model-monitoring','supported'",
- "'google-vertex-ai','mlops-experiment-tracking','supported'",
+ "'domino-enterprise-mlops','mlops-feature-store','supported'",
  "'azure-machine-learning','mlops-experiment-tracking','supported'",
  "'azure-machine-learning','mlops-pipelines','supported'"
 ] as $forbidden){
