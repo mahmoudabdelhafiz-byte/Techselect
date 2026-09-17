@@ -43,7 +43,7 @@ foreach([
 $allowedHosts=[
  'collibra.com','www.collibra.com','productresources.collibra.com',
  'alation.com','www.alation.com',
- 'learn.microsoft.com',
+ 'learn.microsoft.com','microsoft.com','www.microsoft.com',
  'atlan.com','www.atlan.com','docs.atlan.com',
  'informatica.com','www.informatica.com',
 ];
