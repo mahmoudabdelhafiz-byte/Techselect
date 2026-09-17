@@ -1,0 +1,36 @@
+name: Catalog SQL alias integrity
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/105_*.sql'
+      - 'db/mysql/106_*.sql'
+      - 'db/mysql/107_*.sql'
+      - 'db/mysql/108_*.sql'
+      - 'db/mysql/109_*.sql'
+      - 'db/mysql/110_*.sql'
+      - 'db/mysql/111_*.sql'
+      - 'scripts/catalog_sql_alias_check.php'
+      - '.github/workflows/catalog-sql-alias.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/105_*.sql'
+      - 'db/mysql/106_*.sql'
+      - 'db/mysql/107_*.sql'
+      - 'db/mysql/108_*.sql'
+      - 'db/mysql/109_*.sql'
+      - 'db/mysql/110_*.sql'
+      - 'db/mysql/111_*.sql'
+      - 'scripts/catalog_sql_alias_check.php'
+      - '.github/workflows/catalog-sql-alias.yml'
+
+jobs:
+  alias-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/catalog_sql_alias_check.php
+      - name: Validate derived capability aliases
+        run: php scripts/catalog_sql_alias_check.php
