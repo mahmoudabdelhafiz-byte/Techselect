@@ -1,0 +1,24 @@
+name: Industrial IoT Edge catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/130_industrial_iot_edge_data_platforms_catalog.sql'
+      - 'scripts/industrial_iot_edge_catalog_check.php'
+      - '.github/workflows/industrial-iot-edge-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/130_industrial_iot_edge_data_platforms_catalog.sql'
+      - 'scripts/industrial_iot_edge_catalog_check.php'
+      - '.github/workflows/industrial-iot-edge-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/industrial_iot_edge_catalog_check.php
+      - name: Evidence-first industrial IoT edge contract
+        run: php scripts/industrial_iot_edge_catalog_check.php
