@@ -54,7 +54,7 @@ $allowedHosts=[
     'asprova.com','www.asprova.com','lib.asprova.com',
     'planettogether.com','www.planettogether.com',
     'caisoft.com','www.caisoft.com',
-    'help.sap.com'
+    'sap.com','www.sap.com','help.sap.com'
 ];
 preg_match_all('#https://[^\s\'\"]+#',$sql,$matches);
 foreach(array_unique($matches[0]??[]) as $url){
