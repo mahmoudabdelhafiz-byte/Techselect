@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'db/mysql/087_mobile_access_selection_criteria.sql'
+      - 'db/mysql/137_mobile_access_post087_backfill.sql'
       - 'scripts/mobile_access_selection_check.php'
       - '.github/workflows/mobile-selection-audit.yml'
       - 'app/lib/Scoring.php'
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - 'db/mysql/087_mobile_access_selection_criteria.sql'
+      - 'db/mysql/137_mobile_access_post087_backfill.sql'
       - 'scripts/mobile_access_selection_check.php'
       - '.github/workflows/mobile-selection-audit.yml'
       - 'app/lib/Scoring.php'
