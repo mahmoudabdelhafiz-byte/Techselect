@@ -7,10 +7,12 @@ on:
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
       - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
+      - 'db/mysql/142_tos_cyberlogitec_opus_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'scripts/tos_market_name_coverage_check.php'
+      - 'scripts/tos_cyberlogitec_opus_depth_check.php'
       - 'api/index.php'
       - 'software_page.php'
       - 'frontend/src/softwareCatalogSearch.js'
@@ -23,10 +25,12 @@ on:
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
       - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
+      - 'db/mysql/142_tos_cyberlogitec_opus_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'scripts/tos_market_name_coverage_check.php'
+      - 'scripts/tos_cyberlogitec_opus_depth_check.php'
       - 'api/index.php'
       - 'software_page.php'
       - 'frontend/src/softwareCatalogSearch.js'
@@ -44,6 +48,7 @@ jobs:
           php -l scripts/tos_depth_program_check.php
           php -l scripts/tos_kaleris_n4_depth_check.php
           php -l scripts/tos_market_name_coverage_check.php
+          php -l scripts/tos_cyberlogitec_opus_depth_check.php
           php -l api/index.php
           php -l software_page.php
       - name: Evidence-first TOS contract
@@ -54,3 +59,5 @@ jobs:
         run: php scripts/tos_kaleris_n4_depth_check.php
       - name: TOS market-name coverage contract
         run: php scripts/tos_market_name_coverage_check.php
+      - name: CyberLogitec OPUS Terminal depth evidence contract
+        run: php scripts/tos_cyberlogitec_opus_depth_check.php
