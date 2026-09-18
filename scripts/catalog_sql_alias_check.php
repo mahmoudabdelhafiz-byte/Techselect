@@ -5,6 +5,7 @@ declare(strict_types=1);
 $root=dirname(__DIR__);
 $files=glob($root.'/db/mysql/{105,106,107,108,109,110,111}_*.sql', GLOB_BRACE) ?: [];
 $errors=[];
+$totalBlocks=0;
 
 if(count($files)!==7){
     $errors[]='Expected catalog migrations 105 through 111 to be present.';
@@ -12,13 +13,23 @@ if(count($files)!==7){
 
 foreach($files as $file){
     $sql=(string)file_get_contents($file);
-    if(strpos($sql,'x.description')===false){
-        continue;
-    }
 
-    if(!preg_match('/FROM\s+modules\s+m\s+JOIN\s*\(\s*SELECT\s+.+?\s+module_slug\s*,.+?\s+name\s*,.+?\s+slug\s*,.+?\s+description(?:\s*,|\s+UNION\s+ALL)/is',$sql)){
-        $errors[]=basename($file).': derived capability table uses x.description without an explicit description alias.';
+    preg_match_all(
+        '/SELECT\s+m\.id,x\.name,x\.slug,x\.description.*?FROM\s+modules\s+m\s+JOIN\s*\(\s*(SELECT.*?\)\s*x\s+ON\s+x\.module_slug=m\.slug)/is',
+        $sql,
+        $matches
+    );
+
+    foreach($matches[1] ?? [] as $index => $block){
+        $totalBlocks++;
+        if(!preg_match("/\bslug\s*,\s*'(?:''|[^'])*'\s+description(?:\s*,|\s+UNION\s+ALL)/is",$block)){
+            $errors[]=basename($file).': capability block '.($index+1).' uses x.description without explicitly aliasing the derived description column.';
+        }
     }
+}
+
+if($totalBlocks!==8){
+    $errors[]="Expected 8 capability derived-table blocks across migrations 105-111; found {$totalBlocks}.";
 }
 
 if($errors){
@@ -26,4 +37,4 @@ if($errors){
     exit(1);
 }
 
-echo "Catalog derived-column alias check passed for migrations 105-111.\n";
+echo "Catalog derived-column alias check passed for all 8 capability blocks in migrations 105-111.\n";
