@@ -1,0 +1,24 @@
+name: Yard Management Dock Scheduling catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/124_yard_management_dock_scheduling_catalog.sql'
+      - 'scripts/yard_dock_catalog_check.php'
+      - '.github/workflows/yard-dock-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/124_yard_management_dock_scheduling_catalog.sql'
+      - 'scripts/yard_dock_catalog_check.php'
+      - '.github/workflows/yard-dock-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/yard_dock_catalog_check.php
+      - name: Evidence-first yard/dock contract
+        run: php scripts/yard_dock_catalog_check.php
