@@ -1,0 +1,24 @@
+name: EHS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/133_environment_health_safety_management_catalog.sql'
+      - 'scripts/ehs_catalog_check.php'
+      - '.github/workflows/ehs-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/133_environment_health_safety_management_catalog.sql'
+      - 'scripts/ehs_catalog_check.php'
+      - '.github/workflows/ehs-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/ehs_catalog_check.php
+      - name: Evidence-first EHS contract
+        run: php scripts/ehs_catalog_check.php
