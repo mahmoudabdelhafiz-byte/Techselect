@@ -1,0 +1,34 @@
+name: Specialized Directory Positioning
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/src/homepageValue.js'
+      - 'frontend/index.html'
+      - 'about_techselectai.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'llms.txt'
+      - 'scripts/specialized_directory_positioning_check.php'
+      - '.github/workflows/specialized-directory-positioning.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/src/homepageValue.js'
+      - 'frontend/index.html'
+      - 'about_techselectai.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'llms.txt'
+      - 'scripts/specialized_directory_positioning_check.php'
+      - '.github/workflows/specialized-directory-positioning.yml'
+
+jobs:
+  positioning-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/specialized_directory_positioning_check.php
+      - name: Specialized directory positioning contract
+        run: php scripts/specialized_directory_positioning_check.php
