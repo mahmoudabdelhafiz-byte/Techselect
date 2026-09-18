@@ -27,7 +27,8 @@ Companion modules, optional products, project-specific integrations and implemen
 - Taxonomy foundation: migration 139 establishes 85 buyer-selectable criteria across nine operational modules.
 - Kaleris N4 evidence pass: migration 140 reviews 31 granular criteria using current first-party Kaleris material. Optional optimization modules and project-specific integrations remain partial rather than being promoted as universal base-N4 features.
 - Market-name and coverage correction: migration 141 restores the canonical public name **Navis N4 TOS**, adds **CARGOES TOS+ (Zodiac)** and **Navis Mixed Cargo TOS**, and introduces searchable aliases so legacy names such as Zodiac, Jade Master Terminal, Master Terminal and MTN resolve to the current product records.
-- CyberLogitec OPUS Terminal evidence pass: migration 142 reviews 22 granular criteria using current first-party CyberLogitec material, preserving TLC module, OPUS DigiPort companion-product, implementation-specific automation and OPUS Terminal M boundaries.\n- RBS TOPS Expert evidence pass: migration 143 reviews 38 granular criteria using current first-party RBS material, preserving TOPX/TOPO package structure and explicit optional/additional-module boundaries for KPI, Billing, GOS, Reefer Monitoring, Truck Appointment, VBS, DGPS and third-party web-service interfaces.
+- CyberLogitec OPUS Terminal evidence pass: migration 142 reviews 22 granular criteria using current first-party CyberLogitec material, preserving TLC module, OPUS DigiPort companion-product, implementation-specific automation and OPUS Terminal M boundaries.
+- RBS TOPS Expert evidence pass: migration 143 reviews 38 granular criteria using current first-party RBS material, preserving TOPX/TOPO package structure and explicit optional/additional-module boundaries for KPI, Billing, GOS, Reefer Monitoring, Truck Appointment, VBS, DGPS and third-party web-service interfaces.
 
 ## Vendor evidence passes
 
