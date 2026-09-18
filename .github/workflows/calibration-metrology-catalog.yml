@@ -1,0 +1,24 @@
+name: Calibration Metrology catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/135_calibration_metrology_management_catalog.sql'
+      - 'scripts/calibration_metrology_catalog_check.php'
+      - '.github/workflows/calibration-metrology-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/135_calibration_metrology_management_catalog.sql'
+      - 'scripts/calibration_metrology_catalog_check.php'
+      - '.github/workflows/calibration-metrology-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/calibration_metrology_catalog_check.php
+      - name: Evidence-first calibration metrology contract
+        run: php scripts/calibration_metrology_catalog_check.php
