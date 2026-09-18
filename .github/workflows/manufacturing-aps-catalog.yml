@@ -1,0 +1,24 @@
+name: Manufacturing APS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/125_manufacturing_advanced_planning_scheduling_catalog.sql'
+      - 'scripts/manufacturing_aps_catalog_check.php'
+      - '.github/workflows/manufacturing-aps-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/125_manufacturing_advanced_planning_scheduling_catalog.sql'
+      - 'scripts/manufacturing_aps_catalog_check.php'
+      - '.github/workflows/manufacturing-aps-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/manufacturing_aps_catalog_check.php
+      - name: Evidence-first manufacturing APS contract
+        run: php scripts/manufacturing_aps_catalog_check.php
