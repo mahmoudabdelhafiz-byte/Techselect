@@ -15,6 +15,18 @@ INSERT INTO modules(category_id,name,slug,description,is_active) VALUES
 (@otsec_cat,'Threat Detection, Segmentation & SOC Operations','otsec-detection-operations','Behavioral detections, network segmentation/policy validation, OT threat intelligence, enterprise security integrations and distributed deployment.',1)
 ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 
+-- Migration 087 predates this category, so create the category-scoped mobile criteria here.
+INSERT INTO modules(category_id,name,slug,description,is_active) VALUES
+(@otsec_cat,'Mobile Access','mobile-access','Buyer-selectable mobile access requirements. Availability is evidence-based; unknown is not unsupported.',1)
+ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
+SET @otsec_mobile_module=(SELECT id FROM modules WHERE category_id=@otsec_cat AND slug='mobile-access' LIMIT 1);
+
+INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active) VALUES
+(@otsec_mobile_module,'Android mobile application','ot-ics-cybersecurity-asset-visibility-mobile-android-app','A vendor-supported Android application is available for the software.',0,1),
+(@otsec_mobile_module,'iOS mobile application','ot-ics-cybersecurity-asset-visibility-mobile-ios-app','A vendor-supported iOS application is available for the software.',0,1),
+(@otsec_mobile_module,'Mobile web access','ot-ics-cybersecurity-asset-visibility-mobile-web-access','The software provides vendor-supported mobile web or responsive browser access.',0,1)
+ON DUPLICATE KEY UPDATE description=VALUES(description),is_security_related=VALUES(is_security_related),is_active=1;
+
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
@@ -192,6 +204,6 @@ INSERT INTO product_mobile_access(product_id,platform,support_status,scope_statu
 SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p CROSS JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') x
 WHERE p.slug IN('nozomi-networks-platform','claroty-ctd','dragos-platform','tenable-one-ot-exposure','microsoft-defender-for-iot')
-ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score);
+ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);
 
 COMMIT;
