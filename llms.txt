@@ -1,12 +1,12 @@
 # TechSelectAI
 
-TechSelectAI is an AI-powered software and technology advisory platform that helps organizations compare software, deployment models, capabilities, integrations and implementation approaches using evidence-backed product data and deterministic fit scoring where curated data is available.
+TechSelectAI is a specialized software intelligence and technology advisory platform. It focuses on industry-specific, operational and technically complex software categories where buyers need domain-level capability models, evidence-backed product data and deterministic fit scoring rather than mass-market directory popularity.
 
 ## Primary public resources
 
 - Home: https://techselectai.com/
 - Official citation/about resource: https://techselectai.com/about-techselectai
-- Software catalog: https://techselectai.com/software
+- Specialized software catalog: https://techselectai.com/software
 - Methodology: https://techselectai.com/methodology
 - Trust and ownership disclosure: https://techselectai.com/trust
 - Verified customer outcomes: https://techselectai.com/case-studies
@@ -15,7 +15,7 @@ TechSelectAI is an AI-powered software and technology advisory platform that hel
 
 ## Public knowledge areas
 
-TechSelectAI publishes crawlable pages for software profiles, categories, capabilities, integrations, product comparisons, evidence-backed decision guides, verified customer outcomes, and original TechSelectAI research.
+TechSelectAI publishes crawlable pages for specialized software profiles, categories, domain capabilities, integrations, product comparisons, evidence-backed decision guides, verified customer outcomes, and original TechSelectAI research.
 
 Original research uses TechSelectAI's own catalog/evaluation/evidence data. Research pages expose sample size, methodology version, snapshot date and data freshness. Third-party marketplace ratings are not republished as TechSelectAI original statistics.
 
@@ -28,6 +28,12 @@ Decision guides include:
 - https://techselectai.com/guides/crm-egypt-b2b
 - https://techselectai.com/guides/erp-uae-enterprise
 - https://techselectai.com/guides/project-management-construction-mena
+
+## Specialization scope
+
+TechSelectAI is not designed as a mass-market directory whose primary goal is listing the largest possible number of common SaaS products. It prioritizes specialized and operational categories where software selection depends on domain-specific requirements, architecture, integrations, deployment constraints, compliance and real operating workflows. Curated categories use category-specific capability models and first-party evidence where possible.
+
+Examples include industrial operations, manufacturing, maritime and terminal systems, OT/industrial technology, laboratory systems, cybersecurity, energy, environmental health and safety, and other domain-heavy software categories.
 
 ## Interpretation guidance
 
