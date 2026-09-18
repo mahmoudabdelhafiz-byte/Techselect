@@ -31,7 +31,7 @@ WHERE m.category_id=@iga_cat
 ON DUPLICATE KEY UPDATE description=VALUES(description),is_security_related=VALUES(is_security_related),is_active=1;
 
 INSERT INTO vendors(name,slug,website_url,description,status) VALUES
-('SailPoint','sailpoint','https://www.sailpoint.com/','Identity security and identity governance software vendor.','active'),
+('RSA','rsa','https://www.rsa.com/','Identity security, governance, authentication and lifecycle-management software vendor.','active'),
 ('Saviynt','saviynt','https://saviynt.com/','Identity security, governance and privileged access software vendor.','active'),
 ('Omada','omada','https://omadaidentity.com/','Identity governance and administration software vendor.','active'),
 ('One Identity','one-identity','https://www.oneidentity.com/','Identity security, governance and access management software vendor.','active'),
@@ -41,7 +41,7 @@ ON DUPLICATE KEY UPDATE website_url=VALUES(website_url),description=VALUES(descr
 DROP TEMPORARY TABLE IF EXISTS cat115_products;
 CREATE TEMPORARY TABLE cat115_products(vendor_slug VARCHAR(190),category_slug VARCHAR(190),product_name VARCHAR(190),product_slug VARCHAR(190),description TEXT,product_url TEXT);
 INSERT INTO cat115_products VALUES
-('sailpoint','identity-governance-administration','SailPoint Identity Security Cloud','sailpoint-identity-security-cloud','Cloud identity security and governance platform for lifecycle management, access requests, certifications, role and entitlement governance, application onboarding and identity risk controls.','https://www.sailpoint.com/solutions/identity-security-cloud'),
+('rsa','identity-governance-administration','RSA Governance & Lifecycle','rsa-governance-lifecycle','Identity governance and administration for lifecycle automation, access requests, certifications, role and entitlement governance, separation-of-duties controls and identity risk across high-assurance environments.','https://www.rsa.com/products/governance-lifecycle/'),
 ('saviynt','identity-governance-administration','Saviynt Identity Governance & Administration','saviynt-identity-governance-administration','Identity governance and administration for lifecycle automation, access requests and reviews, identity risk, compliance controls and application onboarding across cloud, hybrid and on-premises environments.','https://saviynt.com/products/identity-governance-and-administration'),
 ('omada','identity-governance-administration','Omada Identity Cloud','omada-identity-cloud','SaaS identity governance and administration for lifecycle management, access governance, provisioning, access reviews, policy controls, integrations and identity analytics.','https://omadaidentity.com/products/omada-identity-cloud/'),
 ('one-identity','identity-governance-administration','One Identity Manager','one-identity-manager','Identity governance and administration software for lifecycle provisioning, access requests, attestation, role and entitlement governance, application governance and compliance reporting.','https://www.oneidentity.com/products/identity-manager/'),
@@ -55,14 +55,8 @@ ON DUPLICATE KEY UPDATE vendor_id=VALUES(vendor_id),category_id=VALUES(category_
 DROP TEMPORARY TABLE IF EXISTS cat115_sources;
 CREATE TEMPORARY TABLE cat115_sources(product_slug VARCHAR(190),url TEXT,title VARCHAR(255),publisher VARCHAR(190));
 INSERT INTO cat115_sources VALUES
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/help/getting_started/index.html','Getting Started in Identity Security Cloud','SailPoint'),
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/help/access/index.html','Access Overview','SailPoint'),
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/help/certs/understanding_certifications.html','Understanding Certifications','SailPoint'),
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/help/sod/index.html','Separation of Duties Overview','SailPoint'),
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/help/ai/app_onboarding/index.html','SailPoint Application Onboarding','SailPoint'),
-('sailpoint-identity-security-cloud','https://documentation.sailpoint.com/saas/user-help/requests/index.html','Access Requests Overview','SailPoint'),
-('sailpoint-identity-security-cloud','https://www.sailpoint.com/products/identity-security-cloud/atlas/capabilities/lifecycle-management','SailPoint Lifecycle Management','SailPoint'),
-('sailpoint-identity-security-cloud','https://www.sailpoint.com/solutions/identity-security-cloud','SailPoint Identity Security Cloud','SailPoint'),
+('rsa-governance-lifecycle','https://www.rsa.com/products/governance-lifecycle/','RSA Governance & Lifecycle','RSA'),
+('rsa-governance-lifecycle','https://www.rsa.com/resources/datasheets/rsa-governance-and-lifecycle/','RSA Governance & Lifecycle Datasheet','RSA'),
 ('saviynt-identity-governance-administration','https://saviynt.com/products/identity-governance-and-administration','Saviynt Identity Governance & Administration','Saviynt'),
 ('omada-identity-cloud','https://omadaidentity.com/products/omada-identity-cloud/','Omada Identity Cloud','Omada'),
 ('omada-identity-cloud','https://omadaidentity.com/products/functionality/identity-governance/','Omada Identity Governance','Omada'),
@@ -82,15 +76,14 @@ WHERE NOT EXISTS(SELECT 1 FROM evidence_sources e WHERE e.product_id=p.id AND e.
 DROP TEMPORARY TABLE IF EXISTS cat115_facts;
 CREATE TEMPORARY TABLE cat115_facts(product_slug VARCHAR(190),capability_slug VARCHAR(190),support_status VARCHAR(40),confidence DECIMAL(4,3),limitations TEXT,source_url TEXT);
 INSERT INTO cat115_facts VALUES
--- SailPoint Identity Security Cloud
-('sailpoint-identity-security-cloud','iga-lifecycle-provisioning','supported',0.990,'Identity Security Cloud lifecycle states can automate provisioning and deprovisioning; exact source connectivity and fulfillment behavior depend on the configured connectors and subscribed services.','https://documentation.sailpoint.com/saas/help/access/index.html'),
-('sailpoint-identity-security-cloud','iga-access-requests','supported',0.990,'SailPoint documents request, approval and fulfillment workflows for access items; some request experiences depend on licensing and enablement.','https://documentation.sailpoint.com/saas/user-help/requests/index.html'),
-('sailpoint-identity-security-cloud','iga-entitlements-roles','supported',0.990,'SailPoint documents entitlements, access profiles, roles and lifecycle states as governed access-model objects.','https://documentation.sailpoint.com/saas/help/access/index.html'),
-('sailpoint-identity-security-cloud','iga-application-onboarding','supported',0.990,'SailPoint documents enterprise-application discovery, guided source configuration and application onboarding into Identity Security Cloud.','https://documentation.sailpoint.com/saas/help/ai/app_onboarding/index.html'),
-('sailpoint-identity-security-cloud','iga-access-reviews','supported',0.990,'SailPoint certification campaigns review roles, access profiles and entitlements and can revoke request-granted access.','https://documentation.sailpoint.com/saas/help/certs/understanding_certifications.html'),
-('sailpoint-identity-security-cloud','iga-segregation-duties','supported',0.990,'Identity Security Cloud documents SoD policies, violations, reporting and remediation workflows for human identities.','https://documentation.sailpoint.com/saas/help/sod/index.html'),
-('sailpoint-identity-security-cloud','iga-risk-analytics','supported',0.970,'SailPoint documents identity-security insights and governance risk capabilities within Identity Security Cloud; exact analytics depend on subscribed services.','https://www.sailpoint.com/solutions/identity-security-cloud'),
-('sailpoint-identity-security-cloud','iga-nonhuman-external','partially_supported',0.950,'Current SailPoint request documentation explicitly supports requests for machine identities in configured scenarios; broader external-identity lifecycle coverage is not inferred here.','https://documentation.sailpoint.com/saas/user-help/requests/index.html'),
+-- RSA Governance & Lifecycle
+('rsa-governance-lifecycle','iga-lifecycle-provisioning','supported',0.990,'RSA documents automated joiner-mover-leaver provisioning and deprovisioning across governed environments.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-access-requests','supported',0.990,'RSA documents role-based access requests, approval and fulfillment workflows as part of lifecycle automation.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-entitlements-roles','supported',0.990,'RSA documents role-based access control and continuous visibility across identities, roles and entitlements.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-access-reviews','supported',0.990,'RSA documents automated access reviews, certifications and attestation workflows.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-segregation-duties','supported',0.990,'RSA explicitly documents segregation-of-duties detection and enforcement.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-risk-analytics','supported',0.990,'RSA documents AI-driven risk analytics, anomalous-access detection, dashboards and governance risk trends.','https://www.rsa.com/products/governance-lifecycle/'),
+('rsa-governance-lifecycle','iga-nonhuman-external','supported',0.990,'RSA explicitly documents governance for employees, contractors, partners, non-human identities, service accounts, bots and machine identities.','https://www.rsa.com/products/governance-lifecycle/'),
 
 -- Saviynt Identity Governance & Administration
 ('saviynt-identity-governance-administration','iga-lifecycle-provisioning','supported',0.990,'Saviynt documents complete identity lifecycle automation from onboarding through access revocation on departure.','https://saviynt.com/products/identity-governance-and-administration'),
@@ -151,20 +144,20 @@ JOIN evidence_sources e ON e.product_id=p.id AND e.source_url=f.source_url;
 INSERT INTO product_deployments(product_id,deployment_model_id,support_status,confidence_score)
 SELECT p.id,d.id,'supported',0.990
 FROM products p JOIN deployment_models d ON d.slug='public-saas'
-WHERE p.slug IN('sailpoint-identity-security-cloud','omada-identity-cloud')
+WHERE p.slug='omada-identity-cloud'
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),confidence_score=VALUES(confidence_score);
 
 INSERT INTO product_deployments(product_id,deployment_model_id,support_status,confidence_score)
 SELECT p.id,d.id,'supported',0.990
 FROM products p JOIN deployment_models d ON d.slug='on-premise'
-WHERE p.slug='ibm-verify-identity-governance'
+WHERE p.slug IN('rsa-governance-lifecycle','ibm-verify-identity-governance')
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),confidence_score=VALUES(confidence_score);
 
 -- Do not infer platform-specific mobile access from browser access or vendor-wide apps.
 INSERT INTO product_mobile_access(product_id,platform,support_status,scope_status,evidence_type,confidence_score)
 SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p CROSS JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') x
-WHERE p.slug IN('sailpoint-identity-security-cloud','saviynt-identity-governance-administration','omada-identity-cloud','one-identity-manager','ibm-verify-identity-governance')
+WHERE p.slug IN('rsa-governance-lifecycle','saviynt-identity-governance-administration','omada-identity-cloud','one-identity-manager','ibm-verify-identity-governance')
 ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score);
 
 COMMIT;
