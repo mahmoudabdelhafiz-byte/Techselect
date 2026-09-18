@@ -1,15 +1,15 @@
 <?php
 $root=dirname(__DIR__);
 $checks=[
-  'about_techselectai.php'=>['Official citation resource','Independence disclosure','AboutPage','Organization','https://techselectai.com/methodology'],
+  'about_techselectai.php'=>['Official citation resource','specialized software intelligence','specialized software directory and decision-intelligence platform','not listing the largest number of products','Independence disclosure','AboutPage','Organization','https://techselectai.com/methodology'],
   'app/lib/AuthorityReferralAnalytics.php'=>['sanitizeAcquisition','sanitizeReferrer','classify','authority_sources','utm_source','referrer'],
   'app/lib/UserConsultationHistory.php'=>['utm_source,utm_medium,utm_campaign,referrer','UserConsultationHistory'],
   'api/secure.php'=>['ts_acq','AuthorityReferralAnalytics::sanitizeAcquisition','UserConsultationHistory::create'],
-  'frontend/index.html'=>['document.referrer','utm_source','ts_acq','SameSite=Lax'],
+  'frontend/index.html'=>['Specialized Software Intelligence & Technology Advisory','specialized software intelligence and technology advisory platform','industry-specific and operational software','document.referrer','utm_source','ts_acq','SameSite=Lax'],
   'authority_analytics.php'=>['External Authority & Referral Analytics','noindex,nofollow','AuthorityReferralAnalytics::summary'],
   '.htaccess'=>['about-techselectai','authority-analytics'],
   'sitemap.php'=>["'/about-techselectai'"],
-  'llms.txt'=>['Official citation/about resource','https://techselectai.com/about-techselectai'],
+  'llms.txt'=>['specialized software intelligence and technology advisory platform','not designed as a mass-market directory','category-specific capability models','Official citation/about resource','https://techselectai.com/about-techselectai'],
 ];
 $failed=[];
 foreach($checks as $file=>$needles){$text=@file_get_contents($root.'/'.$file)?:'';foreach($needles as $needle){if(strpos($text,$needle)===false)$failed[]="$file missing $needle";}}
