@@ -1,0 +1,24 @@
+name: Terminal Operating Systems catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/117_terminal_operating_system_catalog.sql'
+      - 'scripts/tos_catalog_check.php'
+      - '.github/workflows/tos-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/117_terminal_operating_system_catalog.sql'
+      - 'scripts/tos_catalog_check.php'
+      - '.github/workflows/tos-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/tos_catalog_check.php
+      - name: Evidence-first TOS contract
+        run: php scripts/tos_catalog_check.php
