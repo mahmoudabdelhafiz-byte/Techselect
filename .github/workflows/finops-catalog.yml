@@ -1,0 +1,24 @@
+name: FinOps catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/112_finops_cloud_cost_catalog.sql'
+      - 'scripts/finops_catalog_check.php'
+      - '.github/workflows/finops-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/112_finops_cloud_cost_catalog.sql'
+      - 'scripts/finops_catalog_check.php'
+      - '.github/workflows/finops-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/finops_catalog_check.php
+      - name: Evidence-first FinOps contract
+        run: php scripts/finops_catalog_check.php
