@@ -1,0 +1,24 @@
+name: Control of Work catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/134_digital_permit_control_of_work_catalog.sql'
+      - 'scripts/control_of_work_catalog_check.php'
+      - '.github/workflows/control-of-work-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/134_digital_permit_control_of_work_catalog.sql'
+      - 'scripts/control_of_work_catalog_check.php'
+      - '.github/workflows/control-of-work-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/control_of_work_catalog_check.php
+      - name: Evidence-first Control of Work contract
+        run: php scripts/control_of_work_catalog_check.php
