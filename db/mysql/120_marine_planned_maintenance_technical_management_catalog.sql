@@ -74,7 +74,9 @@ INSERT INTO cat120_sources VALUES
 ('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/','Cloud Fleet Manager','Hanseaticsoft'),
 ('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/cloud-maintenance/maintenance/','CFM Maintenance','Hanseaticsoft'),
 ('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/new-features/cfm-updates-august-2026/','CFM Updates August 2026','Hanseaticsoft'),
-('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/new-features/cfm-updates-june-2026/','CFM Updates June 2026','Hanseaticsoft');
+('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/new-features/cfm-updates-june-2026/','CFM Updates June 2026','Hanseaticsoft'),
+('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/new-features/cfm-updates-january-2026/','CFM Updates January 2026','Hanseaticsoft'),
+('cloud-fleet-manager-maintenance','https://hanseaticsoft.com/new-features/cfm-updates-february-2026/','CFM Updates February 2026','Hanseaticsoft');
 
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT p.id,'vendor_documentation',s.url,s.title,s.publisher,1,'verified','high',NOW()
