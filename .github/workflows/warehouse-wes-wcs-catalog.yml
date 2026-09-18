@@ -1,0 +1,24 @@
+name: Warehouse WES WCS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/121_warehouse_execution_control_systems_catalog.sql'
+      - 'scripts/warehouse_wes_wcs_catalog_check.php'
+      - '.github/workflows/warehouse-wes-wcs-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/121_warehouse_execution_control_systems_catalog.sql'
+      - 'scripts/warehouse_wes_wcs_catalog_check.php'
+      - '.github/workflows/warehouse-wes-wcs-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/warehouse_wes_wcs_catalog_check.php
+      - name: Evidence-first WES WCS contract
+        run: php scripts/warehouse_wes_wcs_catalog_check.php
