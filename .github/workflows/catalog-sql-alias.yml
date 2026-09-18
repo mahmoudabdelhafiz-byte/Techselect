@@ -40,6 +40,7 @@ on:
       - 'db/mysql/140_*.sql'
       - 'db/mysql/141_*.sql'
       - 'db/mysql/142_*.sql'
+      - 'db/mysql/143_*.sql'
       - 'scripts/catalog_sql_alias_check.php'
       - '.github/workflows/catalog-sql-alias.yml'
   push:
@@ -82,6 +83,7 @@ on:
       - 'db/mysql/140_*.sql'
       - 'db/mysql/141_*.sql'
       - 'db/mysql/142_*.sql'
+      - 'db/mysql/143_*.sql'
       - 'scripts/catalog_sql_alias_check.php'
       - '.github/workflows/catalog-sql-alias.yml'
 
