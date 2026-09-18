@@ -60,6 +60,7 @@ INSERT INTO cat118_sources VALUES
 ('siemens-opcenter-execution','https://www.siemens.com/en-gb/products/opcenter/execution/','Siemens Opcenter Execution','Siemens'),
 ('siemens-opcenter-execution','https://www.siemens.com/en-gb/solutions/manufacturing-execution-system-mes/','Siemens Manufacturing Execution System Software','Siemens'),
 ('siemens-opcenter-execution','https://www.siemens.com/en-us/products/opcenter/execution/process/','Siemens Opcenter Execution Process','Siemens'),
+('siemens-opcenter-execution','https://www.siemens.com/en-us/products/opcenter/execution/electronics/','Siemens Opcenter Execution Electronics','Siemens'),
 ('sap-digital-manufacturing','https://www.sap.com/products/scm/digital-manufacturing.html','SAP Digital Manufacturing','SAP'),
 ('sap-digital-manufacturing','https://www.sap.com/products/scm/digital-manufacturing/features.html','SAP Digital Manufacturing Features','SAP'),
 ('sap-digital-manufacturing','https://www.sap.com/products/scm/digital-manufacturing/product-tour.html','SAP Digital Manufacturing Product Tour','SAP'),
@@ -85,7 +86,7 @@ CREATE TEMPORARY TABLE cat118_facts(product_slug VARCHAR(190),capability_slug VA
 INSERT INTO cat118_facts VALUES
 -- Siemens Opcenter Execution
 ('siemens-opcenter-execution','mes-production-execution','supported',0.990,'Opcenter Execution is Siemens MES family for orchestrating and controlling production and processes across manufacturing operations.','https://www.siemens.com/en-gb/products/opcenter/execution/'),
-('siemens-opcenter-execution','mes-work-instructions-paperless','supported',0.970,'Siemens documents paperless manufacturing, electronic work instructions and electronic records in multiple Opcenter Execution industry variants; exact functions vary by selected edition.','https://www.siemens.com/en-us/products/opcenter/execution/process/'),
+('siemens-opcenter-execution','mes-work-instructions-paperless','supported',0.970,'Siemens documents paperless manufacturing and advanced electronic work instructions in Opcenter Execution Electronics; exact work-instruction and electronic-record functions vary by selected Opcenter edition.','https://www.siemens.com/en-us/products/opcenter/execution/electronics/'),
 ('siemens-opcenter-execution','mes-scheduling-dispatch','supported',0.990,'Opcenter Execution documents optimized sequencing and synchronized production execution to reduce cycle times.','https://www.siemens.com/en-gb/products/opcenter/execution/'),
 ('siemens-opcenter-execution','mes-wip-traceability-genealogy','supported',0.990,'Siemens documents production tracking, work-in-process status, material movement and full manufacturing traceability.','https://www.siemens.com/en-gb/solutions/manufacturing-execution-system-mes/'),
 ('siemens-opcenter-execution','mes-quality-compliance','supported',0.980,'Opcenter Execution Process documents integrated quality sampling/testing and traceability; exact quality and regulated-record scope varies by industry-specific Opcenter edition.','https://www.siemens.com/en-us/products/opcenter/execution/process/'),
