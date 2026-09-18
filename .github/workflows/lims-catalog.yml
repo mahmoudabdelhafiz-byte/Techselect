@@ -1,0 +1,24 @@
+name: Laboratory Information Management Systems catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/127_laboratory_information_management_systems_catalog.sql'
+      - 'scripts/lims_catalog_check.php'
+      - '.github/workflows/lims-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/127_laboratory_information_management_systems_catalog.sql'
+      - 'scripts/lims_catalog_check.php'
+      - '.github/workflows/lims-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/lims_catalog_check.php
+      - name: Evidence-first LIMS contract
+        run: php scripts/lims_catalog_check.php
