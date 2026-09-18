@@ -64,7 +64,7 @@ INSERT INTO cat117_sources VALUES
 ('tideworks-mainsail','https://tideworks.com/pomtoc-modernizes-terminal-operations-with-cloud-based-tos-mainsail-10/','POMTOC Modernizes with Mainsail 10','Tideworks Technology'),
 ('tideworks-mainsail','https://tideworks.com/oregons-only-international-container-terminal-relaunches-with-tideworks-technology/','Oregon Container Terminal Relaunch','Tideworks Technology'),
 ('tideworks-mainsail','https://tideworks.com/traffic-control/','Tideworks Traffic Control','Tideworks Technology'),
-('realtime-business-solutions','https://rbs-tops.com/terminal-operating-system/tops-terminal-solution/tops-expert-enterprise/','RBS TOPS Expert Enterprise','Realtime Business Solutions'),
+('rbs-tops-expert','https://rbs-tops.com/terminal-operating-system/tops-terminal-solution/tops-expert-enterprise/','RBS TOPS Expert Enterprise','Realtime Business Solutions'),
 ('rbs-tops-expert','https://rbs-tops.com/terminal-operating-system/topo-expert-2/','RBS TOPO Expert','Realtime Business Solutions'),
 ('rbs-tops-expert','https://www.rbs-emea.com/products/tops-expert-cloud','RBS TOPS Expert Cloud','Realtime Business Solutions'),
 ('rbs-tops-expert','https://www.rbs-emea.com/','RBS EMEA Terminal Operating Systems','Realtime Business Solutions'),
