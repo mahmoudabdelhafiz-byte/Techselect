@@ -1,7 +1,7 @@
 <?php
 $root=dirname(__DIR__);
 $checks=[
-  'frontend/src/homepageValue.js'=>['AI-powered software & technology advisory','Decide what technology to buy — and why.','Get My Recommendations','Commercial relationships never determine TechSelectAI recommendation scores or rankings.','/methodology','/trust','/software','No signup required to get recommendations.'],
+  'frontend/src/homepageValue.js'=>['Specialized software intelligence & technology advisory','Decide what technology to buy — and why.','industry-specific and operational software decisions','not a mass-market list of popular tools','Specialized software profiles','Popularity, listing volume and commercial relationships never determine TechSelectAI recommendation scores or rankings.','/methodology','/trust','/software','No signup required to get recommendations.'],
   'frontend/src/main.jsx'=>["import'./homepageValue.js'"]
 ];
 $failed=[];
