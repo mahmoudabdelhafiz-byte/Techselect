@@ -1,0 +1,24 @@
+name: Dangerous Goods Hazmat catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/138_dangerous_goods_hazmat_compliance_catalog.sql'
+      - 'scripts/dangerous_goods_hazmat_catalog_check.php'
+      - '.github/workflows/dangerous-goods-hazmat-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/138_dangerous_goods_hazmat_compliance_catalog.sql'
+      - 'scripts/dangerous_goods_hazmat_catalog_check.php'
+      - '.github/workflows/dangerous-goods-hazmat-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/dangerous_goods_hazmat_catalog_check.php
+      - name: Evidence-first dangerous goods hazmat contract
+        run: php scripts/dangerous_goods_hazmat_catalog_check.php
