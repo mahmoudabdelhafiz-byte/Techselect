@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 $root=dirname(__DIR__);
-$files=glob($root.'/db/mysql/{105,106,107,108,109,110,111,112,113,114,115,117,118,119,120,121}_*.sql', GLOB_BRACE) ?: [];
+$files=glob($root.'/db/mysql/{105,106,107,108,109,110,111,112,113,114,115,117,118,119,120,121,122}_*.sql', GLOB_BRACE) ?: [];
 $errors=[];
 $totalBlocks=0;
 
-if(count($files)!==16){
-    $errors[]='Expected catalog migrations 105 through 115 plus 117-121 to be present.';
+if(count($files)!==17){
+    $errors[]='Expected catalog migrations 105 through 115 plus 117-122 to be present.';
 }
 
 foreach($files as $file){
@@ -25,11 +25,11 @@ foreach($files as $file){
     }
 }
 
-if($totalBlocks!==17){
-    $errors[]="Expected 17 capability derived-table blocks across catalog migrations 105-115 and 117-121; found {$totalBlocks}.";
+if($totalBlocks!==18){
+    $errors[]="Expected 18 capability derived-table blocks across catalog migrations 105-115 and 117-122; found {$totalBlocks}.";
 }
 if($errors){
     fwrite(STDERR,"Catalog derived-column alias check failed:\n- ".implode("\n- ",$errors)."\n");
     exit(1);
 }
-echo "Catalog derived-column alias check passed for all 17 capability blocks in catalog migrations 105-115 and 117-121.\n";
+echo "Catalog derived-column alias check passed for all 18 capability blocks in catalog migrations 105-115 and 117-122.\n";
