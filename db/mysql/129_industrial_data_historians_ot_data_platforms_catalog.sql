@@ -67,6 +67,7 @@ INSERT INTO cat129_sources VALUES
 ('canary-historian','https://www.canarylabs.com/product/axiom','Canary Axiom','Canary Labs'),
 ('proficy-historian','https://www.gevernova.com/software/products/proficy/historian','Proficy Historian','GE Vernova'),
 ('proficy-historian','https://www.gevernova.com/software/products/proficy/historian/cloud','Proficy Historian for Cloud','GE Vernova'),
+('proficy-historian','https://www.gevernova.com/software/products/proficy','Proficy Industrial Software Portfolio','GE Vernova'),
 ('proficy-historian','https://www.gevernova.com/software/resources/webinar/proficy-2026','Proficy Historian 2026','GE Vernova'),
 ('aspen-infoplus21','https://www.aspentech.com/en/products/msc/aspen-infoplus21','Aspen InfoPlus.21','AspenTech'),
 ('aspen-infoplus21','https://www.aspentech.com/en/resources/brochure/aspen-infoplus-21','Aspen InfoPlus.21 Brochure','AspenTech'),
@@ -90,7 +91,7 @@ INSERT INTO cat129_facts VALUES
 ('aveva-pi-system','hist-visualization-trending','supported',0.990,'PI System includes configurable operations-data visualization and dashboard capabilities through the PI portfolio.','https://www.aveva.com/en/products/aveva-pi-system/'),
 ('aveva-pi-system','hist-calculations-analytics','supported',0.980,'PI System supports foundational analysis, event tracking, notifications and processing of historical and real-time data; advanced AI/ML remains external/adjacent unless separately licensed.','https://www.aveva.com/en/products/aveva-pi-system/'),
 ('aveva-pi-system','hist-api-enterprise-integration','supported',0.990,'AVEVA documents delivery of trusted operations data to remote users, applications, BI, analytics and AI tools.','https://www.aveva.com/en/products/aveva-pi-system/'),
-('aveva-pi-system','hist-enterprise-scale-ha','supported',0.980,'PI System is positioned as enterprise operations-data infrastructure supporting complex multi-asset and multi-site environments; exact redundancy architecture depends on deployed components.','https://www.aveva.com/en/perspectives/blog/historian-vs-data-infrastructure-what-s-the-difference/'),
+('aveva-pi-system','hist-enterprise-scale-ha','partially_supported',0.980,'PI System is positioned as enterprise operations-data infrastructure supporting complex multi-asset and multi-site environments; exact redundancy architecture depends on deployed components.','https://www.aveva.com/en/perspectives/blog/historian-vs-data-infrastructure-what-s-the-difference/'),
 
 -- Canary Historian
 ('canary-historian','hist-timeseries-ingestion','supported',0.990,'Canary Historian is designed for high-throughput industrial time-series collection and storage.','https://www.canarylabs.com/product/step-1.html'),
@@ -121,7 +122,7 @@ INSERT INTO cat129_facts VALUES
 ('aspen-infoplus21','hist-visualization-trending','partially_supported',0.980,'Aspen provides process visualization through aspenONE Process Explorer, which is a related product rather than assumed universally bundled in IP.21.','https://www.aspentech.com/en/products/msc/aspen-infoplus21'),
 ('aspen-infoplus21','hist-calculations-analytics','supported',0.990,'IP.21 includes real-time computation engines for KPI and SPC/SQC analysis and supports advanced analytics over historian data.','https://www.aspentech.com/en/products/msc/aspen-infoplus21'),
 ('aspen-infoplus21','hist-api-enterprise-integration','partially_supported',0.960,'IP.21 is designed to disseminate operations data across the organization, but a current public API/connector catalogue is not inferred from the reviewed sources.','https://www.aspentech.com/en/products/msc/aspen-infoplus21'),
-('aspen-infoplus21','hist-enterprise-scale-ha','supported',0.980,'Aspen documents scalable infrastructure and enterprise-wide benchmarking/collaboration across industrial operations.','https://www.aspentech.com/en/products/msc/aspen-infoplus21'),
+('aspen-infoplus21','hist-enterprise-scale-ha','partially_supported',0.980,'Aspen documents scalable infrastructure and enterprise-wide benchmarking/collaboration across industrial operations; explicit historian redundancy/failover is not inferred from the reviewed product evidence.','https://www.aspentech.com/en/products/msc/aspen-infoplus21'),
 
 -- Honeywell Uniformance PHD
 ('honeywell-uniformance-phd','hist-timeseries-ingestion','supported',0.990,'Uniformance PHD collects and stores historical and continuous plant process data from distributed control and industrial data sources.','https://process.honeywell.com/us/en/products/industrial-software/operational-excellence/enterprise-data-management'),
