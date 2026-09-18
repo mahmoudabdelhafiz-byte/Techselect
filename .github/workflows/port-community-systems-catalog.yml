@@ -1,0 +1,24 @@
+name: Port Community Systems catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/122_port_community_systems_catalog.sql'
+      - 'scripts/port_community_systems_catalog_check.php'
+      - '.github/workflows/port-community-systems-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/122_port_community_systems_catalog.sql'
+      - 'scripts/port_community_systems_catalog_check.php'
+      - '.github/workflows/port-community-systems-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/port_community_systems_catalog_check.php
+      - name: Evidence-first PCS contract
+        run: php scripts/port_community_systems_catalog_check.php
