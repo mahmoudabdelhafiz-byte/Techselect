@@ -51,7 +51,7 @@ foreach($expected as [$capability,$status,$confidence]){
 foreach(['tideworks-mainsail','rbs-tops-expert','cyberlogitec-opus-terminal','total-soft-bank-catos'] as $other){
     if(strpos($sql,"'{$other}'")!==false)$errors[]="Kaleris evidence pass must not modify another TOS product: {$other}";
 }
-if(substr_count($sql,"'kaleris-n4-tos'")!==2)$errors[]='Kaleris product scope changed unexpectedly';
+if(substr_count($sql,"'kaleris-n4-tos'")!==1)$errors[]='Kaleris product scope changed unexpectedly';
 
 $allowed=['kaleris.com','www.kaleris.com'];
 preg_match_all('#https://[^\s\'\"]+#',$sql,$matches);
