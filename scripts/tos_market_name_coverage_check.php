@@ -12,8 +12,8 @@ foreach(['alias_name VARCHAR(190) NOT NULL','normalized_alias VARCHAR(190) NOT N
   if(strpos($legacyAliases,$column)===false)$errors[]="Migration 043 canonical alias schema missing: {$column}";
   if(strpos($sql,$column)===false)$errors[]="Migration 141 must reuse migration 043 alias schema: {$column}";
 }
-foreach(['alias VARCHAR(190) NOT NULL','alias_type VARCHAR(40)','is_active TINYINT'] as $divergent){
-  if(strpos($sql,$divergent)!==false)$errors[]="Migration 141 must not redefine product_aliases with divergent column: {$divergent}";
+foreach(["\n  alias VARCHAR(190) NOT NULL","\n  alias_type VARCHAR(40)","\n  is_active TINYINT"] as $divergent){
+  if(strpos($sql,$divergent)!==false)$errors[]="Migration 141 must not redefine product_aliases with divergent column: ".trim($divergent);
 }
 foreach([
   "name='Navis N4 TOS'","'CARGOES TOS+ (Zodiac)'","'cargoes-tos-plus-zodiac'",
