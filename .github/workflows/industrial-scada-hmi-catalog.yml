@@ -1,0 +1,24 @@
+name: Industrial SCADA HMI catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/128_industrial_scada_hmi_platforms_catalog.sql'
+      - 'scripts/industrial_scada_hmi_catalog_check.php'
+      - '.github/workflows/industrial-scada-hmi-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/128_industrial_scada_hmi_platforms_catalog.sql'
+      - 'scripts/industrial_scada_hmi_catalog_check.php'
+      - '.github/workflows/industrial-scada-hmi-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/industrial_scada_hmi_catalog_check.php
+      - name: Evidence-first industrial SCADA HMI contract
+        run: php scripts/industrial_scada_hmi_catalog_check.php
