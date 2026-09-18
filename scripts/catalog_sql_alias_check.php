@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 $root=dirname(__DIR__);
-$files=glob($root.'/db/mysql/{105,106,107,108,109,110,111,112,113,114,115,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136}_*.sql', GLOB_BRACE) ?: [];
+$files=glob($root.'/db/mysql/{105,106,107,108,109,110,111,112,113,114,115,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137}_*.sql', GLOB_BRACE) ?: [];
 $errors=[];
 $totalBlocks=0;
 
-if(count($files)!==31){
-    $errors[]='Expected catalog migrations 105 through 115 plus 117-136 to be present.';
+if(count($files)!==32){
+    $errors[]='Expected catalog migrations 105 through 115 plus 117-137 to be present.';
 }
 
 foreach($files as $file){
@@ -26,7 +26,7 @@ foreach($files as $file){
 }
 
 if($totalBlocks!==32){
-    $errors[]="Expected 32 capability derived-table blocks across catalog migrations 105-115 and 117-136; found {$totalBlocks}.";
+    $errors[]="Expected 32 capability derived-table blocks across catalog migrations 105-115 and 117-137; found {$totalBlocks}.";
 }
 if($errors){
     fwrite(STDERR,"Catalog derived-column alias check failed:\n- ".implode("\n- ",$errors)."\n");
