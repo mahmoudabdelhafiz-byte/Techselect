@@ -46,7 +46,7 @@ ON DUPLICATE KEY UPDATE description=VALUES(description),is_active=1;
 INSERT INTO capabilities(module_id,name,slug,description,is_security_related,is_active)
 SELECT m.id,x.name,x.slug,x.description,x.sec,1
 FROM modules m JOIN (
- SELECT 'uem-device-lifecycle' module_slug,'Cross-platform endpoint management' name,'uem-cross-platform-management' slug,'Centrally manage multiple endpoint operating systems and device classes from one administrative platform.',0 sec UNION ALL
+ SELECT 'uem-device-lifecycle' module_slug,'Cross-platform endpoint management' name,'uem-cross-platform-management' slug,'Centrally manage multiple endpoint operating systems and device classes from one administrative platform.' description,0 sec UNION ALL
  SELECT 'uem-device-lifecycle','Enrollment & provisioning','uem-enrollment-provisioning','Enroll, onboard or provision enterprise endpoints using manual, automated or zero-touch methods.',0 UNION ALL
  SELECT 'uem-device-lifecycle','Configuration & policy management','uem-configuration-policy','Apply and maintain device configurations, profiles, controls and administrative policies.',1 UNION ALL
  SELECT 'uem-device-lifecycle','Application management & distribution','uem-application-management','Deploy, configure, update, restrict or remove applications across managed endpoints.',0 UNION ALL
