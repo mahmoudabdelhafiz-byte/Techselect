@@ -154,8 +154,19 @@ if(preg_match('/INSERT INTO product_deployments.*?d\.slug=\'public-saas\'.*?WHER
 } else {
     $errors[]='Could not isolate explicit public-SaaS promotion.';
 }
-if(strpos($sql,"'microsoft-azure-iot-operations'")!==false && preg_match("/d\.slug='(?:public-saas|on-premise)'.*?microsoft-azure-iot-operations/s",$sql)){
-    $errors[]='Do not collapse Azure IoT Operations hybrid deployment into generic deployment labels in batch 130.';
+if(preg_match("/d\.slug='on-premise'\s*\nWHERE p\.slug IN\(([^)]*)\)/s",$sql,$onPremMatch)){
+    if(strpos($onPremMatch[1],"'microsoft-azure-iot-operations'")!==false){
+        $errors[]='Do not classify Azure IoT Operations as generic on-premises in batch 130.';
+    }
+} else {
+    $errors[]='Could not isolate explicit on-premises deployment set.';
+}
+if(preg_match("/d\.slug='public-saas'\s*\nWHERE p\.slug='([^']+)'/s",$sql,$publicSaasMatch)){
+    if($publicSaasMatch[1]==='microsoft-azure-iot-operations'){
+        $errors[]='Do not classify Azure IoT Operations as generic public SaaS in batch 130.';
+    }
+} else {
+    $errors[]='Could not isolate explicit public-SaaS product.';
 }
 
 // Platform-specific mobile access remains unknown for all five products.
