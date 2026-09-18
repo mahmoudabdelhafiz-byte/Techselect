@@ -5,8 +5,10 @@ on:
     paths:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
+      - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
+      - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
   push:
@@ -14,8 +16,10 @@ on:
     paths:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
+      - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
+      - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
 
@@ -28,7 +32,10 @@ jobs:
         run: |
           php -l scripts/tos_catalog_check.php
           php -l scripts/tos_depth_program_check.php
+          php -l scripts/tos_kaleris_n4_depth_check.php
       - name: Evidence-first TOS contract
         run: php scripts/tos_catalog_check.php
       - name: TOS depth taxonomy contract
         run: php scripts/tos_depth_program_check.php
+      - name: Kaleris N4 depth evidence contract
+        run: php scripts/tos_kaleris_n4_depth_check.php
