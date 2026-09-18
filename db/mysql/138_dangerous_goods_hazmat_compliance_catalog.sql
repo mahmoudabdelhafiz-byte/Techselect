@@ -154,8 +154,7 @@ INSERT INTO cat138_facts VALUES
 ('shiphazmat','dg-packaging-labeling','supported',0.990,'ShipHazmat provides packaging diagrams, marking/labeling guidance and placarding information based on applicable shipment rules.','https://www.shiphazmat.net/Public/Tour/FeaturesBenefits.aspx'),
 ('shiphazmat','dg-documents-manifests','supported',0.990,'ShipHazmat creates compliant shipping papers including 49 CFR bills of lading and IATA Shipper declarations; ocean documentation is also supported.','https://www.shiphazmat.net/Public/Tour/Documentation.aspx'),
 ('shiphazmat','dg-regulatory-updates','supported',0.990,'The web service is maintained with current regulatory guidelines and requires no customer software updates.','https://www.shiphazmat.net/Public/Tour/FeaturesBenefits.aspx'),
-('shiphazmat','dg-multimodal-compliance','partially_supported',0.980,'Air, US ground and ocean workflows are explicit; ADR/RID support is not inferred from current reviewed evidence.','https://www.shiphazmat.net/'),
-('shiphazmat','dg-sds-section14','not_yet_verified',0.000,'Current reviewed first-party evidence does not establish SDS authoring or Section 14 management as a ShipHazmat capability.','https://www.shiphazmat.net/');
+('shiphazmat','dg-multimodal-compliance','partially_supported',0.980,'Air, US ground and ocean workflows are explicit; ADR/RID support is not inferred from current reviewed evidence.','https://www.shiphazmat.net/');
 
 INSERT INTO product_capabilities(product_id,capability_id,edition_id,support_status,limitations,confidence_score,last_verified_at)
 SELECT p.id,c.id,NULL,f.support_status,f.limitations,f.confidence,NOW()
