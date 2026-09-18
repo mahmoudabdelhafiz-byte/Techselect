@@ -11,19 +11,19 @@ function enhance(){
  if(location.pathname!=='/'&&location.pathname!=='')return;
  const hero=document.querySelector('main .hero');if(!hero||!hero.querySelector('textarea'))return;
  ensureStyle();
- const eyebrow=hero.querySelector('.eyebrow');if(eyebrow)eyebrow.textContent='AI-powered software & technology advisory';
+ const eyebrow=hero.querySelector('.eyebrow');if(eyebrow)eyebrow.textContent='Specialized software intelligence & technology advisory';
  const h1=hero.querySelector('h1');if(h1)h1.textContent='Decide what technology to buy — and why.';
- const p=hero.querySelector('h1 + p');if(p){p.classList.add('ts-home-outcome');p.textContent='Tell us what your business needs. TechSelectAI turns your requirements into explainable, evidence-backed technology recommendations — not just another list of tools.';}
- const textarea=hero.querySelector('textarea');if(textarea)textarea.placeholder='Example: We need a CRM for 60 users in Saudi Arabia with Arabic, WhatsApp, strong reporting and a budget under $1,000/month';
+ const p=hero.querySelector('h1 + p');if(p){p.classList.add('ts-home-outcome');p.textContent='TechSelectAI is built for specialized, industry-specific and operational software decisions. We turn real buyer requirements into explainable, evidence-backed recommendations — not a mass-market list of popular tools.';}
+ const textarea=hero.querySelector('textarea');if(textarea)textarea.placeholder='Example: We need a terminal truck appointment system with haulier self-service, gate pre-validation, TOS integration and congestion controls';
  const button=hero.querySelector('textarea + button');if(button&&!button.disabled&&button.textContent.trim()==='Start free consultation')button.textContent='Get My Recommendations';
  if(!hero.querySelector('.ts-home-support')){
-   const support=document.createElement('div');support.className='ts-home-support';support.textContent='Evaluate SaaS, on-premise, self-hosted, private cloud, open-source, AI platforms, industry software, custom development — or whether keeping and extending your current system is the better choice.';
+   const support=document.createElement('div');support.className='ts-home-support';support.textContent='Go deeper on specialized software for industrial operations, manufacturing, maritime, logistics, OT, laboratories, security, energy, EHS and other domain-heavy categories — with capability models built around how those systems are actually selected.';
    textarea?.insertAdjacentElement('beforebegin',support);
  }
  if(!hero.querySelector('.ts-home-trust')){
-   const trust=document.createElement('div');trust.className='ts-home-trust';trust.innerHTML='<a href="/methodology">Explainable scoring</a><a href="/trust">Trust & commercial disclosure</a><a href="/software">Evidence-backed software profiles</a>';
+   const trust=document.createElement('div');trust.className='ts-home-trust';trust.innerHTML='<a href="/methodology">Explainable scoring</a><a href="/trust">Trust & commercial disclosure</a><a href="/software">Specialized software profiles</a>';
    (button||textarea)?.insertAdjacentElement('afterend',trust);
-   const micro=document.createElement('p');micro.className='ts-home-micro';micro.textContent='No signup required to get recommendations. Commercial relationships never determine TechSelectAI recommendation scores or rankings.';
+   const micro=document.createElement('p');micro.className='ts-home-micro';micro.textContent='No signup required to get recommendations. Popularity, listing volume and commercial relationships never determine TechSelectAI recommendation scores or rankings.';
    trust.insertAdjacentElement('afterend',micro);
  }
 }
