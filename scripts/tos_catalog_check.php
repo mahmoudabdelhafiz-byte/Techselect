@@ -140,6 +140,12 @@ if(strpos($sql,"SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','no
 if(preg_match("/'supported','supported','vendor_documentation'.*WHERE p\.slug IN\([^;]*(kaleris-n4-tos|tideworks-mainsail|rbs-tops-expert|cyberlogitec-opus-terminal|total-soft-bank-catos)/s",$sql)){
     $errors[]='Do not infer supported platform-specific mobile access for TOS products.';
 }
+if(strpos($sql,"ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);")===false){
+    $errors[]='TOS mobile default seeding must preserve later reviewed facts on migration rerun.';
+}
+if(strpos($sql,"ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score)")!==false){
+    $errors[]='TOS migration must not reset curated mobile evidence on rerun.';
+}
 
 if($errors){
     fwrite(STDERR,"TOS catalog check failed:\n- ".implode("\n- ",$errors)."\n");
