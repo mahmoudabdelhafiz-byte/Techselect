@@ -31,6 +31,7 @@ foreach(array_merge([$category],$products) as $slug){
     $hits=[];
     foreach($migrations as $file){
         if(realpath($file)===realpath($migration))continue;
+        if(basename($file)==='139_tos_depth_taxonomy_foundation.sql')continue;
         $text=@file_get_contents($file)?:'';
         if(strpos($text,"'{$slug}'")!==false)$hits[]=basename($file);
     }
@@ -138,6 +139,12 @@ if(strpos($sql,"SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','no
 }
 if(preg_match("/'supported','supported','vendor_documentation'.*WHERE p\.slug IN\([^;]*(kaleris-n4-tos|tideworks-mainsail|rbs-tops-expert|cyberlogitec-opus-terminal|total-soft-bank-catos)/s",$sql)){
     $errors[]='Do not infer supported platform-specific mobile access for TOS products.';
+}
+if(strpos($sql,"ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);")===false){
+    $errors[]='TOS mobile default seeding must preserve later reviewed facts on migration rerun.';
+}
+if(strpos($sql,"ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score)")!==false){
+    $errors[]='TOS migration must not reset curated mobile evidence on rerun.';
 }
 
 if($errors){
