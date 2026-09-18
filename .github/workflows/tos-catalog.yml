@@ -6,9 +6,14 @@ on:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
+      - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
+      - 'scripts/tos_market_name_coverage_check.php'
+      - 'api/index.php'
+      - 'software_page.php'
+      - 'frontend/src/softwareCatalogSearch.js'
       - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
   push:
@@ -17,9 +22,14 @@ on:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
       - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'db/mysql/140_tos_kaleris_n4_depth_evidence.sql'
+      - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
+      - 'scripts/tos_market_name_coverage_check.php'
+      - 'api/index.php'
+      - 'software_page.php'
+      - 'frontend/src/softwareCatalogSearch.js'
       - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
 
@@ -33,9 +43,14 @@ jobs:
           php -l scripts/tos_catalog_check.php
           php -l scripts/tos_depth_program_check.php
           php -l scripts/tos_kaleris_n4_depth_check.php
+          php -l scripts/tos_market_name_coverage_check.php
+          php -l api/index.php
+          php -l software_page.php
       - name: Evidence-first TOS contract
         run: php scripts/tos_catalog_check.php
       - name: TOS depth taxonomy contract
         run: php scripts/tos_depth_program_check.php
       - name: Kaleris N4 depth evidence contract
         run: php scripts/tos_kaleris_n4_depth_check.php
+      - name: TOS market-name coverage contract
+        run: php scripts/tos_market_name_coverage_check.php
