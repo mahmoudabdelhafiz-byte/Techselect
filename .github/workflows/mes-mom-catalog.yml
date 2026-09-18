@@ -1,0 +1,24 @@
+name: Manufacturing Execution Systems MOM catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/118_manufacturing_execution_systems_mom_catalog.sql'
+      - 'scripts/mes_mom_catalog_check.php'
+      - '.github/workflows/mes-mom-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/118_manufacturing_execution_systems_mom_catalog.sql'
+      - 'scripts/mes_mom_catalog_check.php'
+      - '.github/workflows/mes-mom-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/mes_mom_catalog_check.php
+      - name: Evidence-first MES MOM contract
+        run: php scripts/mes_mom_catalog_check.php
