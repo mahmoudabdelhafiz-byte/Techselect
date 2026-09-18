@@ -1,0 +1,24 @@
+name: Industrial Historian catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/129_industrial_data_historians_ot_data_platforms_catalog.sql'
+      - 'scripts/industrial_historian_catalog_check.php'
+      - '.github/workflows/industrial-historian-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/129_industrial_data_historians_ot_data_platforms_catalog.sql'
+      - 'scripts/industrial_historian_catalog_check.php'
+      - '.github/workflows/industrial-historian-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/industrial_historian_catalog_check.php
+      - name: Evidence-first industrial historian contract
+        run: php scripts/industrial_historian_catalog_check.php
