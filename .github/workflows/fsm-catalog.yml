@@ -1,0 +1,24 @@
+name: Field Service Management catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/114_field_service_management_catalog.sql'
+      - 'scripts/fsm_catalog_check.php'
+      - '.github/workflows/fsm-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/114_field_service_management_catalog.sql'
+      - 'scripts/fsm_catalog_check.php'
+      - '.github/workflows/fsm-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/fsm_catalog_check.php
+      - name: Evidence-first FSM contract
+        run: php scripts/fsm_catalog_check.php
