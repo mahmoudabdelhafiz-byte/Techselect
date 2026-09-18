@@ -12,13 +12,12 @@ SET @tos_cat=(SELECT id FROM categories WHERE slug='terminal-operating-systems' 
 CREATE TABLE IF NOT EXISTS product_aliases(
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
-  alias VARCHAR(190) NOT NULL,
-  alias_type VARCHAR(40) NOT NULL DEFAULT 'market_name',
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  alias_name VARCHAR(190) NOT NULL,
+  normalized_alias VARCHAR(190) NOT NULL,
+  source VARCHAR(40) NOT NULL DEFAULT 'admin',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_product_alias(product_id,alias),
-  KEY idx_product_alias_lookup(alias,is_active),
+  UNIQUE KEY uq_product_alias(product_id,normalized_alias),
+  KEY idx_product_alias_lookup(normalized_alias),
   FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -47,7 +46,7 @@ FROM vendors v WHERE v.slug='kaleris'
 ON DUPLICATE KEY UPDATE vendor_id=VALUES(vendor_id),category_id=VALUES(category_id),name=VALUES(name),short_description=VALUES(short_description),website_url=VALUES(website_url),status='active',last_reviewed_at=NOW();
 
 DROP TEMPORARY TABLE IF EXISTS cat141_aliases;
-CREATE TEMPORARY TABLE cat141_aliases(product_slug VARCHAR(190),alias VARCHAR(190),alias_type VARCHAR(40));
+CREATE TEMPORARY TABLE cat141_aliases(product_slug VARCHAR(190),alias_name VARCHAR(190),source VARCHAR(40));
 INSERT INTO cat141_aliases VALUES
 ('kaleris-n4-tos','N4','short_name'),
 ('kaleris-n4-tos','N4 TOS','market_name'),
@@ -68,10 +67,10 @@ INSERT INTO cat141_aliases VALUES
 ('navis-mixed-cargo-tos','MTN','former_name'),
 ('navis-mixed-cargo-tos','Navis Master Terminal','search_name');
 
-INSERT INTO product_aliases(product_id,alias,alias_type,is_active)
-SELECT p.id,a.alias,a.alias_type,1
+INSERT INTO product_aliases(product_id,alias_name,normalized_alias,source)
+SELECT p.id,a.alias_name,LOWER(TRIM(a.alias_name)),a.source
 FROM cat141_aliases a JOIN products p ON p.slug=a.product_slug
-ON DUPLICATE KEY UPDATE alias_type=VALUES(alias_type),is_active=1;
+ON DUPLICATE KEY UPDATE alias_name=VALUES(alias_name),source=VALUES(source);
 
 DROP TEMPORARY TABLE IF EXISTS cat141_sources;
 CREATE TEMPORARY TABLE cat141_sources(product_slug VARCHAR(190),url TEXT,title VARCHAR(255),publisher VARCHAR(190),vendor_owned TINYINT(1));

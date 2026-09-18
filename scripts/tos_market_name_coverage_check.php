@@ -5,8 +5,16 @@ $sql=(string)@file_get_contents($root.'/db/mysql/141_tos_market_names_zodiac_mas
 $api=(string)@file_get_contents($root.'/api/index.php');
 $page=(string)@file_get_contents($root.'/software_page.php');
 $search=(string)@file_get_contents($root.'/frontend/src/softwareCatalogSearch.js');
+$legacyAliases=(string)@file_get_contents($root.'/db/mysql/043_software_submissions.sql');
 $errors=[];
 if($sql==='')$errors[]='Missing migration 141';
+foreach(['alias_name VARCHAR(190) NOT NULL','normalized_alias VARCHAR(190) NOT NULL',"source VARCHAR(40) NOT NULL DEFAULT 'admin'"] as $column){
+  if(strpos($legacyAliases,$column)===false)$errors[]="Migration 043 canonical alias schema missing: {$column}";
+  if(strpos($sql,$column)===false)$errors[]="Migration 141 must reuse migration 043 alias schema: {$column}";
+}
+foreach(['alias VARCHAR(190) NOT NULL','alias_type VARCHAR(40)','is_active TINYINT'] as $divergent){
+  if(strpos($sql,$divergent)!==false)$errors[]="Migration 141 must not redefine product_aliases with divergent column: {$divergent}";
+}
 foreach([
   "name='Navis N4 TOS'","'CARGOES TOS+ (Zodiac)'","'cargoes-tos-plus-zodiac'",
   "'Navis Mixed Cargo TOS'","'navis-mixed-cargo-tos'",
@@ -32,8 +40,11 @@ if(strpos($sql,"ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);")===false
 foreach(['g2.com','capterra','recommendation_rank','Scoring::','overall_score','fit_score','popularity_score','sponsored_rank'] as $bad) if(stripos($sql,$bad)!==false)$errors[]="Prohibited ranking/source coupling: {$bad}";
 foreach([
   [$api,'product_aliases','software API reads product aliases'],
+  [$api,'pa.alias_name','software API uses canonical alias_name column'],
+  [$api,'source AS alias_type','software detail API maps canonical source metadata'],
   [$api,"'aliases'",'software detail API exposes aliases'],
   [$page,'product_aliases','software page reads product aliases'],
+  [$page,'alias_name AS alias','software page uses canonical alias_name column'],
   [$page,'alternateName','software page structured data exposes alternate names'],
   [$search,'p.aliases','catalog autocomplete searches aliases'],
   [$search,'aliasBySlug','catalog card filtering searches aliases']
