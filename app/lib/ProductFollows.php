@@ -7,20 +7,41 @@ final class ProductFollows {
         return $st->fetch()?:null;
     }
 
+    private static function missingCommunityNotifications(Throwable $e): bool {
+        $m=strtolower($e->getMessage());
+        return strpos($m,'community_notifications')!==false
+            && (strpos($m,'unknown column')!==false || strpos($m,'doesn\'t exist')!==false);
+    }
+
     public static function listForUser(PDO $pdo,int $userId,int $limit=100):array {
         $limit=max(1,min(200,$limit));
-        $st=$pdo->prepare("SELECT pf.id,pf.product_id,pf.followed_at,pf.last_notified_at,pf.community_notifications,p.name,p.slug,p.last_reviewed_at,p.updated_at,v.name vendor_name,c.name category_name FROM product_follows pf JOIN products p ON p.id=pf.product_id LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE pf.user_id=? AND pf.status='active' AND p.status='active' ORDER BY COALESCE(pf.last_notified_at,pf.followed_at) DESC,p.name ASC LIMIT {$limit}");
-        $st->execute([$userId]);
+        $base="SELECT pf.id,pf.product_id,pf.followed_at,pf.last_notified_at,%s,p.name,p.slug,p.last_reviewed_at,p.updated_at,v.name vendor_name,c.name category_name FROM product_follows pf JOIN products p ON p.id=pf.product_id LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE pf.user_id=? AND pf.status='active' AND p.status='active' ORDER BY COALESCE(pf.last_notified_at,pf.followed_at) DESC,p.name ASC LIMIT {$limit}";
+        try {
+            $st=$pdo->prepare(sprintf($base,'pf.community_notifications,1 AS community_notifications_available'));
+            $st->execute([$userId]);
+        } catch (Throwable $e) {
+            if(!self::missingCommunityNotifications($e)) throw $e;
+            $st=$pdo->prepare(sprintf($base,'0 AS community_notifications,0 AS community_notifications_available'));
+            $st->execute([$userId]);
+        }
         return $st->fetchAll()?:[];
     }
 
     public static function state(PDO $pdo, int $userId, int $productId): array {
-        $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at,community_notifications FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
-        $st->execute([$userId,$productId]);
-        $row=$st->fetch()?:null;
+        try {
+            $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at,community_notifications,1 AS community_notifications_available FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
+            $st->execute([$userId,$productId]);
+            $row=$st->fetch()?:null;
+        } catch (Throwable $e) {
+            if(!self::missingCommunityNotifications($e)) throw $e;
+            $st=$pdo->prepare("SELECT id,status,followed_at,last_notified_at,0 AS community_notifications,0 AS community_notifications_available FROM product_follows WHERE user_id=? AND product_id=? LIMIT 1");
+            $st->execute([$userId,$productId]);
+            $row=$st->fetch()?:null;
+        }
         return [
             'followed'=>$row!==null && ($row['status']??'')==='active',
             'community_notifications'=>$row!==null && (int)($row['community_notifications']??0)===1,
+            'community_notifications_available'=>$row===null || (int)($row['community_notifications_available']??1)===1,
             'follow'=>$row,
         ];
     }
@@ -33,16 +54,27 @@ final class ProductFollows {
     }
 
     public static function unfollow(PDO $pdo, int $userId, int $productId): array {
-        $pdo->prepare("UPDATE product_follows SET status='unsubscribed',community_notifications=0,updated_at=NOW() WHERE user_id=? AND product_id=?")
-            ->execute([$userId,$productId]);
+        try {
+            $pdo->prepare("UPDATE product_follows SET status='unsubscribed',community_notifications=0,updated_at=NOW() WHERE user_id=? AND product_id=?")
+                ->execute([$userId,$productId]);
+        } catch (Throwable $e) {
+            if(!self::missingCommunityNotifications($e)) throw $e;
+            $pdo->prepare("UPDATE product_follows SET status='unsubscribed',updated_at=NOW() WHERE user_id=? AND product_id=?")
+                ->execute([$userId,$productId]);
+        }
         return self::state($pdo,$userId,$productId);
     }
 
     public static function setCommunityNotifications(PDO $pdo,int $userId,int $productId,bool $enabled):array {
         $state=self::state($pdo,$userId,$productId);
         if(!$state['followed'])throw new LogicException('follow_required');
-        $pdo->prepare("UPDATE product_follows SET community_notifications=?,updated_at=NOW() WHERE user_id=? AND product_id=? AND status='active'")
-            ->execute([$enabled?1:0,$userId,$productId]);
+        try {
+            $pdo->prepare("UPDATE product_follows SET community_notifications=?,updated_at=NOW() WHERE user_id=? AND product_id=? AND status='active'")
+                ->execute([$enabled?1:0,$userId,$productId]);
+        } catch (Throwable $e) {
+            if(!self::missingCommunityNotifications($e)) throw $e;
+            throw new LogicException('community_notifications_unavailable');
+        }
         return self::state($pdo,$userId,$productId);
     }
 

@@ -4,7 +4,7 @@ SET NAMES utf8mb4;
 START TRANSACTION;
 
 ALTER TABLE product_follows
-  ADD COLUMN community_notifications TINYINT(1) NOT NULL DEFAULT 0 AFTER last_notified_at;
+  ADD COLUMN IF NOT EXISTS community_notifications TINYINT(1) NOT NULL DEFAULT 0 AFTER last_notified_at;
 
 CREATE TABLE IF NOT EXISTS product_community_notification_deliveries(
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
