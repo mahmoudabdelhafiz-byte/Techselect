@@ -1,0 +1,24 @@
+name: Terminal Truck Appointment Gate catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/123_terminal_truck_appointment_gate_management_catalog.sql'
+      - 'scripts/terminal_truck_gate_catalog_check.php'
+      - '.github/workflows/terminal-truck-gate-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/123_terminal_truck_appointment_gate_management_catalog.sql'
+      - 'scripts/terminal_truck_gate_catalog_check.php'
+      - '.github/workflows/terminal-truck-gate-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/terminal_truck_gate_catalog_check.php
+      - name: Evidence-first terminal truck/gate contract
+        run: php scripts/terminal_truck_gate_catalog_check.php
