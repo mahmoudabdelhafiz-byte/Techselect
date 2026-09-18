@@ -76,8 +76,29 @@ if(strpos($sql,"'dynamics-365-field-service','fsm-offline-execution','partially_
 if(strpos($sql,'refreshed mobile experience currently does not support offline operation')===false){
     $errors[]='Dynamics refreshed-mobile offline limitation must remain explicit.';
 }
-if(strpos($sql,'it is an extension of ServiceMax Core')===false){
+if(strpos($sql,"'servicemax-core','fsm-customer-appointments','partially_supported',0.950")===false){
+    $errors[]='ServiceMax Engage customer self-service must be partial/extension-aware rather than fully supported.';
+}
+if(strpos($sql,'it is an extension of ServiceMax Core and should not be treated as universally included in Core')===false){
     $errors[]='ServiceMax Engage extension boundary must remain explicit.';
+}
+
+
+// Every promoted capability fact must point to a URL registered in cat114_sources so
+// product_capability_evidence can be created by the exact source_url join.
+if(preg_match('/INSERT INTO cat114_sources VALUES\s*(.*?);\s*\n\s*INSERT INTO evidence_sources/is',$sql,$sm)){
+    preg_match_all("/\\('(?:''|[^'])*','(https:\\/\\/(?:''|[^'])+)'/",$sm[1],$sourceMatches);
+    $registered=array_fill_keys($sourceMatches[1]??[],true);
+    if(preg_match('/INSERT INTO cat114_facts VALUES\s*(.*?);\s*\n\s*INSERT INTO product_capabilities/is',$sql,$fm)){
+        preg_match_all("/\\('(?:''|[^'])*','(?:''|[^'])*','(?:''|[^'])*',[0-9.]+,'(?:''|[^'])*','(https:\\/\\/(?:''|[^'])+)'\\)/",$fm[1],$factMatches);
+        foreach(array_unique($factMatches[1]??[]) as $url){
+            if(!isset($registered[$url]))$errors[]="Capability source URL is not registered in cat114_sources: {$url}";
+        }
+    } else {
+        $errors[]='Could not parse cat114_facts block for evidence-link validation.';
+    }
+} else {
+    $errors[]='Could not parse cat114_sources block for evidence-link validation.';
 }
 
 foreach([
