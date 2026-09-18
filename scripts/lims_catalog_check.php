@@ -117,10 +117,14 @@ if(preg_match('/-- Promote deployment only where current product-specific eviden
     if(strpos($dm[1],"'starlims-quality-manufacturing-lims'")!==false){
         $errors[]='STARLIMS deployment must remain unverified in batch 127.';
     }
-    foreach(['thermo-samplemanager-lims','sapio-lims'] as $slug){
-        if(preg_match("/d\.slug='public-saas'.*?{$slug}/s",$dm[1])){
-            $errors[]="Do not infer public SaaS for {$slug} from hosted/cloud wording.";
+    if(preg_match("/d\.slug='public-saas'\s*\nWHERE p\.slug IN\(([^)]*)\)/s",$dm[1],$saasMatch)){
+        foreach(['thermo-samplemanager-lims','sapio-lims'] as $slug){
+            if(strpos($saasMatch[1],"'{$slug}'")!==false){
+                $errors[]="Do not infer public SaaS for {$slug} from hosted/cloud wording.";
+            }
         }
+    } else {
+        $errors[]='Could not isolate the explicit public-SaaS product set.';
     }
 } else {
     $errors[]='Could not isolate LIMS deployment block.';
