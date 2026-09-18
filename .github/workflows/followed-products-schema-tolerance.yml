@@ -1,0 +1,31 @@
+name: Followed products schema tolerance
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/ProductFollows.php'
+      - 'my_followed_products.php'
+      - 'db/mysql/102_product_community_notifications.sql'
+      - 'scripts/followed_products_schema_tolerance_check.php'
+      - '.github/workflows/followed-products-schema-tolerance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/lib/ProductFollows.php'
+      - 'my_followed_products.php'
+      - 'db/mysql/102_product_community_notifications.sql'
+      - 'scripts/followed_products_schema_tolerance_check.php'
+      - '.github/workflows/followed-products-schema-tolerance.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l app/lib/ProductFollows.php
+          php -l my_followed_products.php
+          php -l scripts/followed_products_schema_tolerance_check.php
+      - name: Followed-products schema tolerance
+        run: php scripts/followed_products_schema_tolerance_check.php
