@@ -23,13 +23,13 @@ function init(){
   let products=[],active=-1;
   const cards=()=>Array.from(grid.querySelectorAll('a.card[href^="/software/"]'));
   const applyFilter=()=>{
-    const q=norm(input.value);let shown=0;
-    cards().forEach(card=>{const hay=norm(card.textContent);const visible=!q||hay.includes(q);card.hidden=!visible;if(visible)shown++});
+    const q=norm(input.value);let shown=0;const aliasBySlug=new Map(products.map(p=>[String(p.slug),Array.isArray(p.aliases)?p.aliases.join(' '):(p.aliases||'')]));
+    cards().forEach(card=>{const slug=decodeURIComponent((card.getAttribute('href')||'').split('/').filter(Boolean).pop()||'');const hay=norm(`${card.textContent} ${aliasBySlug.get(slug)||''}`);const visible=!q||hay.includes(q);card.hidden=!visible;if(visible)shown++});
     noResults.hidden=shown!==0;meta.textContent=q?`${shown} software result${shown===1?'':'s'}`:`${cards().length} software products`;clear.hidden=!input.value;
   };
   const matches=()=>{
     const q=norm(input.value);if(!q)return[];
-    return products.filter(p=>norm(`${p.name} ${p.vendor||''} ${p.category||''}`).includes(q)).sort((a,b)=>{
+    return products.filter(p=>norm(`${p.name} ${p.vendor||''} ${p.category||''} ${Array.isArray(p.aliases)?p.aliases.join(' '):(p.aliases||'')}`).includes(q)).sort((a,b)=>{
       const an=norm(a.name),bn=norm(b.name);const ae=an===q?0:an.startsWith(q)?1:2;const be=bn===q?0:bn.startsWith(q)?1:2;return ae-be||a.name.localeCompare(b.name);
     }).slice(0,8);
   };

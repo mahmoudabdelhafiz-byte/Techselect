@@ -11,6 +11,7 @@ function body_json(){return json_decode(file_get_contents('php://input'),true)?:
 function token(){return bin2hex(random_bytes(24));}
 function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 function consultation(PDO $pdo,string $public){$st=$pdo->prepare("SELECT * FROM consultations WHERE public_token=?");$st->execute([$public]);return $st->fetch()?:null;}
+function product_alias_table_exists(PDO $pdo){static $exists=null;if($exists!==null)return $exists;try{$st=$pdo->query("SELECT 1 FROM product_aliases LIMIT 1");$exists=$st!==false;}catch(Throwable $e){$exists=false;}return $exists;}
 
 if($path==='/health') json_out(['status'=>'ok','stack'=>'php-mariadb']);
 if($path==='/robots.txt'){
@@ -28,11 +29,14 @@ if($path==='/sitemap.xml'){
 }
 
 if($path==='/api/software' && $method==='GET'){
-  $q=$pdo->query("SELECT p.id,p.name,p.slug,p.short_description,p.status,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.status='active' ORDER BY p.name");
+  $aliasSql=product_alias_table_exists($pdo)?"(SELECT GROUP_CONCAT(pa.alias_name ORDER BY pa.alias_name SEPARATOR '||') FROM product_aliases pa WHERE pa.product_id=p.id)":"NULL";
+  $q=$pdo->query("SELECT p.id,p.name,p.slug,p.short_description,p.status,v.name vendor,c.name category,{$aliasSql} aliases FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.status='active' ORDER BY p.name");
   json_out(['products'=>$q->fetchAll()]);
 }
 if(preg_match('#^/api/software/([a-z0-9-]+)$#',$path,$m) && $method==='GET'){
   $st=$pdo->prepare("SELECT p.*,v.name vendor,c.name category FROM products p LEFT JOIN vendors v ON v.id=p.vendor_id LEFT JOIN categories c ON c.id=p.category_id WHERE p.slug=? AND p.status='active'");$st->execute([$m[1]]);$p=$st->fetch();if(!$p)json_out(['error'=>'not_found'],404);
+  $p['aliases']=[];
+  if(product_alias_table_exists($pdo)){$st=$pdo->prepare("SELECT alias_name AS alias,source AS alias_type FROM product_aliases WHERE product_id=? ORDER BY alias_name");$st->execute([$p['id']]);$p['aliases']=$st->fetchAll();}
   $st=$pdo->prepare("SELECT cap.name,cap.slug,mo.name AS module,pc.support_status,pc.limitations,pc.confidence_score,pc.last_verified_at FROM product_capabilities pc JOIN capabilities cap ON cap.id=pc.capability_id JOIN modules mo ON mo.id=cap.module_id WHERE pc.product_id=? AND pc.edition_id IS NULL ORDER BY mo.name,cap.name");$st->execute([$p['id']]);$p['capabilities']=$st->fetchAll();
   $st=$pdo->prepare("SELECT source_title,source_url,source_type,verification_status,confidence,checked_at FROM evidence_sources WHERE product_id=? ORDER BY checked_at DESC");$st->execute([$p['id']]);$p['evidence']=$st->fetchAll();json_out(['product'=>$p]);
 }
