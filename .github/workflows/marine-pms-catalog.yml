@@ -1,0 +1,24 @@
+name: Marine PMS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/120_marine_planned_maintenance_technical_management_catalog.sql'
+      - 'scripts/marine_pms_catalog_check.php'
+      - '.github/workflows/marine-pms-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/120_marine_planned_maintenance_technical_management_catalog.sql'
+      - 'scripts/marine_pms_catalog_check.php'
+      - '.github/workflows/marine-pms-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/marine_pms_catalog_check.php
+      - name: Evidence-first marine PMS contract
+        run: php scripts/marine_pms_catalog_check.php
