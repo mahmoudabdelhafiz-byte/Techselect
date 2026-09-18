@@ -1,0 +1,24 @@
+name: Energy Sustainability catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/132_industrial_energy_sustainability_management_catalog.sql'
+      - 'scripts/energy_sustainability_catalog_check.php'
+      - '.github/workflows/energy-sustainability-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/132_industrial_energy_sustainability_management_catalog.sql'
+      - 'scripts/energy_sustainability_catalog_check.php'
+      - '.github/workflows/energy-sustainability-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/energy_sustainability_catalog_check.php
+      - name: Evidence-first energy sustainability contract
+        run: php scripts/energy_sustainability_catalog_check.php
