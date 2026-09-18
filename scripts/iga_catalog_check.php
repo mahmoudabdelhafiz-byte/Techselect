@@ -14,7 +14,7 @@ if($sql===false){
 
 $category='identity-governance-administration';
 $products=[
-    'sailpoint-identity-security-cloud',
+    'rsa-governance-lifecycle',
     'saviynt-identity-governance-administration',
     'omada-identity-cloud',
     'one-identity-manager',
@@ -48,7 +48,7 @@ foreach([
 }
 
 $allowedHosts=[
-    'sailpoint.com','www.sailpoint.com','documentation.sailpoint.com',
+    'rsa.com','www.rsa.com',
     'saviynt.com','www.saviynt.com',
     'omadaidentity.com','www.omadaidentity.com','documentation.omadaidentity.com',
     'oneidentity.com','www.oneidentity.com',
@@ -91,19 +91,16 @@ foreach([
     if(strpos($sql,$forbidden)!==false)$errors[]="Unverified IGA capability must remain not_yet_verified: {$forbidden}";
 }
 
-if(strpos($sql,"'sailpoint-identity-security-cloud','iga-nonhuman-external','partially_supported',0.950")===false){
-    $errors[]='SailPoint non-human/external governance must preserve the partial-scope boundary.';
-}
 if(strpos($sql,"'omada-identity-cloud','iga-nonhuman-external','partially_supported',0.970")===false){
     $errors[]='Omada non-human/external governance must preserve the partial-scope boundary.';
 }
 
 // Deployment rows are intentionally narrower than vendor-wide/cloud positioning.
-if(strpos($sql,"WHERE p.slug IN('sailpoint-identity-security-cloud','omada-identity-cloud')")===false){
-    $errors[]='Only explicitly evidenced SailPoint/Omada public SaaS deployment rows should be promoted.';
+if(strpos($sql,"WHERE p.slug='omada-identity-cloud'")===false){
+    $errors[]='Only explicitly evidenced Omada public SaaS deployment should be promoted.';
 }
-if(strpos($sql,"WHERE p.slug='ibm-verify-identity-governance'")===false){
-    $errors[]='IBM Verify Identity Governance on-premises deployment evidence must remain explicit.';
+if(strpos($sql,"WHERE p.slug IN('rsa-governance-lifecycle','ibm-verify-identity-governance')")===false){
+    $errors[]='RSA and IBM on-premises deployment evidence must remain explicit.';
 }
 if(preg_match('/-- Deployment is promoted only where current product-specific evidence is explicit\.(.*?)-- Do not infer platform-specific mobile access/s',$sql,$dm)){
     foreach(['saviynt-identity-governance-administration','one-identity-manager'] as $slug){
@@ -117,7 +114,7 @@ if(preg_match('/-- Deployment is promoted only where current product-specific ev
 if(strpos($sql,"SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000")===false){
     $errors[]='IGA mobile access must be inserted as not_yet_verified.';
 }
-if(preg_match("/'supported','supported','vendor_documentation'.*WHERE p\.slug IN\([^;]*(sailpoint-identity-security-cloud|saviynt-identity-governance-administration|omada-identity-cloud|one-identity-manager|ibm-verify-identity-governance)/s",$sql)){
+if(preg_match("/'supported','supported','vendor_documentation'.*WHERE p\.slug IN\([^;]*(rsa-governance-lifecycle|saviynt-identity-governance-administration|omada-identity-cloud|one-identity-manager|ibm-verify-identity-governance)/s",$sql)){
     $errors[]='Do not infer supported platform-specific mobile access for IGA products.';
 }
 
