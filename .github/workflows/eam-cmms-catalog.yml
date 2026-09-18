@@ -1,0 +1,24 @@
+name: EAM CMMS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/113_eam_cmms_catalog.sql'
+      - 'scripts/eam_cmms_catalog_check.php'
+      - '.github/workflows/eam-cmms-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/113_eam_cmms_catalog.sql'
+      - 'scripts/eam_cmms_catalog_check.php'
+      - '.github/workflows/eam-cmms-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/eam_cmms_catalog_check.php
+      - name: Evidence-first EAM CMMS contract
+        run: php scripts/eam_cmms_catalog_check.php
