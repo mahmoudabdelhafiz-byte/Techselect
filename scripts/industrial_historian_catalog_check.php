@@ -54,7 +54,7 @@ $allowedHosts=[
     'canarylabs.com','www.canarylabs.com',
     'gevernova.com','www.gevernova.com',
     'aspentech.com','www.aspentech.com',
-    'process.honeywell.com'
+    'honeywell.com','www.honeywell.com','process.honeywell.com'
 ];
 preg_match_all('#https://[^\s\'\"]+#',$sql,$matches);
 foreach(array_unique($matches[0]??[]) as $url){
