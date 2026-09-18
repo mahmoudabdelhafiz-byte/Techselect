@@ -24,6 +24,7 @@ on:
       - 'db/mysql/124_*.sql'
       - 'db/mysql/125_*.sql'
       - 'db/mysql/126_*.sql'
+      - 'db/mysql/127_*.sql'
       - 'scripts/catalog_sql_alias_check.php'
       - '.github/workflows/catalog-sql-alias.yml'
   push:
@@ -50,6 +51,7 @@ on:
       - 'db/mysql/124_*.sql'
       - 'db/mysql/125_*.sql'
       - 'db/mysql/126_*.sql'
+      - 'db/mysql/127_*.sql'
       - 'scripts/catalog_sql_alias_check.php'
       - '.github/workflows/catalog-sql-alias.yml'
 
