@@ -4,13 +4,19 @@ on:
   pull_request:
     paths:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
+      - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'scripts/tos_catalog_check.php'
+      - 'scripts/tos_depth_program_check.php'
+      - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
   push:
     branches: [main]
     paths:
       - 'db/mysql/117_terminal_operating_system_catalog.sql'
+      - 'db/mysql/139_tos_depth_taxonomy_foundation.sql'
       - 'scripts/tos_catalog_check.php'
+      - 'scripts/tos_depth_program_check.php'
+      - 'docs/TOS_DEPTH_PROGRAM.md'
       - '.github/workflows/tos-catalog.yml'
 
 jobs:
@@ -19,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: PHP syntax
-        run: php -l scripts/tos_catalog_check.php
+        run: |
+          php -l scripts/tos_catalog_check.php
+          php -l scripts/tos_depth_program_check.php
       - name: Evidence-first TOS contract
         run: php scripts/tos_catalog_check.php
+      - name: TOS depth taxonomy contract
+        run: php scripts/tos_depth_program_check.php

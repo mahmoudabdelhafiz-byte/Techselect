@@ -31,6 +31,7 @@ foreach(array_merge([$category],$products) as $slug){
     $hits=[];
     foreach($migrations as $file){
         if(realpath($file)===realpath($migration))continue;
+        if(basename($file)==='139_tos_depth_taxonomy_foundation.sql')continue;
         $text=@file_get_contents($file)?:'';
         if(strpos($text,"'{$slug}'")!==false)$hits[]=basename($file);
     }

@@ -175,6 +175,6 @@ INSERT INTO product_mobile_access(product_id,platform,support_status,scope_statu
 SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000
 FROM products p CROSS JOIN (SELECT 'android' platform UNION ALL SELECT 'ios' UNION ALL SELECT 'mobile_web') x
 WHERE p.slug IN('kaleris-n4-tos','tideworks-mainsail','rbs-tops-expert','cyberlogitec-opus-terminal','total-soft-bank-catos')
-ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score);
+ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);
 
 COMMIT;
