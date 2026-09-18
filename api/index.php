@@ -10,7 +10,8 @@ function json_out($data,int $status=200){http_response_code($status);header('Con
 function body_json(){return json_decode(file_get_contents('php://input'),true)?:[];}
 function token(){return bin2hex(random_bytes(24));}
 function h($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
-function consultation(PDO $pdo,string $public){$st=$pdo->prepare("SELECT * FROM consultations WHERE public_token=?");$st->execute([$public]);return $st->fetch()?:null;}\nfunction product_alias_table_exists(PDO $pdo){static $exists=null;if($exists!==null)return $exists;try{$st=$pdo->query("SELECT 1 FROM product_aliases LIMIT 1");$exists=$st!==false;}catch(Throwable $e){$exists=false;}return $exists;}
+function consultation(PDO $pdo,string $public){$st=$pdo->prepare("SELECT * FROM consultations WHERE public_token=?");$st->execute([$public]);return $st->fetch()?:null;}
+function product_alias_table_exists(PDO $pdo){static $exists=null;if($exists!==null)return $exists;try{$st=$pdo->query("SELECT 1 FROM product_aliases LIMIT 1");$exists=$st!==false;}catch(Throwable $e){$exists=false;}return $exists;}
 
 if($path==='/health') json_out(['status'=>'ok','stack'=>'php-mariadb']);
 if($path==='/robots.txt'){
