@@ -22,7 +22,8 @@ foreach(array_merge([$category],$products) as $slug){
 }
 
 foreach([
- 'not_yet_verified','product_capability_evidence','vendor_documentation','product_deployments','product_mobile_access',
+ 'not_yet_verified','product_capability_evidence','vendor_documentation','product_deployments','product_mobile_access','mobile-access',
+ 'ot-ics-cybersecurity-asset-visibility-mobile-android-app','ot-ics-cybersecurity-asset-visibility-mobile-ios-app','ot-ics-cybersecurity-asset-visibility-mobile-web-access',
  'otsec-passive-discovery','otsec-active-enrichment','otsec-topology-mapping','otsec-vulnerability-exposure',
  'otsec-engineering-change-monitoring','otsec-threat-anomaly-detection','otsec-segmentation-policy',
  'otsec-threat-intelligence','otsec-soc-integration','otsec-distributed-deployment','Unknown != Unsupported'
@@ -75,6 +76,8 @@ if(strpos($sql,"WHERE p.slug IN('nozomi-networks-platform','claroty-ctd','dragos
 if(strpos($sql,"Defender for IoT combines Azure services with locally managed/cloud-connected/air-gapped OT sensors")===false)$errors[]='Microsoft hybrid deployment boundary missing';
 
 if(strpos($sql,"SELECT p.id,x.platform,'not_yet_verified','not_yet_verified','not_yet_verified',0.000")===false)$errors[]='Mobile defaults must remain unknown';
+if(strpos($sql,"ON DUPLICATE KEY UPDATE product_id=VALUES(product_id);")===false)$errors[]='Mobile default seeding must preserve later reviewed facts on rerun';
+if(strpos($sql,"ON DUPLICATE KEY UPDATE support_status=VALUES(support_status),scope_status=VALUES(scope_status),evidence_type=VALUES(evidence_type),confidence_score=VALUES(confidence_score)")!==false)$errors[]='Migration must not reset reviewed mobile facts on rerun';
 
 if($errors){fwrite(STDERR,"OT/ICS cybersecurity catalog check failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}
 echo "OT/ICS cybersecurity catalog contract passed: 1 canonical category, 5 current products, first-party evidence, OT-specific scope boundaries, conservative deployment/mobile handling and ranking neutrality.\n";
