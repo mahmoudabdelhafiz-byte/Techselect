@@ -1,0 +1,24 @@
+name: Commercial Shipping VMS catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/119_commercial_shipping_voyage_management_catalog.sql'
+      - 'scripts/commercial_shipping_vms_catalog_check.php'
+      - '.github/workflows/commercial-shipping-vms-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/119_commercial_shipping_voyage_management_catalog.sql'
+      - 'scripts/commercial_shipping_vms_catalog_check.php'
+      - '.github/workflows/commercial-shipping-vms-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/commercial_shipping_vms_catalog_check.php
+      - name: Evidence-first commercial shipping VMS contract
+        run: php scripts/commercial_shipping_vms_catalog_check.php
