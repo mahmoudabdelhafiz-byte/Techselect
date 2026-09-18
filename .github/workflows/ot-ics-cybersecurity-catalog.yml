@@ -1,0 +1,24 @@
+name: OT ICS Cybersecurity catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/136_ot_ics_cybersecurity_asset_visibility_catalog.sql'
+      - 'scripts/ot_ics_cybersecurity_catalog_check.php'
+      - '.github/workflows/ot-ics-cybersecurity-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/136_ot_ics_cybersecurity_asset_visibility_catalog.sql'
+      - 'scripts/ot_ics_cybersecurity_catalog_check.php'
+      - '.github/workflows/ot-ics-cybersecurity-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/ot_ics_cybersecurity_catalog_check.php
+      - name: Evidence-first OT ICS cybersecurity contract
+        run: php scripts/ot_ics_cybersecurity_catalog_check.php
