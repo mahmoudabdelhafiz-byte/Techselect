@@ -1,0 +1,24 @@
+name: Asset Performance Management catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/131_asset_performance_management_predictive_maintenance_catalog.sql'
+      - 'scripts/asset_performance_management_catalog_check.php'
+      - '.github/workflows/asset-performance-management-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/131_asset_performance_management_predictive_maintenance_catalog.sql'
+      - 'scripts/asset_performance_management_catalog_check.php'
+      - '.github/workflows/asset-performance-management-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: php -l scripts/asset_performance_management_catalog_check.php
+      - name: Evidence-first asset performance management contract
+        run: php scripts/asset_performance_management_catalog_check.php
