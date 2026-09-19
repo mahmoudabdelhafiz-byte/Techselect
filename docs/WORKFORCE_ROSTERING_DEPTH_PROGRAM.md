@@ -27,7 +27,9 @@ The model intentionally includes concerns common in terminals, logistics, manufa
 - ATOSS Workforce Management
 - Legion WFM
 
-The initial migration records only claims supported by current first-party sources. Every other criterion remains `not_yet_verified`.\n\n- **ManpowerIQ evidence pass:** migration 147 reviews 21 specialist criteria from the dedicated public ManpowerIQ product page. It promotes automatic rostering, skills/certification/availability constraints, custom shift patterns, fair overtime distribution, cross-pooling, operational-area/equipment allocation, approvals and workforce visibility while preserving integration, deployment, mobile, fatigue/rest and self-service boundaries.
+The initial migration records only claims supported by current first-party sources. Every other criterion remains `not_yet_verified`.
+
+- **ManpowerIQ evidence pass:** migration 147 reviews 21 specialist criteria from the dedicated public ManpowerIQ product page. It promotes automatic rostering, skills/certification/availability constraints, custom shift patterns, fair overtime distribution, cross-pooling, operational-area/equipment allocation, approvals and workforce visibility while preserving integration, deployment, mobile, fatigue/rest and self-service boundaries.
 
 ## ManpowerIQ relationship disclosure
 
