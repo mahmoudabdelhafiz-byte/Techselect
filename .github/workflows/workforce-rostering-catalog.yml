@@ -1,0 +1,42 @@
+name: Workforce Rostering catalog
+
+on:
+  pull_request:
+    paths:
+      - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
+      - 'scripts/workforce_rostering_catalog_check.php'
+      - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
+      - 'software_page.php'
+      - 'api/index.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'scripts/recommendation_neutrality_check.php'
+      - '.github/workflows/workforce-rostering-catalog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
+      - 'scripts/workforce_rostering_catalog_check.php'
+      - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
+      - 'software_page.php'
+      - 'api/index.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'scripts/recommendation_neutrality_check.php'
+      - '.github/workflows/workforce-rostering-catalog.yml'
+
+jobs:
+  catalog-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l scripts/workforce_rostering_catalog_check.php
+          php -l software_page.php
+          php -l api/index.php
+          php -l scripts/recommendation_neutrality_check.php
+      - name: Evidence-first rostering contract
+        run: php scripts/workforce_rostering_catalog_check.php
+      - name: Recommendation neutrality
+        run: php scripts/recommendation_neutrality_check.php
