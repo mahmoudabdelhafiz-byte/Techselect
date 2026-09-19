@@ -7,7 +7,7 @@ $root=dirname(__DIR__);
 $fail=[];$ok=[];
 function seo_read(string $path): string { global $root,$fail; $full=$root.'/'.$path; if(!is_file($full)){ $fail[]="missing:$path"; return ''; } return (string)file_get_contents($full); }
 function seo_require(string $file,string $needle,string $label): void { global $fail,$ok; $src=seo_read($file); if($src!=='' && strpos($src,$needle)!==false)$ok[]=$label; else $fail[]="$label ($file missing $needle)"; }
-$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php','alternatives_page.php','best_category_page.php','regional_category_page.php','tos_research.php','tos_taxonomy.php'];
+$pages=['software_page.php','category_page.php','capability_page.php','integration_page.php','comparison_page.php','alternatives_page.php','best_category_page.php','regional_category_page.php'];
 foreach($pages as $file){
   seo_require($file,'<title>',$file.':title');
   seo_require($file,'meta name="description"',$file.':description');
@@ -19,10 +19,11 @@ foreach($pages as $file){
 seo_require('software_page.php',"'@type'=>'SoftwareApplication'",'software:schema-softwareapplication');
 seo_require('software_page.php',"'@type'=>'BreadcrumbList'",'software:schema-breadcrumb');
 seo_require('category_page.php',"'@type'=>'ItemList'",'category:schema-itemlist');
-seo_require('tos_research.php',"'@type'=>'CollectionPage'",'tos-research:schema-collectionpage');
-seo_require('tos_research.php',"'@type'=>'ItemList'",'tos-research:schema-itemlist');
-seo_require('tos_taxonomy.php',"'@type'=>'TechArticle'",'tos-taxonomy:schema-techarticle');
-seo_require('tos_taxonomy.php',"'@type'=>'DefinedTermSet'",'tos-taxonomy:schema-definedtermset');
+seo_require('app/lib/TosResearchAuthority.php',"'@type'=>'CollectionPage'",'tos-research:schema-collectionpage');
+seo_require('app/lib/TosResearchAuthority.php',"'@type'=>'ItemList'",'tos-research:schema-itemlist');
+seo_require('app/lib/TosResearchAuthority.php',"'@type'=>'TechArticle'",'tos-taxonomy:schema-techarticle');
+seo_require('app/lib/TosResearchAuthority.php',"'@type'=>'DefinedTermSet'",'tos-taxonomy:schema-definedtermset');
+seo_require('research_report.php','TosResearchAuthority::render','tos-research:consolidated-dispatch');
 seo_require('capability_page.php',"'@type'=>'ItemList'",'capability:schema-itemlist');
 seo_require('alternatives_page.php',"'@type'=>'ItemList'",'alternatives:schema-itemlist');
 seo_require('app/lib/AlternativeSeo.php','count($alts)<3','alternatives:min-three-peers');
