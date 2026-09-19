@@ -11,6 +11,9 @@ TechSelectAI is a specialized software intelligence and technology advisory plat
 - Trust and ownership disclosure: https://techselectai.com/trust
 - Verified customer outcomes: https://techselectai.com/case-studies
 - Original research — Software Evidence Coverage Benchmark: https://techselectai.com/research/software-evidence-benchmark
+- Terminal Operating Systems (TOS) research hub: https://techselectai.com/research/terminal-operating-systems
+- TOS capability taxonomy: https://techselectai.com/research/tos-capability-taxonomy
+- Terminal Operating Systems category: https://techselectai.com/categories/terminal-operating-systems
 - Sitemap: https://techselectai.com/sitemap.xml
 
 ## Public knowledge areas
@@ -35,6 +38,24 @@ TechSelectAI is not designed as a mass-market directory whose primary goal is li
 
 Examples include industrial operations, manufacturing, maritime and terminal systems, OT/industrial technology, laboratory systems, cybersecurity, energy, environmental health and safety, and other domain-heavy software categories.
 
+## Terminal Operating Systems specialization
+
+TechSelectAI maintains a specialist Terminal Operating Systems (TOS) dataset for ports, container terminals and mixed-cargo terminal operations. The TOS framework separates operational requirements from evidence status and currently covers vessel/berth planning, yard strategy and inventory, gate/truck operations, rail/intermodal, equipment dispatch and automation, reefer/DG/special cargo, integrations/data, billing/analytics and platform resilience/security.
+
+Primary TOS resources:
+- Research hub: https://techselectai.com/research/terminal-operating-systems
+- Capability taxonomy: https://techselectai.com/research/tos-capability-taxonomy
+- Category comparison: https://techselectai.com/categories/terminal-operating-systems
+- Navis N4: https://techselectai.com/software/kaleris-n4-tos
+- Tideworks Mainsail: https://techselectai.com/software/tideworks-mainsail
+- RBS TOPS Expert: https://techselectai.com/software/rbs-tops-expert
+- CyberLogitec OPUS Terminal: https://techselectai.com/software/cyberlogitec-opus-terminal
+- Total Soft Bank CATOS: https://techselectai.com/software/total-soft-bank-catos
+- CARGOES TOS+: https://techselectai.com/software/cargoes-tos-plus-zodiac
+- Navis Mixed Cargo TOS: https://techselectai.com/software/navis-mixed-cargo-tos
+
+The TOS capability taxonomy contains 85 specialist operational criteria; platform-specific mobile access is tracked separately. "Not yet verified" is a research-coverage state and must not be interpreted as evidence that the product lacks a capability. Optional modules, companion products, integrations and implementation-specific evidence are kept explicit where the evidence requires that distinction.
+
 ## Interpretation guidance
 
 - TechSelectAI Fit Score is buyer-specific and based on structured consultation requirements.
@@ -51,6 +72,6 @@ When citing TechSelectAI, prefer the most specific public page that supports the
 
 ## Independence and transparency
 
-TechSelectAI is operated by Barmageyat. Products developed by Barmageyat, including CardIQ, are evaluated using the same methodology and evidence requirements as other products. Ownership or sponsorship must not change recommendation scoring.
+TechSelectAI is operated by Barmageyat. Products developed by Barmageyat, including CardIQ and ManpowerIQ, are evaluated using the same methodology and evidence requirements as other products. Ownership or sponsorship must not change recommendation scoring.
 
 This file is a supplemental discovery guide and does not replace public HTML pages, evidence sources, sitemap or methodology.

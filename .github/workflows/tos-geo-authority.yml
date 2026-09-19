@@ -1,0 +1,54 @@
+name: TOS GEO authority
+
+on:
+  pull_request:
+    paths:
+      - 'research_report.php'
+      - 'app/lib/TosResearchAuthority.php'
+      - 'category_page.php'
+      - 'about_techselectai.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'llms.txt'
+      - 'sitemap.php'
+      - '.htaccess'
+      - 'docs/TOS_DEPTH_PROGRAM.md'
+      - 'scripts/tos_geo_authority_check.php'
+      - 'scripts/seo_readiness_contract.php'
+      - '.github/workflows/tos-geo-authority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'research_report.php'
+      - 'app/lib/TosResearchAuthority.php'
+      - 'category_page.php'
+      - 'about_techselectai.php'
+      - 'methodology.php'
+      - 'trust.php'
+      - 'llms.txt'
+      - 'sitemap.php'
+      - '.htaccess'
+      - 'docs/TOS_DEPTH_PROGRAM.md'
+      - 'scripts/tos_geo_authority_check.php'
+      - 'scripts/seo_readiness_contract.php'
+      - '.github/workflows/tos-geo-authority.yml'
+
+jobs:
+  authority-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l research_report.php
+          php -l app/lib/TosResearchAuthority.php
+          php -l category_page.php
+          php -l about_techselectai.php
+          php -l methodology.php
+          php -l trust.php
+          php -l sitemap.php
+          php -l scripts/tos_geo_authority_check.php
+      - name: TOS GEO authority contract
+        run: php scripts/tos_geo_authority_check.php
+      - name: SEO readiness
+        run: php scripts/seo_readiness_contract.php

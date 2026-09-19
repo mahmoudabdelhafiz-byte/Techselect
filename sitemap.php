@@ -19,6 +19,8 @@ add_url($urls,'/plans','monthly','0.6');
 add_url($urls,'/about-techselectai','monthly','0.7');
 add_url($urls,'/case-studies','weekly','0.8');
 add_url($urls,'/research/software-evidence-benchmark','monthly','0.9');
+add_url($urls,'/research/terminal-operating-systems','weekly','0.95');
+add_url($urls,'/research/tos-capability-taxonomy','monthly','0.92');
 add_url($urls,'/guides/crm-saudi-arabia','weekly','0.8');
 add_url($urls,'/guides/salesforce-vs-dynamics-enterprise','weekly','0.8');
 add_url($urls,'/guides/cloud-vs-self-hosted-crm','weekly','0.8');

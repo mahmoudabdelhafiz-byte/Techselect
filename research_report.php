@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__.'/app/lib/OriginalResearch.php';
+require_once __DIR__.'/app/lib/TosResearchAuthority.php';
 $config=require __DIR__.'/app/config.php';
+$researchPath=parse_url($_SERVER['REQUEST_URI']??'/',PHP_URL_PATH)?:'/';
+if(TosResearchAuthority::render($researchPath,$config))exit;
 $s=OriginalResearch::latest();
 if(!$s){http_response_code(503);echo '<!doctype html><html><body><h1>Research report not published yet</h1><p>Run the research snapshot generator after migration 055.</p></body></html>';exit;}
 function rr_h($v){return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}

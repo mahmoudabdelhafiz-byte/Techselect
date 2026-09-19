@@ -31,6 +31,7 @@ Companion modules, optional products, project-specific integrations and implemen
 - RBS TOPS Expert evidence pass: migration 143 reviews 38 granular criteria using current first-party RBS material, preserving TOPX/TOPO package structure and explicit optional/additional-module boundaries for KPI, Billing, GOS, Reefer Monitoring, Truck Appointment, VBS, DGPS and third-party web-service interfaces.
 - Total Soft Bank CATOS evidence pass: migration 144 reviews 34 granular criteria using current first-party TSB material, preserving CATOS Digital Twin as a companion-product boundary and avoiding unsupported protocol, deployment or mobile inferences.
 - Tideworks Mainsail evidence pass: migration 145 reviews 30 criteria using current first-party Tideworks material, preserving Spinnaker, Traffic Control, GateVision, Forecast and EDI Porter as explicit companion-product boundaries while verifying Mainsail core reporting, billing, API/integration, responsive browser and SaaS evidence.
+- Public authority/GEO foundation: the crawlable `/research/terminal-operating-systems` hub and `/research/tos-capability-taxonomy` reference make the specialist TOS dataset, product relationships, evidence interpretation and 85-criterion framework directly discoverable to search engines, AI retrieval systems and external researchers.
 
 ## Vendor evidence passes
 
@@ -51,6 +52,7 @@ The five planned current-product depth passes are now complete. The next special
 After evidence coverage is materially deeper:
 
 - expose category-relative evidence depth on public product/comparison pages;
+- maintain the TOS research hub and capability taxonomy as canonical internal-link targets for product, category and future RFP content;
 - build evidence-derived TOS comparison pages;
 - add reusable TOS requirement templates for consultation intake;
 - map selected criteria into RFP and business-case workflows;
