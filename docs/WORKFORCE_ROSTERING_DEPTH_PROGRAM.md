@@ -29,6 +29,8 @@ The model intentionally includes concerns common in terminals, logistics, manufa
 
 The initial migration records only claims supported by current first-party sources. Every other criterion remains `not_yet_verified`.
 
+- **ManpowerIQ evidence pass:** migration 147 reviews 21 specialist criteria from the dedicated public ManpowerIQ product page. It promotes automatic rostering, skills/certification/availability constraints, custom shift patterns, fair overtime distribution, cross-pooling, operational-area/equipment allocation, approvals and workforce visibility while preserving integration, deployment, mobile, fatigue/rest and self-service boundaries.
+
 ## ManpowerIQ relationship disclosure
 
 TechSelectAI is operated by Barmageyat, and ManpowerIQ is a Barmageyat product. This relationship is stored as an explicit product disclosure and shown separately from capability evidence and scoring.
@@ -45,7 +47,7 @@ A product capability is promoted only when the exact scope is supported by curre
 
 ## Next depth passes
 
-1. ManpowerIQ — deepen only from published/approved product documentation.
+1. ManpowerIQ — first depth pass complete in migration 147.
 2. UKG Shiftboard — complex 24/7 and high-compliance scheduling.
 3. UKG Pro Workforce Management — enterprise WFM and complex scheduling.
 4. Quinyx Workforce Management — frontline scheduling and compliance.

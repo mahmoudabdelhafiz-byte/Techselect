@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
+      - 'db/mysql/147_rostering_manpoweriq_depth_evidence.sql'
       - 'scripts/workforce_rostering_catalog_check.php'
+      - 'scripts/rostering_manpoweriq_depth_check.php'
       - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
       - 'software_page.php'
       - 'api/index.php'
@@ -16,7 +18,9 @@ on:
     branches: [main]
     paths:
       - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
+      - 'db/mysql/147_rostering_manpoweriq_depth_evidence.sql'
       - 'scripts/workforce_rostering_catalog_check.php'
+      - 'scripts/rostering_manpoweriq_depth_check.php'
       - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
       - 'software_page.php'
       - 'api/index.php'
@@ -33,10 +37,13 @@ jobs:
       - name: PHP syntax
         run: |
           php -l scripts/workforce_rostering_catalog_check.php
+          php -l scripts/rostering_manpoweriq_depth_check.php
           php -l software_page.php
           php -l api/index.php
           php -l scripts/recommendation_neutrality_check.php
       - name: Evidence-first rostering contract
         run: php scripts/workforce_rostering_catalog_check.php
+      - name: ManpowerIQ depth evidence contract
+        run: php scripts/rostering_manpoweriq_depth_check.php
       - name: Recommendation neutrality
         run: php scripts/recommendation_neutrality_check.php
