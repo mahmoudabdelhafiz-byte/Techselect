@@ -30,6 +30,7 @@ Companion modules, optional products, project-specific integrations and implemen
 - CyberLogitec OPUS Terminal evidence pass: migration 142 reviews 22 granular criteria using current first-party CyberLogitec material, preserving TLC module, OPUS DigiPort companion-product, implementation-specific automation and OPUS Terminal M boundaries.
 - RBS TOPS Expert evidence pass: migration 143 reviews 38 granular criteria using current first-party RBS material, preserving TOPX/TOPO package structure and explicit optional/additional-module boundaries for KPI, Billing, GOS, Reefer Monitoring, Truck Appointment, VBS, DGPS and third-party web-service interfaces.
 - Total Soft Bank CATOS evidence pass: migration 144 reviews 34 granular criteria using current first-party TSB material, preserving CATOS Digital Twin as a companion-product boundary and avoiding unsupported protocol, deployment or mobile inferences.
+- Tideworks Mainsail evidence pass: migration 145 reviews 30 criteria using current first-party Tideworks material, preserving Spinnaker, Traffic Control, GateVision, Forecast and EDI Porter as explicit companion-product boundaries while verifying Mainsail core reporting, billing, API/integration, responsive browser and SaaS evidence.
 
 ## Vendor evidence passes
 
@@ -39,9 +40,11 @@ The intended next passes are:
 2. CyberLogitec OPUS Terminal — first depth pass complete in migration 142
 3. RBS TOPS Expert — first depth pass complete in migration 143
 4. Total Soft Bank CATOS — first depth pass complete in migration 144
-5. Tideworks Mainsail and explicitly identified companion products
+5. Tideworks Mainsail and explicitly identified companion products — first depth pass complete in migration 145
 
 Each pass should register first-party source URLs, promote only directly supported criteria, preserve limitations, and leave everything else unknown.
+
+The five planned current-product depth passes are now complete. The next specialist-category program is Workforce Rostering & Shift Scheduling, using the same evidence-first and neutrality controls.
 
 ## Product follow-on
 
