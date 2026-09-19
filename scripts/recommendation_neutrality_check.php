@@ -25,8 +25,8 @@ $require = static function (bool $ok, string $message) use (&$failures): void {
     if (!$ok) $failures[] = $message;
 };
 
-// The scoring/ranking path must never know that CardIQ is a house product.
-foreach (['cardiq', 'card iq', 'barmageyat', 'CardIqPromotion'] as $needle) {
+// The scoring/ranking path must never know which products are related-party / Barmageyat-owned.
+foreach (['cardiq', 'card iq', 'manpoweriq', 'manpower iq', 'barmageyat', 'CardIqPromotion', 'product_relationship_disclosures', 'related_party'] as $needle) {
     $require(stripos($recommend, $needle) === false, "Recommendation engine contains product/owner-specific token: {$needle}");
     $require(stripos($scoring, $needle) === false, "Scoring engine contains product/owner-specific token: {$needle}");
 }
@@ -65,4 +65,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Recommendation neutrality contract passed: no house-product scoring/ranking path and no product-specific consultation promotion.\n";
+echo "Recommendation neutrality contract passed: no related-party/house-product scoring or ranking path and no product-specific consultation promotion.\n";
