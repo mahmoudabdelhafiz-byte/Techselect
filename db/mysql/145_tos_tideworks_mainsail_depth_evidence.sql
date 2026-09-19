@@ -1,6 +1,7 @@
 -- TechSelectAI TOS Depth Program - Tideworks Mainsail evidence pass.
 -- Reviews granular Mainsail criteria using current first-party Tideworks material.
 -- Spinnaker, Traffic Control, GateVision, Forecast and EDI Porter remain explicit companion-product boundaries.
+-- EDI Porter remains the managed EDI companion service; specific EDI message standards are not inferred for Mainsail itself.
 -- Responsive browser access is verified as mobile web; native Android/iOS applications are not inferred.
 -- Every unlisted TOS criterion remains not_yet_verified. Unknown != Unsupported.
 -- No Fit Score, recommendation ranking, review weighting, popularity or commercial placement logic is changed.
@@ -23,7 +24,7 @@ INSERT INTO cat145_sources VALUES
 ('https://tideworks.com/forecast/','Forecast by Tideworks'),
 ('https://tideworks.com/pomtoc-modernizes-terminal-operations-with-cloud-based-tos-mainsail-10/','POMTOC Cloud-Based Mainsail 10'),
 ('https://tideworks.com/oregons-only-international-container-terminal-relaunches-with-tideworks-technology/','Oregon Container Terminal Tideworks SaaS Suite'),
-('https://tideworks.com/video-library/','Tideworks Video Library - Mainsail Billing and Product Features');
+('https://tideworks.com/maximizing-profit-eliminating-revenue-leakage/','Mainsail 10 Billing and Revenue Leakage');
 
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT @mainsail,'vendor_documentation',s.url,s.title,'Tideworks Technology',1,'verified','high',NOW()
@@ -66,8 +67,8 @@ INSERT INTO cat145_facts VALUES
 ('tos-pcs-customs-integration','partially_supported',0.980,'Mainsail 10 explicitly supports Port Community System integrations, but customs integration is not separately established by the reviewed current public material.','https://tideworks.com/tideworks-technology-introduces-mainsail-10-and-announces-go-live-at-mit/'),
 ('tos-ocr-gate-system-integration','supported',0.990,'Mainsail 10 explicitly supports OCR and LPR third-party integrations; exact OCR/LPR vendors and project topology remain implementation-specific.','https://tideworks.com/tideworks-technology-introduces-mainsail-10-and-announces-go-live-at-mit/'),
 ('tos-erp-finance-integration','partially_supported',0.960,'Tideworks documents Mainsail integration with third-party ERP systems, but universal finance/ERP connector coverage is not established.','https://tideworks.com/industry-integration-third-party-systems-in-mainsail-10/'),
-('tos-billing-financial','supported',0.960,'Tideworks currently publishes Mainsail 10 product material specifically covering Billing, establishing native billing functionality while detailed tariff/rating depth remains separately bounded.','https://tideworks.com/video-library/'),
-('tos-storage-tariff-billing','partially_supported',0.940,'Mainsail 10 has documented billing functionality, but the reviewed public material does not enumerate universal storage, tariff, demurrage and service-rating rules.','https://tideworks.com/video-library/'),
+('tos-billing-financial','supported',0.990,'Mainsail 10 records revenue-generating events, applies contract rates and generates customer billing while integrating with ERP and CRM systems.','https://tideworks.com/maximizing-profit-eliminating-revenue-leakage/'),
+('tos-storage-tariff-billing','supported',0.990,'Mainsail 10 billing explicitly applies rates and service agreements, creates charges from revenue-generating events, supports configurable invoicing, and Tideworks documents centralized management of billing contracts, rates and tariffs.','https://tideworks.com/maximizing-profit-eliminating-revenue-leakage/'),
 ('tos-customer-self-service','partially_supported',0.990,'Forecast provides terminal customers with container information, clearance/demurrage status, notifications and online payments, but Forecast is a separate companion customer-service portal rather than base Mainsail functionality.','https://tideworks.com/forecast/'),
 ('tos-shift-dashboard','partially_supported',0.950,'Mainsail 10 provides real-time visibility and highly configurable reporting, but a dedicated shift/control-room dashboard workflow is not separately established.','https://tideworks.com/mainsail-10-advanced-reporting-capabilities/'),
 ('tos-productivity-kpis','supported',0.980,'Mainsail 10 supports historical reporting, real-time visibility, trending analysis, custom ad-hoc reports and dynamic recap for terminal operational data.','https://tideworks.com/mainsail-10-advanced-reporting-capabilities/'),
