@@ -31,7 +31,7 @@ foreach(array_merge([$category],$products) as $slug){
     $hits=[];
     foreach($migrations as $file){
         if(realpath($file)===realpath($migration))continue;
-        if(in_array(basename($file),['139_tos_depth_taxonomy_foundation.sql','140_tos_kaleris_n4_depth_evidence.sql','141_tos_market_names_zodiac_master_terminal.sql','142_tos_cyberlogitec_opus_depth_evidence.sql','143_tos_rbs_tops_expert_depth_evidence.sql'],true))continue;
+        if(in_array(basename($file),['139_tos_depth_taxonomy_foundation.sql','140_tos_kaleris_n4_depth_evidence.sql','141_tos_market_names_zodiac_master_terminal.sql','142_tos_cyberlogitec_opus_depth_evidence.sql','143_tos_rbs_tops_expert_depth_evidence.sql','144_tos_total_soft_bank_catos_depth_evidence.sql'],true))continue;
         $text=@file_get_contents($file)?:'';
         if(strpos($text,"'{$slug}'")!==false)$hits[]=basename($file);
     }
