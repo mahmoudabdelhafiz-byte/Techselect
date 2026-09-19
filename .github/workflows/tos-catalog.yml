@@ -9,12 +9,14 @@ on:
       - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
       - 'db/mysql/142_tos_cyberlogitec_opus_depth_evidence.sql'
       - 'db/mysql/143_tos_rbs_tops_expert_depth_evidence.sql'
+      - 'db/mysql/144_tos_total_soft_bank_catos_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'scripts/tos_market_name_coverage_check.php'
       - 'scripts/tos_cyberlogitec_opus_depth_check.php'
       - 'scripts/tos_rbs_tops_expert_depth_check.php'
+      - 'scripts/tos_total_soft_bank_catos_depth_check.php'
       - 'api/index.php'
       - 'software_page.php'
       - 'frontend/src/softwareCatalogSearch.js'
@@ -29,12 +31,14 @@ on:
       - 'db/mysql/141_tos_market_names_zodiac_master_terminal.sql'
       - 'db/mysql/142_tos_cyberlogitec_opus_depth_evidence.sql'
       - 'db/mysql/143_tos_rbs_tops_expert_depth_evidence.sql'
+      - 'db/mysql/144_tos_total_soft_bank_catos_depth_evidence.sql'
       - 'scripts/tos_catalog_check.php'
       - 'scripts/tos_depth_program_check.php'
       - 'scripts/tos_kaleris_n4_depth_check.php'
       - 'scripts/tos_market_name_coverage_check.php'
       - 'scripts/tos_cyberlogitec_opus_depth_check.php'
       - 'scripts/tos_rbs_tops_expert_depth_check.php'
+      - 'scripts/tos_total_soft_bank_catos_depth_check.php'
       - 'api/index.php'
       - 'software_page.php'
       - 'frontend/src/softwareCatalogSearch.js'
@@ -54,6 +58,7 @@ jobs:
           php -l scripts/tos_market_name_coverage_check.php
           php -l scripts/tos_cyberlogitec_opus_depth_check.php
           php -l scripts/tos_rbs_tops_expert_depth_check.php
+          php -l scripts/tos_total_soft_bank_catos_depth_check.php
           php -l api/index.php
           php -l software_page.php
       - name: Evidence-first TOS contract
@@ -68,3 +73,5 @@ jobs:
         run: php scripts/tos_cyberlogitec_opus_depth_check.php
       - name: RBS TOPS Expert depth evidence contract
         run: php scripts/tos_rbs_tops_expert_depth_check.php
+      - name: Total Soft Bank CATOS depth evidence contract
+        run: php scripts/tos_total_soft_bank_catos_depth_check.php
