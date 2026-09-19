@@ -16,7 +16,7 @@ $errors=[];
 foreach($files as $name=>$src)if($src==='')$errors[]="Missing or empty {$name}";
 foreach([
  '<title>','meta name="description"','rel="canonical"','application/ld+json',
- 'Terminal Operating Systems (TOS)','not supported','not yet verified',
+ 'Terminal Operating Systems (TOS)','not supported','Not yet verified',
  '/categories/terminal-operating-systems','/research/tos-capability-taxonomy',
  "'@type'=>'CollectionPage'","'@type'=>'ItemList'","'@type'=>'BreadcrumbList'"
 ] as $needle)if(strpos($files['tos_research.php'],$needle)===false)$errors[]="TOS research hub missing {$needle}";
