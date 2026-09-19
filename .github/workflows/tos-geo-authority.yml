@@ -3,8 +3,8 @@ name: TOS GEO authority
 on:
   pull_request:
     paths:
-      - 'tos_research.php'
-      - 'tos_taxonomy.php'
+      - 'research_report.php'
+      - 'app/lib/TosResearchAuthority.php'
       - 'category_page.php'
       - 'about_techselectai.php'
       - 'methodology.php'
@@ -19,8 +19,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'tos_research.php'
-      - 'tos_taxonomy.php'
+      - 'research_report.php'
+      - 'app/lib/TosResearchAuthority.php'
       - 'category_page.php'
       - 'about_techselectai.php'
       - 'methodology.php'
@@ -40,8 +40,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: PHP syntax
         run: |
-          php -l tos_research.php
-          php -l tos_taxonomy.php
+          php -l research_report.php
+          php -l app/lib/TosResearchAuthority.php
           php -l category_page.php
           php -l about_techselectai.php
           php -l methodology.php
