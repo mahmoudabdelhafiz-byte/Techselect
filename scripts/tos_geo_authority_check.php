@@ -2,8 +2,8 @@
 declare(strict_types=1);
 $root=dirname(__DIR__);
 $files=[
- 'tos_research.php'=>(string)@file_get_contents($root.'/tos_research.php'),
- 'tos_taxonomy.php'=>(string)@file_get_contents($root.'/tos_taxonomy.php'),
+ 'authority'=>(string)@file_get_contents($root.'/app/lib/TosResearchAuthority.php'),
+ 'research_report.php'=>(string)@file_get_contents($root.'/research_report.php'),
  '.htaccess'=>(string)@file_get_contents($root.'/.htaccess'),
  'sitemap.php'=>(string)@file_get_contents($root.'/sitemap.php'),
  'llms.txt'=>(string)@file_get_contents($root.'/llms.txt'),
@@ -16,18 +16,17 @@ $errors=[];
 foreach($files as $name=>$src)if($src==='')$errors[]="Missing or empty {$name}";
 foreach([
  '<title>','meta name="description"','rel="canonical"','application/ld+json',
- 'Terminal Operating Systems (TOS)','not supported','Not yet verified',
+ 'Terminal Operating Systems (TOS)','Not yet verified','not supported',
  '/categories/terminal-operating-systems','/research/tos-capability-taxonomy',
- "'@type'=>'CollectionPage'","'@type'=>'ItemList'","'@type'=>'BreadcrumbList'"
-] as $needle)if(strpos($files['tos_research.php'],$needle)===false)$errors[]="TOS research hub missing {$needle}";
-foreach([
- '<title>','meta name="description"','rel="canonical"','application/ld+json',
+ "'@type'=>'CollectionPage'","'@type'=>'ItemList'","'@type'=>'BreadcrumbList'",
  'Terminal Operating System Capability Taxonomy','Taxonomy depth is not evidence depth',
  "'@type'=>'TechArticle'","'@type'=>'DefinedTermSet'","'@type'=>'DefinedTerm'",
  "module_slug']==='mobile-access'"
-] as $needle)if(strpos($files['tos_taxonomy.php'],$needle)===false)$errors[]="TOS taxonomy page missing {$needle}";
-foreach(['research/terminal-operating-systems','tos_research.php','research/tos-capability-taxonomy','tos_taxonomy.php'] as $needle)
- if(strpos($files['.htaccess'],$needle)===false)$errors[]=".htaccess missing {$needle}";
+] as $needle)if(strpos($files['authority'],$needle)===false)$errors[]="TOS research authority component missing {$needle}";
+if(strpos($files['research_report.php'],'TosResearchAuthority::render')===false)$errors[]='Existing research surface must dispatch TOS authority routes';
+foreach(['research/terminal-operating-systems','research/tos-capability-taxonomy'] as $route){
+ if(strpos($files['.htaccess'],$route)===false||strpos($files['.htaccess'],$route.'/?$ research_report.php')===false)$errors[]=".htaccess must consolidate {$route} through research_report.php";
+}
 foreach(['/research/terminal-operating-systems','/research/tos-capability-taxonomy'] as $needle)
  if(strpos($files['sitemap.php'],$needle)===false)$errors[]="Sitemap missing {$needle}";
 foreach([
@@ -44,8 +43,7 @@ foreach(['Terminal Operating Systems (TOS)','/research/terminal-operating-system
   if(strpos($files[$file],$needle)===false)$errors[]="{$file} missing TOS authority signal: {$needle}";
  }
 }
-foreach(['recommendation_rank','overall_score','fit_score','sponsored_rank','popularity_score'] as $bad){
- if(stripos($files['tos_research.php'],$bad)!==false||stripos($files['tos_taxonomy.php'],$bad)!==false)$errors[]="TOS authority pages must not implement ranking logic: {$bad}";
-}
+foreach(['recommendation_rank','overall_score','fit_score','sponsored_rank','popularity_score'] as $bad)
+ if(stripos($files['authority'],$bad)!==false)$errors[]="TOS authority component must not implement ranking logic: {$bad}";
 if($errors){fwrite(STDERR,"TOS GEO authority contract failed:\n- ".implode("\n- ",$errors)."\n");exit(1);}
-echo "TOS GEO authority contract passed: crawlable research hub, taxonomy, internal links, sitemap and AI discovery signals are present without ranking logic.\n";
+echo "TOS GEO authority contract passed: consolidated research hub, taxonomy, internal links, sitemap and AI discovery signals are present without new top-level product surfaces or ranking logic.\n";
