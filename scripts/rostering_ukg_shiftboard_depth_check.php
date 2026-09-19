@@ -33,7 +33,7 @@ $expected=[
     ['rostering-minimum-skill-mix','supported','0.990'],
     ['rostering-absence-backfill','supported','0.990'],
     ['rostering-intraday-reassignment','supported','0.990'],
-    ['rostering-schedule-self-service','supported','0.970'],
+    ['rostering-schedule-self-service','partially_supported','0.960'],
     ['rostering-shift-swaps','supported','0.990'],
     ['rostering-shift-bidding','supported','0.990'],
     ['rostering-open-shift-volunteering','supported','0.990'],
@@ -69,6 +69,7 @@ foreach(array_unique($matches[0]??[]) as $url){
     $host=strtolower((string)parse_url($url,PHP_URL_HOST));
     if($host===''||!in_array($host,$allowed,true))$errors[]="Unapproved UKG Shiftboard evidence host: {$host}";
 }
+if(strpos($sql,'https://www.ukg.com/sites/default/files/2026-03/UKG-Shiftboard-Product-Profile.pdf')===false)$errors[]='Official UKG Shiftboard product profile source must be registered';
 
 foreach([
     'does not copy broader UKG Pro Workforce Management features',
@@ -79,7 +80,8 @@ foreach([
     'does not establish a generic external ERP/MES/API connector',
     'this proves suite integration but not a generic HRIS connector catalogue',
     'does not establish direct payroll export or a generic payroll-connector catalogue',
-    'native app platform support is not inferred'
+    'native app platform support is not inferred',
+    'does not explicitly state full published-roster viewing'
 ] as $phrase){
     if(strpos($sql,$phrase)===false)$errors[]="Missing UKG Shiftboard evidence boundary: {$phrase}";
 }

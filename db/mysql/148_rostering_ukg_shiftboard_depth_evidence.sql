@@ -18,7 +18,8 @@ INSERT INTO cat148_sources VALUES
 ('https://www.ukg.com/products/features/ukg-shiftboard','UKG Shiftboard','UKG'),
 ('https://marketplace.ukg.com/en-US/apps/426658/ukg-shiftboard/features','UKG Shiftboard Features','UKG'),
 ('https://www.ukg.com/learn/resources/product-info/ukg-shiftboard','UKG Shiftboard Product Information','UKG'),
-('https://www.ukg.com/glossary/how-ukg-shiftboard-helps-union-compliance','How UKG Shiftboard Helps With Union Compliance','UKG');
+('https://www.ukg.com/glossary/how-ukg-shiftboard-helps-union-compliance','How UKG Shiftboard Helps With Union Compliance','UKG'),
+('https://www.ukg.com/sites/default/files/2026-03/UKG-Shiftboard-Product-Profile.pdf','UKG Shiftboard Product Profile','UKG');
 
 INSERT INTO evidence_sources(product_id,source_type,source_url,source_title,publisher_name,vendor_owned,verification_status,confidence,checked_at)
 SELECT @shiftboard,'vendor_documentation',s.url,s.title,s.publisher,1,'verified','high',NOW()
@@ -64,7 +65,7 @@ INSERT INTO cat148_facts VALUES
 ('rostering-minimum-skill-mix','supported',0.990,'UKG Shiftboard optimizes the workforce skill mix to maximize required coverage.','https://marketplace.ukg.com/en-US/apps/426658/ukg-shiftboard/features'),
 ('rostering-absence-backfill','supported',0.990,'UKG Shiftboard automates scheduling responses to sudden call-offs and other staffing disruptions.','https://www.ukg.com/products/features/ukg-shiftboard'),
 ('rostering-intraday-reassignment','supported',0.990,'UKG Shiftboard can reassign underutilized workers to understaffed areas and make proactive adjustments as demand changes.','https://marketplace.ukg.com/en-US/apps/426658/ukg-shiftboard/features'),
-('rostering-schedule-self-service','supported',0.970,'UKG Shiftboard gives employees schedule controls from any device, including bidding, preferences, trades and time-off actions; native app platform support is not inferred from this wording.','https://www.ukg.com/learn/resources/product-info/ukg-shiftboard'),
+('rostering-schedule-self-service','partially_supported',0.960,'UKG Shiftboard gives employees schedule controls from any device, including bidding, preferences, trades and time-off actions, but the reviewed wording does not explicitly state full published-roster viewing; native app platform support is not inferred.','https://www.ukg.com/learn/resources/product-info/ukg-shiftboard'),
 ('rostering-shift-swaps','supported',0.990,'UKG Shiftboard explicitly allows employees to trade schedules.','https://www.ukg.com/learn/resources/product-info/ukg-shiftboard'),
 ('rostering-shift-bidding','supported',0.990,'UKG Shiftboard explicitly allows employees to bid on shifts.','https://www.ukg.com/learn/resources/product-info/ukg-shiftboard'),
 ('rostering-open-shift-volunteering','supported',0.990,'UKG Shiftboard explicitly gives employees volunteering opportunities for shifts.','https://www.ukg.com/sites/default/files/2026-03/UKG-Shiftboard-Product-Profile.pdf'),
