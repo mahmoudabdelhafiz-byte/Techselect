@@ -5,8 +5,10 @@ on:
     paths:
       - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
       - 'db/mysql/147_rostering_manpoweriq_depth_evidence.sql'
+      - 'db/mysql/148_rostering_ukg_shiftboard_depth_evidence.sql'
       - 'scripts/workforce_rostering_catalog_check.php'
       - 'scripts/rostering_manpoweriq_depth_check.php'
+      - 'scripts/rostering_ukg_shiftboard_depth_check.php'
       - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
       - 'software_page.php'
       - 'api/index.php'
@@ -19,8 +21,10 @@ on:
     paths:
       - 'db/mysql/146_workforce_rostering_shift_scheduling_catalog.sql'
       - 'db/mysql/147_rostering_manpoweriq_depth_evidence.sql'
+      - 'db/mysql/148_rostering_ukg_shiftboard_depth_evidence.sql'
       - 'scripts/workforce_rostering_catalog_check.php'
       - 'scripts/rostering_manpoweriq_depth_check.php'
+      - 'scripts/rostering_ukg_shiftboard_depth_check.php'
       - 'docs/WORKFORCE_ROSTERING_DEPTH_PROGRAM.md'
       - 'software_page.php'
       - 'api/index.php'
@@ -38,6 +42,7 @@ jobs:
         run: |
           php -l scripts/workforce_rostering_catalog_check.php
           php -l scripts/rostering_manpoweriq_depth_check.php
+          php -l scripts/rostering_ukg_shiftboard_depth_check.php
           php -l software_page.php
           php -l api/index.php
           php -l scripts/recommendation_neutrality_check.php
@@ -45,5 +50,7 @@ jobs:
         run: php scripts/workforce_rostering_catalog_check.php
       - name: ManpowerIQ depth evidence contract
         run: php scripts/rostering_manpoweriq_depth_check.php
+      - name: UKG Shiftboard depth evidence contract
+        run: php scripts/rostering_ukg_shiftboard_depth_check.php
       - name: Recommendation neutrality
         run: php scripts/recommendation_neutrality_check.php

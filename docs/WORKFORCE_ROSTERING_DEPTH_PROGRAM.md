@@ -29,7 +29,7 @@ The model intentionally includes concerns common in terminals, logistics, manufa
 
 The initial migration records only claims supported by current first-party sources. Every other criterion remains `not_yet_verified`.
 
-- **ManpowerIQ evidence pass:** migration 147 reviews 21 specialist criteria from the dedicated public ManpowerIQ product page. It promotes automatic rostering, skills/certification/availability constraints, custom shift patterns, fair overtime distribution, cross-pooling, operational-area/equipment allocation, approvals and workforce visibility while preserving integration, deployment, mobile, fatigue/rest and self-service boundaries.
+- **ManpowerIQ evidence pass:** migration 147 reviews 21 specialist criteria from the dedicated public ManpowerIQ product page. It promotes automatic rostering, skills/certification/availability constraints, custom shift patterns, fair overtime distribution, cross-pooling, operational-area/equipment allocation, approvals and workforce visibility while preserving integration, deployment, mobile, fatigue/rest and self-service boundaries.\n- **UKG Shiftboard evidence pass:** migration 148 reviews 43 specialist criteria using current first-party UKG material. It deepens production-driven staffing, automated scheduling, skills/certifications, union and fatigue rules, overtime equalization, disruption recovery, self-service, auditing and coverage/cost control while preserving UKG Pro WFM suite-integration, deployment, API/SSO and mobile-platform boundaries.
 
 ## ManpowerIQ relationship disclosure
 
@@ -48,7 +48,7 @@ A product capability is promoted only when the exact scope is supported by curre
 ## Next depth passes
 
 1. ManpowerIQ — first depth pass complete in migration 147.
-2. UKG Shiftboard — complex 24/7 and high-compliance scheduling.
+2. UKG Shiftboard — first depth pass complete in migration 148.
 3. UKG Pro Workforce Management — enterprise WFM and complex scheduling.
 4. Quinyx Workforce Management — frontline scheduling and compliance.
 5. ATOSS Workforce Management — enterprise demand-to-deployment scheduling.
